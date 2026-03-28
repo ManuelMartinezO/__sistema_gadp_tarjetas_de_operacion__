@@ -1,0 +1,5 @@
+Django == 5.1.7
+psycopg2==2.9.9
+xhtml2pdf==0.2.17
+reportlab ==4.4.0
+qrcode==7.4.2
