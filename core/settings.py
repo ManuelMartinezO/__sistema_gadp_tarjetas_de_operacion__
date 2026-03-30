@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+import os
 
 from pathlib import Path
 
@@ -38,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'apps.usuario'
+    'apps.usuario',
+    'apps.tramite',
 ]
 
 MIDDLEWARE = [
@@ -117,9 +119,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuración para usar el modelo de usuario personalizado
+AUTH_USER_MODEL ='usuario.Usuario'
+
+# Redirecciones del sistema de autenticación
+LOGIN_URL = 'login'              # A dónde enviar si no están logueados
+LOGIN_REDIRECT_URL = 'inicio'    # A dónde enviar tras un login exitoso
+LOGOUT_REDIRECT_URL = 'login'    # A dónde enviar tras cerrar sesión
+
+# URL que se verá en el navegador (ej. 127.0.0.1:8000/media/tramites/archivo.pdf)
+MEDIA_URL = '/media/'
+# Carpeta física en tu proyecto donde se guardarán
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

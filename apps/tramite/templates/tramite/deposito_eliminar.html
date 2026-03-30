@@ -1,0 +1,34 @@
+{% extends 'usuario/base.html' %}
+
+{% block title %}Eliminar Depósito - GADP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card border-danger shadow">
+            <div class="card-header bg-danger text-white text-center">
+                <h4 class="mb-0">Eliminar Registro de Pago</h4>
+            </div>
+            <div class="card-body text-center">
+                <p class="fs-5 mt-2">¿Estás seguro de que deseas anular este comprobante de pago?</p>
+                
+                <div class="p-3 bg-light rounded border my-4">
+                    <h5 class="text-danger">Comprobante N° {{ deposito.numero_deposito }}</h5>
+                    <p class="mb-1"><strong>Monto:</strong> Bs. {{ deposito.monto_deposito }}</p>
+                    <p class="mb-0"><strong>Perteneciente al Trámite N°:</strong> {{ deposito.tramite.numero_tramite }}</p>
+                </div>
+                
+                <div class="alert alert-warning">
+                    Esta acción borrará el registro contable de este pago. El trámite volverá a aparecer como "Pago Pendiente".
+                </div>
+
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <a href="{% url 'tramite:tramite_detalle' deposito.tramite.id %}" class="btn btn-secondary btn-lg me-3">Cancelar</a>
+                    <button type="submit" class="btn btn-danger btn-lg">Sí, Anular Pago</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

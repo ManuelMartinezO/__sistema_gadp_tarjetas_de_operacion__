@@ -1,0 +1,46 @@
+{% extends 'usuario/base.html' %}
+
+{% block title %}
+    {% if request.user.is_authenticated %}Dashboard{% else %}Bienvenido{% endif %} - GADP
+{% endblock %}
+
+{% block content %}
+    
+    {% if request.user.is_authenticated %}
+        <div class="row">
+            <div class="col-12 mt-4">
+                <h2>Dashboard Principal</h2>
+                <p class="text-muted">Bienvenido de nuevo, <strong>{{ request.user.nombre }} {{ request.user.apellido }}</strong>.</p>
+                <hr>
+                
+                <div class="alert alert-info">
+                    <h5>Módulo de Estadísticas (Próximamente)</h5>
+                    <p>Aquí se mostrarán los gráficos y reportes del sistema.</p>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="row justify-content-center text-center mt-5">
+            <div class="col-md-8">
+                
+                <div class="mb-4">
+                    <span style="font-size: 5rem;">🏛️</span> 
+                </div>
+                
+                <h1 class="display-5 fw-bold text-dark">Gobierno Autónomo Departamental de Potosí</h1>
+                <p class="lead text-muted mt-3">
+                    Sistema Integrado de Gestión de Trámites y Operaciones Internas.
+                </p>
+                <hr class="my-4">
+                
+                <p>Para acceder a las funciones del sistema, por favor inicie sesión con sus credenciales institucionales.</p>
+                
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg mt-3 px-5 rounded-pill shadow">
+                    Ir al Portal de Ingreso
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}
