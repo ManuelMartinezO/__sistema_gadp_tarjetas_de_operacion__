@@ -1,0 +1,21 @@
+<div class="modal fade" id="modal-color" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold">Añadir Nuevo Color</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form class="form-ajax-flotante">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" name="tipo_atributo" value="color">
+                    {{ form_color.as_p }}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

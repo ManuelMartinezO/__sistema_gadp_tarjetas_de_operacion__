@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-light rounded-circle me-3 shadow-sm">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="fw-bold mb-0" style="color: var(--bs-dark-red);">Nuevo Registro de Trámite</h2>
+                <p class="text-muted small mb-0">Complete los campos obligatorios para iniciar el proceso</p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
+            <div style="height: 5px; background: linear-gradient(90deg, var(--bs-dark-red), var(--bs-gold));"></div>
+            
+            <div class="card-body p-4 p-md-5">
+                <form method="POST" enctype="multipart/form-data" class="needs-validation">
+                    {% csrf_token %}
+
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-uppercase small" style="color: var(--bs-gold);">
+                                <i class="bi bi-person-badge me-2"></i>Asignación de Usuario
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px;">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                {{ form.usuario }}
+                            </div>
+                            <div class="form-text">Seleccione el usuario responsable de este trámite.</div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold text-uppercase small" style="color: var(--bs-gold);">
+                                <i class="bi bi-layers me-2"></i>Tipo de Operación
+                            </label>
+                            {{ form.tipo_tramite }}
+                        </div>
+
+                        <div class="col-12">
+                            <div class="p-4 border border-dashed rounded-4 bg-light text-center" style="border: 2px dashed #dee2e6 !important; border-radius: 15px;">
+                                <i class="bi bi-cloud-arrow-up display-5 text-muted"></i>
+                                <label class="d-block fw-bold mt-2">Documentación del Trámite</label>
+                                <p class="text-muted small mb-3">Formatos permitidos: PDF, JPG, PNG</p>
+                                
+                                <div class="px-md-5">
+                                    {{ form.tramite_file }}
+                                </div>
+                                
+                                {% for error in form.tramite_file.errors %}
+                                    <div class="text-danger small mt-2">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-5">
+                        <button type="submit" class="btn btn-primary btn-lg flex-grow-1 shadow-sm" 
+                                style="background-color: var(--bs-primary); border: none; border-radius: 12px; font-weight: 600;">
+                            <i class="bi bi-plus-circle me-2"></i>CREAR TRÁMITE
+                        </button>
+                        
+                        <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-outline-secondary btn-lg px-4" 
+                           style="border-radius: 12px;">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4 text-muted small">
+            <i class="bi bi-info-circle me-1"></i> El número de trámite se generará automáticamente correlativo al último registro.
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos específicos para que los inputs se vean premium */
+    select.form-control, input.form-control {
+        border-radius: 12px !important;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+    }
+    
+    select.form-control:focus, input.form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.1);
+    }
+
+    /* Estilo para el input file nativo de Bootstrap */
+    input[type="file"]::file-selector-button {
+        background-color: var(--bs-dark-red);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        margin-right: 1rem;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    
+    input[type="file"]::file-selector-button:hover {
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}

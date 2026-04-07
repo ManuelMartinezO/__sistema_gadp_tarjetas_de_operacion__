@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'afiliado:lista_afiliados' %}" class="text-decoration-none" style="color: var(--bs-gold);">Afiliados</a></li>
+                <li class="breadcrumb-item active">Ficha de Afiliado</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold" style="color: var(--bs-dark-red);">{{ afiliado.nombre }} {{ afiliado.apellido }}</h2>
+    </div>
+    <a href="{% url 'afiliado:lista_afiliados' %}" class="btn btn-outline-secondary rounded-pill shadow-sm">
+        <i class="bi bi-list-ul me-1"></i> Ver Lista Completa
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
+            <div class="card-body p-4 text-center">
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" 
+                     style="width: 100px; height: 100px; border: 3px solid var(--bs-gold);">
+                    <i class="bi bi-person-vcard text-secondary display-4"></i>
+                </div>
+                <h5 class="fw-bold mb-1">{{ afiliado.nombre }} {{ afiliado.apellido }}</h5>
+                <p class="badge bg-light text-dark border rounded-pill px-3">Afiliado Activo</p>
+                
+                <hr class="my-4 opacity-25">
+                
+                <div class="text-start mb-3">
+                    <label class="text-muted small d-block text-uppercase fw-bold">Empresa Perteneciente</label>
+                    <div class="d-flex align-items-center mt-1">
+                        <i class="bi bi-building me-2 text-primary"></i>
+                        <span class="fw-semibold">{{ afiliado.operador.nombre }}</span>
+                    </div>
+                </div>
+
+                <div class="text-start mb-3">
+                    <label class="text-muted small d-block text-uppercase fw-bold">Fecha de Registro</label>
+                    <div class="d-flex align-items-center mt-1">
+                        <i class="bi bi-calendar-check me-2 text-muted"></i>
+                        <span>{{ afiliado.fecha_registro|date:"d M, Y" }}</span>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button class="btn btn-primary rounded-pill" style="background-color: var(--bs-primary); border:none;">
+                        <i class="bi bi-pencil me-2"></i>Editar Perfil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-car-front-fill me-2 text-primary"></i>Vehículos Registrados</h5>
+                <a href="#" class="btn btn-sm btn-outline-dark rounded-pill">Asignar Nuevo</a>
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4 small">PLACA</th>
+                                <th class="small">MARCA / MODELO</th>
+                                <th class="small text-center">CAPACIDAD</th>
+                                <th class="text-end pe-4 small">ESTADO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vehiculo in afiliado.vehiculo_set.all %}
+                            <tr style="cursor: pointer;">
+                                <td class="ps-4">
+                                    <span class="badge bg-dark px-3 py-2 fw-bold" style="letter-spacing: 1px;">{{ vehiculo.placa }}</span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ vehiculo.marca }}</div>
+                                    <div class="text-muted small">Modelo: {{ vehiculo.modelo }}</div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="small">{{ vehiculo.capacidad }} pasajeros</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <i class="bi bi-check-circle-fill text-success" title="Activo"></i>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted small">
+                                    <i class="bi bi-info-circle d-block mb-2 fs-4"></i>
+                                    Este afiliado no tiene vehículos registrados actualmente.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-4" style="border-radius: 20px; border-left: 5px solid var(--bs-gold) !important;">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-1">Información de Gestión</h6>
+                <p class="text-muted small mb-0">Este afiliado está habilitado para realizar trámites de renovación y otorgación de tarjetas de operación a través de <strong>{{ afiliado.operador }}</strong>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilo para simular una placa de vehículo real */
+    .badge.bg-dark {
+        border: 1px solid #444;
+        box-shadow: inset 0 0 5px rgba(255,255,255,0.2);
+    }
+    
+    /* Hover suave en la tabla */
+    .table-hover tbody tr:hover {
+        background-color: rgba(197, 160, 89, 0.05) !important; /* Usando tu dorado con transparencia */
+    }
+</style>
+{% endblock %}

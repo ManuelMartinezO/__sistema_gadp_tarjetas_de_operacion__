@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'tramite:lista_tramites' %}" class="text-decoration-none" style="color: var(--bs-gold);">Trámites</a></li>
+                <li class="breadcrumb-item active">Detalle #{{ tramite.numero_tramite }}</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold" style="color: var(--bs-dark-red);">Expediente N° {{ tramite.numero_tramite }}</h2>
+    </div>
+    <div class="text-end">
+        {% if tramite.estado_tramite == 'pendiente' %}
+            <span class="badge bg-warning text-dark p-2 px-3 rounded-pill">PENDIENTE DE REVISIÓN</span>
+        {% elif tramite.estado_tramite == 'validado' %}
+            <span class="badge bg-success p-2 px-3 rounded-pill">TRÁMITE VALIDADO</span>
+        {% else %}
+            <span class="badge bg-danger p-2 px-3 rounded-pill">TRÁMITE OBSERVADO</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3 border-bottom pb-2">Información del Trámite</h5>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="text-muted small d-block">Tipo de Trámite</label>
+                        <span class="fw-semibold">{{ tramite.get_tipo_tramite_display }}</span>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="text-muted small d-block">Fecha de Registro</label>
+                        <span class="fw-semibold">{{ tramite.fecha_registro|date:"d/m/Y H:i" }}</span>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3 border-bottom pb-2 mt-2">Documentos Adjuntos</h5>
+                <div class="d-flex gap-3">
+                    <div class="flex-fill p-3 border rounded-3 text-center">
+                        <i class="bi bi-file-earmark-pdf text-danger fs-3"></i>
+                        <p class="small mb-2">Informe Técnico</p>
+                        {% if tramite.tramite_file %}
+                            <a href="{{ tramite.tramite_file.url }}" target="_blank" class="btn btn-sm btn-outline-dark rounded-pill w-100">Ver PDF</a>
+                        {% else %}
+                            <span class="badge bg-light text-muted w-100">No subido</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-fill p-3 border rounded-3 text-center">
+                        <i class="bi bi-clipboard-check text-primary fs-3"></i>
+                        <p class="small mb-2">Reporte Final</p>
+                        {% if tramite.reporte_file %}
+                            <a href="{{ tramite.reporte_file.url }}" target="_blank" class="btn btn-sm btn-outline-dark rounded-pill w-100">Ver Reporte</a>
+                        {% else %}
+                            <span class="badge bg-light text-muted w-100">No subido</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if tarjetas %}
+        <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3" style="color: var(--bs-gold);">Tarjetas de Operación Asociadas</h5>
+                <div class="list-group list-group-flush">
+                    {% for tarjeta in tarjetas %}
+                    <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 border-start-0 border-end-0">
+                        <div>
+                            <i class="bi bi-credit-card-2-front me-2 text-muted"></i>
+                            <strong>{{ tarjeta.vehiculo.placa }}</strong> 
+                            <span class="text-muted small ms-2">| {{ tarjeta.vehiculo.tipo_vehiculo }}</span>
+                        </div>
+                        <span class="badge bg-light text-dark border">{{ tarjeta.monto }} Bs.</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-5">
+        
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; background-color: {% if tramite.estado_deposito %}#e8f5e9{% else %}#fff9c4{% endif %};">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-uppercase small mb-2">Estado Financiero</h6>
+                {% if n_tarjetas > 0 %}
+                    {% if tramite.estado_deposito %}
+                        <div class="d-flex align-items-center text-success">
+                            <i class="bi bi-check-circle-fill fs-4 me-2"></i>
+                            <span class="fw-bold">PAGO CONFIRMADO Y PROCESADO</span>
+                        </div>
+                    {% else %}
+                        <p class="small mb-3">Pendiente de registro de comprobante bancario.</p>
+                        <form method="POST" class="bg-white p-3 rounded-3 shadow-sm">
+                            {% csrf_token %}
+                            <h6 class="small fw-bold mb-3">Registrar Depósito</h6>
+                            {{ form_deposito.as_p }}
+                            <button type="submit" name="btn_deposito" class="btn btn-primary w-100 rounded-pill" style="background-color: var(--bs-primary); border:none;">
+                                Notificar Depósito
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <div class="text-muted small text-center py-2">
+                        <i class="bi bi-info-circle me-1"></i> Debe agregar tarjetas para habilitar el pago.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if user.rol == 'u' and not tramite.reporte_file %}
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; border-left: 5px solid var(--bs-dark-red) !important;">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Cargar Reporte Final</h6>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form_reporte.as_p }}
+                    <button type="submit" name="btn_reporte" class="btn btn-dark w-100 rounded-pill mt-2">
+                        Enviar Reporte <i class="bi bi-send ms-1"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            {% if tramite.estado_tramite == 'validado' and tramite.reporte_file and tramite.tramite_file and not tramite.estado_deposito %}
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; border-top: 4px solid var(--bs-gold) !important;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-plus-square me-2"></i>Nueva Tarjeta de Operación</h6>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="small-forms">
+                            {{ form_tarjeta.as_p }}
+                        </div>
+                        <button type="submit" name="btn_tarjeta" class="btn btn-primary w-100 rounded-pill mt-3" style="background-color: var(--bs-primary); border:none;">
+                            Registrar Tarjeta
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        {% endif %}
+
+    </div>
+</div>
+
+<style>
+    /* Estilizar los forms dentro de la tarjeta lateral */
+    .small-forms p label {
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #666;
+        margin-bottom: 2px;
+    }
+    .small-forms p input, .small-forms p select {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}

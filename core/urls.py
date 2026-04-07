@@ -23,6 +23,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('apps.usuario.urls')),
     path('', include('apps.tramite.urls')),
+    path('', include('apps.operador.urls')),
+    path('', include('apps.afiliado.urls')),
+    path('', include('apps.vehiculo.urls')),
+    path('', include('apps.tarjeta_de_operacion.urls')),
 ]
 
 if settings.DEBUG:

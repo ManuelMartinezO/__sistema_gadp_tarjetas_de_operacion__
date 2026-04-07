@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-6 col-lg-5">
+        <div class="text-center mb-4">
+            <i class="bi bi-person-circle" style="font-size: 3rem; color: var(--bs-dark-red);"></i>
+            <h2 class="fw-bold mt-2">Bienvenido</h2>
+            <p class="text-muted">Ingresa tus credenciales para acceder al sistema</p>
+        </div>
+
+        <form method="POST" class="needs-validation">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger border-0 shadow-sm" style="border-radius: 10px;">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="{{ form.username.id_for_label }}" class="form-label fw-semibold">Usuario</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius: 10px 0 0 10px;">
+                        <i class="bi bi-person text-muted"></i>
+                    </span>
+                    <input type="text" name="username" class="form-control border-start-0" 
+                           placeholder="Tu nombre de usuario" style="border-radius: 0 10px 10px 0;" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="{{ form.password.id_for_label }}" class="form-label fw-semibold">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius: 10px 0 0 10px;">
+                        <i class="bi bi-lock text-muted"></i>
+                    </span>
+                    <input type="password" name="password" class="form-control border-start-0" 
+                           placeholder="********" style="border-radius: 0 10px 10px 0;" required>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm" 
+                        style="background-color: var(--bs-primary); border: none; border-radius: 12px;">
+                    INGRESAR
+                </button>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p class="small text-muted">¿No tienes cuenta? <a href="{% url 'logup' %}" style="color: var(--bs-dark-red); text-decoration: none;" class="fw-bold">Regístrate aquí</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

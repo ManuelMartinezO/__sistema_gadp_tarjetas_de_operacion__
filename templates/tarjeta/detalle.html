@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Detalle tarjeta {{ tarjeta.id }}</h1>
+    <p>{{ tarjeta.vehiculo.placa }}</p>
+    <p>{{ tarjeta.tipo }}</p>
+    <p>{{ tarjeta.afiliado.nombre }}</p>
+    <p>{{ tarjeta.tramite.numero_tramite }}</p>
+    <a href="{% url 'tarjeta:lista_tarjetas' %}">LISTA</a>
+    <a href="{% url 'tramite:detalle_tramite' tarjeta.tramite.numero_tramite %}">IR AL TRAMITE</a>
+{% endblock %}

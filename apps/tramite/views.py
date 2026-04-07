@@ -2,8 +2,76 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-from apps.tramite.forms import TramiteForm, DepositoForm, TramiteEvaluacionForm
+from apps.tramite.forms import TramiteEviadoForm, TramiteReportadoForm, DepositoForm
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Tramite, Deposito
+from apps.tarjeta_de_operacion.forms import TarjetaDeOperacionForm
+from apps.vehiculo.forms import VehiculoForm
+from apps.afiliado.forms import AfiliadoForm
+from apps.operador.forms import OperadorForm
+from apps.tarjeta_de_operacion.models import TarjetaDeOperacion
+
+
+# === TRAMITE VIEWS ===
+def lista_tramites (request):
+    tramites = Tramite.objects.all()
+    contexto = {
+        'tramites': tramites,
+    }
+    return render(request, 'tramite/lista.html', contexto)
+
+def detalle_tramite (request, numero_tramite):
+    tramite = get_object_or_404(Tramite, numero_tramite=numero_tramite)
+    tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
+    if request.method == 'POST':
+        if 'btn_reporte' in request.POST:
+            form_reporte = TramiteReportadoForm(request.POST, request.FILES, instance=tramite, prefix='reporte')
+            if form_reporte.is_valid():
+                guardado = form_reporte.save()
+                return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
+        if 'btn_tarjeta' in request.POST:
+            form_tarjeta = TarjetaDeOperacionForm(request.POST, prefix='tarjeta')
+            if form_tarjeta.is_valid():
+                tarjeta_guardado = form_tarjeta.save(commit=False)
+                tarjeta_guardado.tramite = tramite
+                tarjeta_guardado.save()
+                return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
+        if 'btn_deposito' in request.POST:
+            form_deposito = DepositoForm(request.POST, prefix='deposito')
+            if form_deposito.is_valid():
+                deposito_guardado = form_deposito.save(commit=False)
+                deposito_guardado.tramite = tramite
+                tramite.estado_deposito = True
+                tramite.save()
+                deposito_guardado.save()
+                return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
+    else:
+        form_reporte = TramiteReportadoForm(prefix='reporte')
+        form_tarjeta = TarjetaDeOperacionForm(prefix='tarjeta')
+        form_deposito = DepositoForm(prefix='deposito')
+    contexto = {
+        'tramite': tramite,
+        'tarjetas': tarjetas,
+        'n_tarjetas': tarjetas.count(),
+        'form_tarjeta': form_tarjeta,
+        'form_reporte': form_reporte,
+        'form_deposito': form_deposito,
+    }
+    return render(request, 'tramite/detalle.html', contexto)
+
+def crear_tramite (request):
+    if request.method == 'POST':
+        form = TramiteEviadoForm(request.POST, request.FILES)
+        if form.is_valid():
+            guardado = form.save()
+            return redirect('tramite:lista_tramites')
+    else:
+        form = TramiteEviadoForm()
+    contexto = {
+        'form': form
+    }
+    return render(request, 'tramite/crear.html', contexto)
+
 
 # ==========================================
 # 1. MIXINS DE SEGURIDAD (Reglas de Negocio)
@@ -48,42 +116,42 @@ class TramiteDetailView(CualquierRolRequiredMixin, DetailView):
     context_object_name = 'tramite'
 
 # CREAR (Solo Admin y SuperAdmin)
-class TramiteCreateView(AdminOrSuperAdminRequiredMixin, CreateView):
-    model = Tramite
-    template_name = 'tramite/crear.html'
-    form_class = TramiteForm
-    success_url = reverse_lazy('tramite:tramite_lista')
+# class TramiteCreateView(AdminOrSuperAdminRequiredMixin, CreateView):
+#     model = Tramite
+#     template_name = 'tramite/crear.html'
+#     form_class = TramiteForm
+#     success_url = reverse_lazy('tramite:tramite_lista')
 
 # tramites/views.py
 
-class TramiteUpdateView(CualquierRolRequiredMixin, UpdateView):
-    model = Tramite
-    template_name = 'tramite/editar.html'
-    success_url = reverse_lazy('tramite:tramite_lista')
+# class TramiteUpdateView(CualquierRolRequiredMixin, UpdateView):
+#     model = Tramite
+#     template_name = 'tramite/editar.html'
+#     success_url = reverse_lazy('tramite:tramite_lista')
 
-    # ELIMINAMOS la línea "form_class = TramiteForm" y usamos esta función dinámica:
-    def get_form_class(self):
-        # Si el que inició sesión es el evaluador (rol 'usuario'):
-        if self.request.user.rol_usuario == 'usuario':
-            return TramiteEvaluacionForm
+#     # ELIMINAMOS la línea "form_class = TramiteForm" y usamos esta función dinámica:
+#     def get_form_class(self):
+#         # Si el que inició sesión es el evaluador (rol 'usuario'):
+#         if self.request.user.rol_usuario == 'usuario':
+#             return TramiteEvaluacionForm
             
-        # Si es 'administrador' o 'super_administrador', le damos el poder total:
-        return TramiteForm
+#         # Si es 'administrador' o 'super_administrador', le damos el poder total:
+#         return TramiteForm
 
-    # EXTRA PRO: Guardar automáticamente la fecha de validación/observación
-    def form_valid(self, form):
-        from django.utils import timezone
+#     # EXTRA PRO: Guardar automáticamente la fecha de validación/observación
+#     def form_valid(self, form):
+#         from django.utils import timezone
         
-        tramite = form.save(commit=False)
-        # Si cambió el estado a validado, registramos la hora exacta
-        if tramite.estado_tramite == 'validado' and not tramite.fecha_validacion:
-            tramite.fecha_validacion = timezone.now()
-        # Si lo observó, registramos la hora exacta
-        elif tramite.estado_tramite == 'observado' and not tramite.fecha_observacion:
-            tramite.fecha_observacion = timezone.now()
+#         tramite = form.save(commit=False)
+#         # Si cambió el estado a validado, registramos la hora exacta
+#         if tramite.estado_tramite == 'validado' and not tramite.fecha_validacion:
+#             tramite.fecha_validacion = timezone.now()
+#         # Si lo observó, registramos la hora exacta
+#         elif tramite.estado_tramite == 'observado' and not tramite.fecha_observacion:
+#             tramite.fecha_observacion = timezone.now()
             
-        tramite.save()
-        return super().form_valid(form)
+#         tramite.save()
+#         return super().form_valid(form)
 
 # ELIMINAR (Solo SuperAdmin)
 class TramiteDeleteView(SoloSuperAdminRequiredMixin, DeleteView):

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'afiliado:lista_afiliados' %}" class="btn btn-light rounded-circle me-3 shadow-sm">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="fw-bold mb-0" style="color: var(--bs-dark-red);">Registro de Nuevo Afiliado</h2>
+                <p class="text-muted small mb-0">Ingrese los datos personales y vincule a una empresa operadora</p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
+            <div style="height: 5px; background: linear-gradient(90deg, var(--bs-dark-red), var(--bs-gold));"></div>
+            
+            <div class="card-body p-4 p-md-5">
+                <form method="POST" class="needs-validation">
+                    {% csrf_token %}
+
+                    <div class="row g-4">
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold text-uppercase small" style="color: var(--bs-gold);">
+                                <i class="bi bi-building me-2"></i>Empresa Operadora
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px;">
+                                    <i class="bi bi-link-45deg"></i>
+                                </span>
+                                {{ form.operador }}
+                            </div>
+                            <div class="form-text small">Seleccione la empresa a la que pertenece este afiliado.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-uppercase small">Nombre(s)</label>
+                            {{ form.nombre }}
+                            {% for error in form.nombre.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-uppercase small">Apellido(s)</label>
+                            {{ form.apellido }}
+                            {% for error in form.apellido.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        </div>
+
+                    <div class="d-flex gap-3 mt-5">
+                        <button type="submit" class="btn btn-primary btn-lg flex-grow-1 shadow-sm" 
+                                style="background-color: var(--bs-primary); border: none; border-radius: 12px; font-weight: 600;">
+                            <i class="bi bi-person-plus me-2"></i>REGISTRAR AFILIADO
+                        </button>
+                        
+                        <a href="{% url 'afiliado:lista_afiliados' %}" class="btn btn-outline-secondary btn-lg px-4" 
+                           style="border-radius: 12px;">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert alert-light border-0 mt-4 text-center small shadow-sm" style="border-radius: 15px;">
+            <i class="bi bi-info-circle me-1 text-primary"></i> 
+            Una vez registrado, podrá asignar vehículos y tramitar tarjetas de operación para este afiliado.
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Aseguramos que los campos de Django tengan el estilo correcto */
+    input.form-control, select.form-control {
+        border-radius: 12px !important;
+        padding: 0.7rem 1rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+    }
+
+    input.form-control:focus, select.form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.1);
+    }
+
+    /* Estilo para los labels de Django que vienen por defecto */
+    .card-body label {
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+</style>
+{% endblock %}

@@ -1,17 +1,19 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'tramite'
 
 urlpatterns = [
-    # ==========================================
-    # RUTAS PARA TRÁMITES
-    # ==========================================
-    path('tramites/', views.TramiteListView.as_view(), name='tramite_lista'),
-    path('tramites/nuevo/', views.TramiteCreateView.as_view(), name='tramite_crear'),
-    path('tramites/<int:pk>/', views.TramiteDetailView.as_view(), name='tramite_detalle'),
-    path('tramites/<int:pk>/editar/', views.TramiteUpdateView.as_view(), name='tramite_editar'),
+    path('tramites/', views.lista_tramites, name='lista_tramites'),
+    path('tramite/nuevo/', views.crear_tramite, name='crear_tramite'),
+    path('tramite/<int:numero_tramite>/', views.detalle_tramite, name='detalle_tramite'),
+
+
+
+    # path('tramites/<int:pk>/editar/', views.TramiteUpdateView.as_view(), name='tramite_editar'),
     path('tramites/<int:pk>/eliminar/', views.TramiteDeleteView.as_view(), name='tramite_eliminar'),
+
+    path('tramites/<int:pk>/', include(('apps.tarjeta_de_operacion.urls', 'tarjeta'), namespace='tarjetas')),
 
     # ==========================================
     # RUTAS PARA DEPÓSITOS

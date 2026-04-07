@@ -18,8 +18,7 @@ class Tramite(models.Model):
     
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name='tramites'
+        on_delete=models.CASCADE,
     )
 
     tramite_file = models.FileField(
@@ -35,10 +34,10 @@ class Tramite(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])]
     )
     
-    numero_tramite = models.PositiveIntegerField(unique=True, blank=True, null=True, verbose_name="N° de Trámite")
-
+    numero_tramite = models.PositiveIntegerField(unique=True)
     estado_deposito = models.BooleanField(default=False)
-    tipo_tramite = models.CharField(max_length=20, choices=TIPO_TRAMITE, default='otorgacion')
+
+    tipo_tramite = models.CharField(max_length=20, choices=TIPO_TRAMITE)
     estado_tramite = models.CharField(max_length=20, choices=ESTADO_TRAMITE, default='pendiente')
     
     fecha_validacion = models.DateTimeField(blank=True, null=True)

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'vehiculo:lista_vehiculos' %}" class="text-decoration-none" style="color: var(--bs-gold);">Vehículos</a></li>
+                <li class="breadcrumb-item active">Ficha Técnica</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold" style="color: var(--bs-dark-red);">UNIDAD: {{ vehiculo.placa }}</h2>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-dark rounded-pill px-4">
+            <i class="bi bi-printer me-2"></i>Imprimir Ficha
+        </button>
+        <a href="{% url 'vehiculo:lista_vehiculos' %}" class="btn btn-light border rounded-circle">
+            <i class="bi bi-x-lg"></i>
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4 text-center" style="border-radius: 20px; background: linear-gradient(145deg, #ffffff, #f0f0f0);">
+            <div class="card-body py-5">
+                <div class="mb-2 text-muted small fw-bold text-uppercase">Placa de Control</div>
+                <div class="d-inline-block p-3 border border-3 border-dark rounded-3 bg-white shadow-sm mb-3" 
+                     style="min-width: 200px; font-family: 'Courier New', monospace;">
+                    <h1 class="display-4 fw-bold mb-0 text-dark" style="letter-spacing: 5px;">{{ vehiculo.placa }}</h1>
+                    <div class="border-top border-2 border-dark mt-1 small fw-bold">BOLIVIA</div>
+                </div>
+                <h5 class="fw-bold text-muted">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h5>
+                <span class="badge {% if vehiculo.tipo_transporte == 'pasajeros' %}bg-info{% else %}bg-warning text-dark{% endif %} px-3 rounded-pill">
+                    SERVICIO DE {{ vehiculo.get_tipo_transporte_display|upper }}
+                </span>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+            <div class="card-body p-4">
+                <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-person-badge me-2"></i>Propietario Legal</h6>
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-light p-3 me-3">
+                        <i class="bi bi-person-check fs-3 text-secondary"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">{{ vehiculo.propietario.nombre }} {{ vehiculo.propietario.apellido }}</div>
+                        <a href="{% url 'afiliado:detalle_afiliado' vehiculo.propietario.id %}" class="small text-decoration-none" style="color: var(--bs-gold);">Ver perfil del afiliado</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0"><i class="bi bi-gear-wide-connected me-2 text-primary"></i>Especificaciones del Vehículo</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <label class="text-muted small d-block text-uppercase fw-bold mb-2">Número de Chasis</label>
+                            <code class="fs-5 text-dark fw-bold">{{ vehiculo.chasis }}</code>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <label class="text-muted small d-block text-uppercase fw-bold mb-2">Tipo de Vehículo</label>
+                            <span class="fs-5 fw-semibold text-dark">{{ vehiculo.tipo_vehiculo }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded-3 text-center">
+                            <i class="bi bi-palette text-muted d-block mb-1"></i>
+                            <label class="text-muted small d-block">Color</label>
+                            <span class="fw-bold">{{ vehiculo.color }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded-3 text-center">
+                            <i class="bi bi-people text-muted d-block mb-1"></i>
+                            <label class="text-muted small d-block">Capacidad</label>
+                            <span class="fw-bold">{{ vehiculo.capacidad }} Personas</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded-3 text-center">
+                            <i class="bi bi-calendar-event text-muted d-block mb-1"></i>
+                            <label class="text-muted small d-block">Año Modelo</label>
+                            <span class="fw-bold">{{ vehiculo.modelo }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <h6 class="fw-bold mb-3">Documentación Reciente</h6>
+                    <div class="alert alert-warning border-0 d-flex align-items-center" style="border-radius: 12px; background-color: rgba(197, 160, 89, 0.1); color: #856404;">
+                        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                        <div class="small">
+                            Este vehículo cuenta con tarjetas de operación activas vinculadas al último trámite de la empresa <strong>{{ vehiculo.propietario.operador }}</strong>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 pb-4 px-4 text-end">
+                <button class="btn btn-primary rounded-pill px-4" style="background-color: var(--bs-primary); border:none;">
+                    <i class="bi bi-pencil-square me-2"></i>Actualizar Datos
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Efecto de código para el chasis */
+    code {
+        color: var(--bs-dark-red) !important;
+        background: transparent;
+        padding: 0;
+        letter-spacing: 1px;
+    }
+    
+    /* Hover en elementos de borde */
+    .border:hover {
+        border-color: var(--bs-gold) !important;
+        background-color: #fff !important;
+        transition: 0.3s;
+    }
+</style>
+{% endblock %}

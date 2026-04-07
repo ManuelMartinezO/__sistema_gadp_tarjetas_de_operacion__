@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>lista tarjeta</h1>
+    <ul>
+        {% for tarjeta in tarjetas %}
+            <li>
+                <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}">{{ tarjeta.id }} - {{ tarjeta.vehiculo.placa }}</a>
+            </li>
+        {% empty %}
+            <li>No hay tarjetas.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

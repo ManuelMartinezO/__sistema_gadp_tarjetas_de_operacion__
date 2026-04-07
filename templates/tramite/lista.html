@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0" style="color: var(--bs-dark-red);">Gestión de Trámites</h2>
+        <p class="text-muted small">Listado general de solicitudes registradas en el sistema</p>
+    </div>
+    
+    {% if user.rol == 'a' or user.rol == 'sa' %}
+        <a href="{% url 'tramite:crear_tramite' %}" class="btn btn-primary shadow-sm" 
+           style="background-color: var(--bs-primary); border: none; border-radius: 10px; padding: 0.6rem 1.2rem;">
+            <i class="bi bi-plus-lg me-2"></i>NUEVO TRÁMITE
+        </a>
+    {% endif %}
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle" style="border-radius: 15px; overflow: hidden;">
+        <thead class="table-light">
+            <tr style="border-bottom: 2px solid var(--bs-gold);">
+                <th class="ps-4">N° TRÁMITE</th>
+                <th>USUARIO</th>
+                <th>TIPO</th>
+                <th>ESTADO</th>
+                <th>DEPÓSITO</th>
+                <th class="text-end pe-4">FECHA REGISTRO</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tramite in tramites %}
+            <tr style="cursor: pointer; transition: all 0.2s;" 
+                onclick="window.location='{% url 'tramite:detalle_tramite' tramite.numero_tramite %}'">
+                
+                <td class="ps-4">
+                    <span class="fw-bold text-dark">#{{ tramite.numero_tramite }}</span>
+                </td>
+                
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                            <i class="bi bi-person text-muted" style="font-size: 0.8rem;"></i>
+                        </div>
+                        {{ tramite.usuario.username }}
+                    </div>
+                </td>
+                
+                <td class="small">
+                    {{ tramite.get_tipo_tramite_display }}
+                </td>
+                
+                <td>
+                    {% if tramite.estado_tramite == 'pendiente' %}
+                        <span class="badge rounded-pill bg-warning text-dark px-3">Pendiente</span>
+                    {% elif tramite.estado_tramite == 'validado' %}
+                        <span class="badge rounded-pill bg-success px-3">Validado</span>
+                    {% else %}
+                        <span class="badge rounded-pill bg-danger px-3">Observado</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if tramite.estado_deposito %}
+                        <i class="bi bi-check-circle-fill text-success me-1"></i> <span class="small">Pagado</span>
+                    {% else %}
+                        <i class="bi bi-clock-history text-muted me-1"></i> <span class="small">Pendiente</span>
+                    {% endif %}
+                </td>
+                
+                <td class="text-end pe-4 text-muted small">
+                    {{ tramite.fecha_registro|date:"d/m/Y H:i" }}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-5 text-muted">
+                    <i class="bi bi-folder-x display-4 d-block mb-3"></i>
+                    No se encontraron trámites registrados.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    /* Efecto de elevación al pasar el mouse por la fila */
+    .table-hover tbody tr:hover {
+        background-color: rgba(217, 119, 6, 0.05) !important;
+        transform: scale(1.002);
+    }
+</style>
+{% endblock %}

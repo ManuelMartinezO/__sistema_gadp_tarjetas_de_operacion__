@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+<form method="POST" id="form-vehiculo">
+
+    {% csrf_token %}
+
+    <button type="button" onclick="document.getElementById('modal-color').showModal()">+ COLOR</button>
+
+    <button type="button" onclick="document.getElementById('modal-marca').showModal()">+ MARCA</button>
+
+    <button type="button" onclick="document.getElementById('modal-tipo_vehiculo').showModal()">+ TIPO</button>
+
+    
+
+    {{ form.as_p }}
+
+    <button type="submit">CREAR VEHÍCULO</button>
+
+</form>
+
+
+
+<dialog id="modal-color">
+
+    <h3>Añadir Nuevo Color</h3>
+
+    <form class="form-ajax-flotante">
+
+        {% csrf_token %}
+
+        <input type="hidden" name="tipo_atributo" value="color">
+
+        {{ form_color.as_p }}
+
+        <button type="submit">Guardar</button>
+
+        <button type="button" onclick="document.getElementById('modal-color').close()">Cancelar</button>
+
+    </form>
+
+</dialog>
+
+
+
+<dialog id="modal-marca">
+
+    <h3>Añadir Nueva Marca</h3>
+
+    <form class="form-ajax-flotante">
+
+        {% csrf_token %}
+
+        <input type="hidden" name="tipo_atributo" value="marca"> 
+
+        {{ form_marca.as_p }}
+
+        <button type="submit">Guardar</button>
+
+        <button type="button" onclick="document.getElementById('modal-marca').close()">Cancelar</button>
+
+    </form>
+
+</dialog>
+
+
+
+<dialog id="modal-tipo_vehiculo">
+
+    <h3>Añadir Nuevo Tipo</h3>
+
+    <form class="form-ajax-flotante">
+
+        {% csrf_token %}
+
+        <input type="hidden" name="tipo_atributo" value="tipo_vehiculo">
+
+        {{ form_tipo.as_p }}
+
+        <button type="submit">Guardar</button>
+
+        <button type="button" onclick="document.getElementById('modal-tipo_vehiculo').close()">Cancelar</button>
+
+    </form>
+
+</dialog>
+
+
+
+<script>
+
+// Seleccionamos todos los formularios flotantes
+
+document.querySelectorAll('.form-ajax-flotante').forEach(formulario => {
+
+    
+
+    formulario.addEventListener('submit', function(e) {
+
+        e.preventDefault(); 
+
+        let formData = new FormData(this);
+
+
+
+        fetch("{% url 'vehiculo:crear_atributo' %}", {
+
+            method: 'POST',
+
+            body: formData,
+
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+
+        })
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            if(data.id) {
+
+                // Buscamos el elemento dinámicamente
+
+                let selectAtributo = document.getElementById('id_' + data.tipo); 
+
+                
+
+                // IMPRIMIMOS EN CONSOLA PARA DEPURAR (Presiona F12 en tu navegador para verlo)
+
+                console.log("Elemento capturado para " + data.tipo + ":", selectAtributo);
+
+                
+
+                // Creamos la nueva opción
+
+                let nuevaOpcion = new Option(data.nombre, data.id, true, true);
+
+                
+
+                // Usamos appendChild, que es más seguro y compatible que .add()
+
+                if (selectAtributo) {
+
+                    selectAtributo.appendChild(nuevaOpcion);
+
+                    
+
+                    // ⚠️ IMPORTANTE: Si estás usando jQuery o Select2, descomenta la siguiente línea:
+
+                    // $(selectAtributo).trigger('change');
+
+                } else {
+
+                    console.error("No se encontró ningún elemento con el ID: id_" + data.tipo);
+
+                }
+
+                
+
+                // Cerramos el modal y limpiamos
+
+                document.getElementById('modal-' + data.tipo).close();
+
+                // this.reset() daba error de scope en funciones flecha a veces, es mejor seleccionar el form:
+
+                document.querySelector('#modal-' + data.tipo + ' form').reset(); 
+
+                
+
+            } else if (data.errores) {
+
+                console.log("Errores del formulario Django:", data.errores);
+
+                alert("Verifica los datos ingresados.");
+
+            }
+
+        })
+
+        .catch(error => console.error('Error AJAX:', error));
+
+    });
+
+    
+
+});
+
+</script>
+
+{% endblock %}

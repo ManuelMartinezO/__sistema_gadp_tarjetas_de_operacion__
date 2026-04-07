@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0" style="color: var(--bs-dark-red);">Registro de Afiliados</h2>
+        <p class="text-muted small">Listado de transportistas y propietarios vinculados al sistema</p>
+    </div>
+    
+    {% if user.rol == 'a' or user.rol == 'sa' %}
+        <a href="{% url 'afiliado:crear_afiliado' %}" class="btn btn-primary shadow-sm" 
+           style="background-color: var(--bs-primary); border: none; border-radius: 10px; padding: 0.6rem 1.2rem;">
+            <i class="bi bi-person-plus-fill me-2"></i>NUEVO AFILIADO
+        </a>
+    {% endif %}
+</div>
+
+<div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead style="background-color: #fdfdfd; border-bottom: 2px solid var(--bs-gold);">
+                <tr>
+                    <th class="ps-4 py-3 small text-uppercase fw-bold text-muted">ID</th>
+                    <th class="py-3 small text-uppercase fw-bold text-muted">Nombre Completo</th>
+                    <th class="py-3 small text-uppercase fw-bold text-muted">Empresa / Operador</th>
+                    <th class="py-3 small text-uppercase fw-bold text-muted">Fecha Registro</th>
+                    <th class="text-end pe-4 py-3 small text-uppercase fw-bold text-muted">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for afiliado in afiliados %}
+                <tr style="cursor: pointer; transition: background 0.2s;" 
+                    onclick="window.location='{% url 'afiliado:detalle_afiliado' afiliado.id %}'">
+                    
+                    <td class="ps-4">
+                        <span class="text-muted">#{{ afiliado.id }}</span>
+                    </td>
+                    
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 40px; height: 40px; border: 1px solid #eee;">
+                                <i class="bi bi-person text-secondary"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">{{ afiliado.nombre }} {{ afiliado.apellido }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td>
+                        <span class="badge bg-light text-dark border px-3 rounded-pill fw-normal">
+                            <i class="bi bi-building me-1 text-muted"></i> {{ afiliado.operador.nombre }}
+                        </span>
+                    </td>
+                    
+                    <td class="text-muted small">
+                        {{ afiliado.fecha_registro|date:"d/m/Y" }}
+                    </td>
+                    
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-light rounded-pill px-3 border">
+                            Ver Ficha
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <i class="bi bi-people text-muted display-4 opacity-25"></i>
+                        <p class="mt-3 text-muted">No se encontraron afiliados registrados.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .table tbody tr:hover {
+        background-color: rgba(217, 119, 6, 0.03) !important;
+    }
+    
+    /* Efecto de borde sutil al rededor de la tabla */
+    .table-responsive {
+        border: 1px solid rgba(0,0,0,0.05);
+        border-radius: 20px;
+    }
+</style>
+{% endblock %}

@@ -41,6 +41,10 @@ INSTALLED_APPS = [
 
     'apps.usuario',
     'apps.tramite',
+    'apps.tarjeta_de_operacion',
+    'apps.afiliado',
+    'apps.operador',
+    'apps.vehiculo',
 ]
 
 MIDDLEWARE = [
@@ -58,7 +62,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -131,7 +135,7 @@ AUTH_USER_MODEL ='usuario.Usuario'
 
 # Redirecciones del sistema de autenticación
 LOGIN_URL = 'login'              # A dónde enviar si no están logueados
-LOGIN_REDIRECT_URL = 'inicio'    # A dónde enviar tras un login exitoso
+LOGIN_REDIRECT_URL = 'home'    # A dónde enviar tras un login exitoso
 LOGOUT_REDIRECT_URL = 'login'    # A dónde enviar tras cerrar sesión
 
 # URL que se verá en el navegador (ej. 127.0.0.1:8000/media/tramites/archivo.pdf)

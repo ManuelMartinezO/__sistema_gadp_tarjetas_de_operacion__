@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'operador:lista_operadores' %}" class="text-decoration-none" style="color: var(--bs-gold);">Operadores</a></li>
+                <li class="breadcrumb-item active">Expediente Empresa</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold" style="color: var(--bs-dark-red);">{{ operador.nombre|upper }}</h2>
+        <span class="badge bg-light text-muted border">ID de Registro: #{{ operador.id }}</span>
+    </div>
+    <a href="{% url 'operador:lista_operadores' %}" class="btn btn-outline-secondary rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Volver al Listado
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3" style="border-radius: 15px; border-bottom: 4px solid var(--bs-primary) !important;">
+            <div class="text-muted small text-uppercase fw-bold">Afiliados Totales</div>
+            <div class="display-6 fw-bold text-dark">{{ operador.afiliados.count }}</div>
+            <i class="bi bi-people text-primary opacity-50"></i>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3" style="border-radius: 15px; border-bottom: 4px solid var(--bs-gold) !important;">
+            <div class="text-muted small text-uppercase fw-bold">Vehículos Registrados</div>
+            <div class="display-6 fw-bold text-dark">{{ operador.vehiculos_count|default:"0" }}</div> <i class="bi bi-truck text-warning opacity-50"></i>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3" style="border-radius: 15px; border-bottom: 4px solid var(--bs-dark-red) !important;">
+            <div class="text-muted small text-uppercase fw-bold">Tarjetas de Operación</div>
+            <div class="display-6 fw-bold text-dark">{{ operador.tarjetas_de_operacion.count }}</div>
+            <i class="bi bi-card-checklist text-danger opacity-50"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4 border-bottom pb-2">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>Datos Generales
+                </h5>
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Razón Social / Nombre</label>
+                    <p class="fs-5 fw-semibold">{{ operador.nombre }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Fecha de Incorporación al Sistema</label>
+                    <p class="fw-semibold">{{ operador.fecha_registro|date:"d \d\e F \d\e Y" }}</p>
+                </div>
+                <hr>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-light border btn-sm rounded-pill">
+                        <i class="bi bi-pencil-square me-1"></i> Editar Información
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">Afiliados Vinculados</h5>
+                <span class="badge bg-dark rounded-pill">{{ operador.afiliados.count }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4 small">NOMBRE COMPLETO</th>
+                                <th class="small">FECHA REGISTRO</th>
+                                <th class="text-end pe-4 small">ACCIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for afiliado in operador.afiliados.all|slice:":5" %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold">{{ afiliado.nombre }} {{ afiliado.apellido }}</div>
+                                </td>
+                                <td class="text-muted small">{{ afiliado.fecha_registro|date:"d/m/Y" }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="#" class="btn btn-sm btn-outline-primary border-0 rounded-circle">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted small">No hay afiliados registrados para esta empresa.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if operador.afiliados.count > 5 %}
+                <div class="card-footer bg-white border-0 text-center pb-4">
+                    <a href="#" class="text-decoration-none small fw-bold" style="color: var(--bs-gold);">VER TODOS LOS AFILIADOS</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

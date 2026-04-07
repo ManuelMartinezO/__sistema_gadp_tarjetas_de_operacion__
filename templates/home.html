@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+<p>AUTENTICADO {{ user.perfil.nombre }} - {{ user.rol }}</p>
+{% endif %}
+
+{% endblock %}

@@ -71,6 +71,31 @@
                         </div>
 
                     </div>
+
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Acciones del Trámite</h5>
+                            
+                            {% if tramite.estado_tramite == 'validado' %}
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle-fill"></i> Este trámite ha sido validado. Ya puede proceder con el registro.
+                                </div>
+                                
+                                <a href="{% url 'tramite:tarjetas:vehiculo_crear' pk=tramite.id %}" class="btn btn-primary">1. Registrar Vehículo</a>
+                                <a href="{% url 'tramite:tarjetas:ruta_crear' pk=tramite.id %}" class="btn btn-info text-white">2. Registrar Ruta</a>
+                                <a href="{% url 'tramite:tarjetas:tarjeta_crear' pk=tramite.id %}" class="btn btn-success">3. Emitir Tarjeta de Operación</a>
+                                
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-lock-fill"></i> El trámite se encuentra en estado 
+                                    <strong>{{ tramite.get_estado_tramite_display }}</strong>. 
+                                    Debe ser validado por un supervisor antes de poder registrar vehículos o emitir tarjetas.
+                                </div>
+                                <button class="btn btn-secondary" disabled>Registrar Vehículo (Bloqueado)</button>
+                            {% endif %}
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
