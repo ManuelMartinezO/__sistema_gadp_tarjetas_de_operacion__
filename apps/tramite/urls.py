@@ -7,6 +7,7 @@ urlpatterns = [
     path('tramites/', views.lista_tramites, name='lista_tramites'),
     path('tramite/nuevo/', views.crear_tramite, name='crear_tramite'),
     path('tramite/<int:numero_tramite>/', views.detalle_tramite, name='detalle_tramite'),
+    path('tramite/pdf/<int:numero_tramite>/', views.generar_pdf_tramite, name='tramite_pdf'),
 
 
 

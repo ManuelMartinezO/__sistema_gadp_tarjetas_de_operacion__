@@ -63,6 +63,7 @@
         </div>
 
         {% if tarjetas %}
+        <a href="{% url 'tramite:tramite_pdf' tramite.numero_tramite %}" target="_blank">IMPRIMIR</a>
         <div class="card border-0 shadow-sm" style="border-radius: 15px;">
             <div class="card-body p-4">
                 <h5 class="fw-bold mb-3" style="color: var(--bs-gold);">Tarjetas de Operación Asociadas</h5>

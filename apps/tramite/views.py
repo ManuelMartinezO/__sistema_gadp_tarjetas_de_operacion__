@@ -11,6 +11,13 @@ from apps.afiliado.forms import AfiliadoForm
 from apps.operador.forms import OperadorForm
 from apps.tarjeta_de_operacion.models import TarjetaDeOperacion
 
+import qrcode
+import io
+import base64
+from django.template.loader import get_template
+from django.http import HttpResponse, JsonResponse
+from xhtml2pdf import pisa
+
 
 # === TRAMITE VIEWS ===
 def lista_tramites (request):
@@ -71,6 +78,64 @@ def crear_tramite (request):
         'form': form
     }
     return render(request, 'tramite/crear.html', contexto)
+
+
+def generar_pdf_tramite (request, numero_tramite):
+    tramite = get_object_or_404(Tramite, numero_tramite=numero_tramite)
+    tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
+    costo_total = sum(tarjeta.monto for tarjeta in tarjetas)
+    for tarjeta in tarjetas:
+        fecha_emision_str = tarjeta.fecha_emision.strftime('%d/%m/%Y') if tarjeta.fecha_emision else "Pendiente"
+        valida_hasta_str = tarjeta.valida_hasta.strftime('%d/%m/%Y') if tarjeta.valida_hasta else "Pendiente"
+        
+        # Generar un texto estructurado y profesional para el escáner
+        texto_qr = (
+            "🏛️ G.A.D. POTOSI - SEC. TRANSPORTE\n"
+            "----------------------------------\n"
+            f"📄 TARJETA Nº: {tarjeta.id:06d}\n"
+            f"🚗 PLACA: {tarjeta.vehiculo.placa}\n"
+            f"🚙 VEHICULO: {tarjeta.vehiculo.marca.nombre} {tarjeta.vehiculo.modelo}\n"
+            f"👤 TITULAR: {tarjeta.afiliado.nombre} {tarjeta.afiliado.apellido}\n"
+            f"🏢 OPERADOR: {tarjeta.operador.nombre}\n"
+            f"📌 SERVICIO: {tarjeta.get_tipo_tarjeta_display().upper()}\n"
+            f"✅ EMISION: {fecha_emision_str}\n"
+            f"⛔ VENCE: {valida_hasta_str}\n"
+            "----------------------------------\n"
+            f"🔍 Ref. Trámite: {tramite.numero_tramite}"
+        )
+        qr = qrcode.QRCode(
+            version=1,  
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(texto_qr)
+        qr.make(fit=True)
+        img_qr = qr.make_image(fill_color="black", back_color="white")
+        buffer = io.BytesIO()
+        img_qr.save(buffer, format='PNG')
+        imagen_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        tarjeta.qr_data_uri = f"data:image/png;base64,{imagen_base64}"
+        
+    contexto = {
+        'tramite': tramite,
+        'tarjetas': tarjetas,
+        'costo_total': costo_total,
+    }
+    template = get_template('pdf/tramite.html')
+    template_render = template.render(contexto)
+    response = HttpResponse(content_type = 'application/pdf')
+    response['Content-Disposition'] = f'inline; filename="Tramite_{tramite.numero_tramite}.pdf"'
+    pisa_status = pisa.CreatePDF(template_render, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Error al generar el PDF')
+    return response
+
+
+
+
+
+
 
 
 # ==========================================

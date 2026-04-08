@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Verificación de Datos - Trámite {{ tramite.numero_tramite }}</title>
+    <style>
+        /* =======================================================
+           CONFIGURACIÓN PÁGINA (XHTML2PDF)
+           ======================================================= */
+        @page {
+            size: A4 portrait;
+            margin: 1.5cm 1cm 1.5cm 1cm;
+            
+            @frame footer {
+                -pdf-frame-content: pie_pagina;
+                bottom: 0.5cm;
+                margin-left: 1cm;
+                margin-right: 1cm;
+                height: 0.5cm;
+            }
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 8pt;
+            color: #000;
+            line-height: 1.1;
+        }
+
+        /* =======================================================
+           NUEVA CABECERA OFICIAL (SEGÚN IMAGEN)
+           ======================================================= */
+        .header-oficial {
+            width: 100%;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .header-oficial td {
+            vertical-align: middle;
+        }
+        .titulo-gobierno {
+            font-size: 14pt;
+            font-weight: bold;
+        }
+        .subtitulo-unidad {
+            font-size: 11pt;
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+        .titulo-formulario {
+            font-size: 12pt;
+            font-weight: bold;
+        }
+
+        /* =======================================================
+           FICHAS DE TARJETAS ULTRA COMPACTAS
+           ======================================================= */
+        .card-tarjeta {
+            width: 100%;
+            border: 1px solid #000;
+            margin-bottom: 8px;
+            page-break-inside: avoid;
+            border-collapse: collapse;
+        }
+
+        .card-title-row td {
+            background-color: #eee;
+            border-bottom: 1px solid #000;
+            padding: 2px 5px;
+            font-size: 7pt;
+            font-weight: bold;
+        }
+
+        .col-qr {
+            width: 20%;
+            padding: 5px;
+            text-align: center;
+            vertical-align: middle;
+            border-right: 1px solid #ccc;
+        }
+        
+        .col-datos {
+            width: 80%;
+            padding: 5px 8px;
+            vertical-align: top;
+        }
+
+        .qr-image {
+            width: 65px;
+            height: 65px;
+            margin-bottom: 2px;
+        }
+
+        .placa-box {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12pt;
+            font-weight: bold;
+            display: inline-block;
+            border: 1px solid #000;
+            padding: 1px 4px;
+            border-radius: 2px;
+            margin-bottom: 3px;
+        }
+
+        .sub-table { width: 100%; border-collapse: collapse; }
+        .sub-table td { vertical-align: top; padding: 1px 2px; }
+
+        .lbl { font-size: 6pt; color: #555; text-transform: uppercase; }
+        .val { font-size: 8pt; font-weight: bold; margin-bottom: 3px; }
+
+        /* =======================================================
+           PIE DE DOCUMENTO (INSTRUCCIONES Y FIRMAS SEGÚN IMAGEN)
+           ======================================================= */
+        .instrucciones-box {
+            margin-top: 15px;
+            font-size: 9pt;
+            line-height: 1.4;
+            text-align: justify;
+        }
+        .instrucciones-box p {
+            margin-bottom: 4px;
+        }
+        
+        .firmas-oficiales {
+            width: 100%;
+            margin-top: 30px;
+            page-break-inside: avoid;
+        }
+        
+        .total-box {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        .total-box td {
+            text-align: right;
+            padding: 8px 10px;
+            font-size: 11pt;
+            font-weight: bold;
+            background-color: #f4f4f4;
+            border: 1.5px solid #000;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="pie_pagina" style="font-size: 6pt; color: #666;">
+        <table style="width: 100%;">
+            <tr>
+                <td style="text-align: right;">Página <pdf:pagenumber> de <pdf:pagecount></td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="header-oficial">
+        <tr>
+            <td style="width: 15%; text-align: left;">
+                </td>
+            <td style="width: 70%; text-align: center;">
+                <div class="titulo-gobierno">GOBIERNO AUTÓNOMO DEPARTAMENTAL DE POTOSÍ</div>
+                <div class="subtitulo-unidad">UNIDAD DE REGISTRO Y REGULACIÓN DE TRANSPORTE</div>
+                <div class="titulo-formulario">FORMULARIO DE VERIFICACIÓN DE DATOS - TARJETA INTERPROVINCIAL</div>
+            </td>
+            <td style="width: 15%; text-align: right;">
+                </td>
+        </tr>
+    </table>
+
+    {% for tarjeta in tarjetas %}
+    <table class="card-tarjeta">
+        <tr class="card-title-row">
+            <td colspan="2">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 33%; text-align: left;">TARJETA Nº {{ tarjeta.id|stringformat:"06d" }}</td>
+                        <td style="width: 33%; text-align: center;">TRÁMITE Nº {{ tramite.numero_tramite }}</td>
+                        <td style="width: 34%; text-align: right;">{{ tarjeta.get_tipo_tarjeta_display|upper }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td class="col-qr">
+                <img src="{{ tarjeta.qr_data_uri }}" alt="QR" class="qr-image"><br>
+                <span style="font-size: 5pt; color: #333;">ID:{{ tarjeta.id }}x{{ tarjeta.vehiculo.id }}</span>
+            </td>
+            <td class="col-datos">
+                <table class="sub-table">
+                    <tr>
+                        <td style="width: 35%; border-right: 1px solid #eee; padding-right: 5px;">
+                            <div class="placa-box">{{ tarjeta.vehiculo.placa }}</div>
+                            <div class="lbl">Marca / Modelo</div>
+                            <div class="val">{{ tarjeta.vehiculo.marca.nombre }} - {{ tarjeta.vehiculo.modelo }}</div>
+                            <div class="lbl">Chasis</div>
+                            <div class="val" style="font-family: monospace;">{{ tarjeta.vehiculo.chasis|default:"N/D" }}</div>
+                        </td>
+                        <td style="width: 45%; border-right: 1px solid #eee; padding-left: 5px; padding-right: 5px;">
+                            <div class="lbl">Titular / Afiliado</div>
+                            <div class="val">{{ tarjeta.afiliado.nombre }} {{ tarjeta.afiliado.apellido }}</div>
+                            <div class="lbl">Sindicato / Operador</div>
+                            <div class="val">{{ tarjeta.operador.nombre }}</div>
+                        </td>
+                        <td style="width: 20%; padding-left: 5px;">
+                            <div class="lbl">Validez</div>
+                            <div class="val">{{ tarjeta.validez_tiempo }} {{ tarjeta.get_validez_periodo_display }}</div>
+                            <div class="lbl">Monto</div>
+                            <div class="val">Bs. {{ tarjeta.monto }}</div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    {% empty %}
+        <p style="text-align: center; color: #555; padding: 10px; border: 1px dashed #ccc;">No existen tarjetas registradas en este trámite.</p>
+    {% endfor %}
+
+    <table class="total-box">
+        <tr>
+            <td>COSTO TOTAL DEL TRÁMITE: Bs. {{ costo_total|default:"0.00" }}</td>
+        </tr>
+    </table>
+
+    <div class="instrucciones-box">
+        <p>a) Lea detalladamente los datos de cada uno de los vehículos en el presente formulario.</p>
+        <p>b) Si encuentra algún error, resaltarlo y devolverlo a Unidad Registro y Regulación de Transporte para su corrección sin firmar.</p>
+        <p>c) Si todos los datos están correctos, firmar el formulario y proceder a realizar el depósito correspondiente en la cuenta N: 1-6024553 del BANCO UNION por el total de las tarjetas, luego entregar fotocopia del presente formulario y del comprobante de depósito a Tesorería de la Gobernación.</p>
+    </div>
+
+    <table class="firmas-oficiales">
+        <tr>
+            <td style="width: 50%; text-align: left; vertical-align: bottom;">
+                <div style="font-weight: bold; font-size: 9pt; margin-bottom: 40px;">JURO LA EXACTITUD DE LOS DATOS DEL PRESENTE FORMULARIO</div>
+                <div style="border-top: 1.5px solid #000; width: 80%; padding-top: 5px; text-align: center; font-size: 9pt;">Firma Rep. legal</div>
+            </td>
+            <td style="width: 50%; text-align: left; vertical-align: bottom;">
+                <div style="font-weight: bold; font-size: 9pt; margin-bottom: 25px;">ACLARACIÓN DE LA FIRMA</div>
+                <div style="font-size: 9pt; margin-bottom: 15px;">Nombre: _____________________________________________</div>
+                <div style="font-size: 9pt;">C.I.: _________________________________________________</div>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

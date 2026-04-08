@@ -25,8 +25,6 @@ class TarjetaDeOperacion(models.Model):
     TIEMPO = (
         ('year', 'AÑO'),
         ('month', 'MES'),
-        ('week', 'SEMANA'),
-        ('day', 'DÍA'),
     )
 
     tramite = models.ForeignKey(

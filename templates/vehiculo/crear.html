@@ -1,193 +1,303 @@
 {% extends 'base.html' %}
 
-
-
 {% block content %}
+<div class="pantalla-completa">
+    <div class="dashboard-card">
+        
+        <div class="dashboard-header">
+            <div>
+                <h2 class="titulo"><i class="bi bi-car-front-fill me-2"></i>Alta de Vehículo</h2>
+                <p class="subtitulo">Gestión de padrón vehicular. Llene los campos correspondientes.</p>
+            </div>
+            
+            <div class="botones-rapidos">
+                <span class="label-rapido">Añadir faltantes:</span>
+                <button type="button" class="btn-mini color" onclick="document.getElementById('modal-color').showModal()">
+                    <i class="bi bi-palette"></i> Color
+                </button>
+                <button type="button" class="btn-mini marca" onclick="document.getElementById('modal-marca').showModal()">
+                    <i class="bi bi-tag"></i> Marca
+                </button>
+                <button type="button" class="btn-mini tipo" onclick="document.getElementById('modal-tipo_vehiculo').showModal()">
+                    <i class="bi bi-truck"></i> Tipo
+                </button>
+            </div>
+        </div>
 
-<form method="POST" id="form-vehiculo">
+        <form method="POST" id="form-vehiculo" class="formulario-grid-master">
+            {% csrf_token %}
+            
+            <div class="grid-django">
+                {{ form.as_p }}
+            </div>
 
-    {% csrf_token %}
+            <div class="footer-acciones">
+                <a href="{% url 'vehiculo:lista_vehiculos' %}" class="btn-cancelar">Cancelar</a>
+                <button type="submit" class="btn-guardar"><i class="bi bi-check2-circle me-2"></i>CREAR VEHÍCULO</button>
+            </div>
+        </form>
 
-    <button type="button" onclick="document.getElementById('modal-color').showModal()">+ COLOR</button>
+    </div>
+</div>
 
-    <button type="button" onclick="document.getElementById('modal-marca').showModal()">+ MARCA</button>
-
-    <button type="button" onclick="document.getElementById('modal-tipo_vehiculo').showModal()">+ TIPO</button>
-
-    
-
-    {{ form.as_p }}
-
-    <button type="submit">CREAR VEHÍCULO</button>
-
-</form>
-
-
-
-<dialog id="modal-color">
-
-    <h3>Añadir Nuevo Color</h3>
-
+<dialog id="modal-color" class="modal-moderno">
+    <div class="modal-header">
+        <h3><i class="bi bi-palette"></i> Nuevo Color</h3>
+    </div>
     <form class="form-ajax-flotante">
-
         {% csrf_token %}
-
         <input type="hidden" name="tipo_atributo" value="color">
-
-        {{ form_color.as_p }}
-
-        <button type="submit">Guardar</button>
-
-        <button type="button" onclick="document.getElementById('modal-color').close()">Cancelar</button>
-
+        <div class="grid-modal">{{ form_color.as_p }}</div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cerrar" onclick="document.getElementById('modal-color').close()">Cancelar</button>
+            <button type="submit" class="btn-confirmar">Guardar</button>
+        </div>
     </form>
-
 </dialog>
 
-
-
-<dialog id="modal-marca">
-
-    <h3>Añadir Nueva Marca</h3>
-
+<dialog id="modal-marca" class="modal-moderno">
+    <div class="modal-header">
+        <h3><i class="bi bi-tag"></i> Nueva Marca</h3>
+    </div>
     <form class="form-ajax-flotante">
-
         {% csrf_token %}
-
         <input type="hidden" name="tipo_atributo" value="marca"> 
-
-        {{ form_marca.as_p }}
-
-        <button type="submit">Guardar</button>
-
-        <button type="button" onclick="document.getElementById('modal-marca').close()">Cancelar</button>
-
+        <div class="grid-modal">{{ form_marca.as_p }}</div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cerrar" onclick="document.getElementById('modal-marca').close()">Cancelar</button>
+            <button type="submit" class="btn-confirmar">Guardar</button>
+        </div>
     </form>
-
 </dialog>
 
-
-
-<dialog id="modal-tipo_vehiculo">
-
-    <h3>Añadir Nuevo Tipo</h3>
-
+<dialog id="modal-tipo_vehiculo" class="modal-moderno">
+    <div class="modal-header">
+        <h3><i class="bi bi-truck"></i> Nuevo Tipo</h3>
+    </div>
     <form class="form-ajax-flotante">
-
         {% csrf_token %}
-
         <input type="hidden" name="tipo_atributo" value="tipo_vehiculo">
-
-        {{ form_tipo.as_p }}
-
-        <button type="submit">Guardar</button>
-
-        <button type="button" onclick="document.getElementById('modal-tipo_vehiculo').close()">Cancelar</button>
-
+        <div class="grid-modal">{{ form_tipo.as_p }}</div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cerrar" onclick="document.getElementById('modal-tipo_vehiculo').close()">Cancelar</button>
+            <button type="submit" class="btn-confirmar">Guardar</button>
+        </div>
     </form>
-
 </dialog>
 
+<style>
+    /* Variables basadas en tu paleta */
+    :root {
+        --bordo: #8b0000;
+        --ambar: #d97706;
+        --dorado: #c5a059;
+        --fondo: #f4f6f9;
+        --texto: #333;
+        --borde: #e2e8f0;
+    }
 
+    /* Contenedor para evitar scroll */
+    .pantalla-completa {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 100px); /* Ajusta según tu navbar */
+        padding: 10px;
+    }
+
+    .dashboard-card {
+        background: white;
+        width: 100%;
+        max-width: 1200px; /* Ancho para aprovechar monitores */
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        border-top: 5px solid var(--bordo);
+        overflow: hidden;
+    }
+
+    /* Cabecera */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 30px;
+        background: #fdfdfd;
+        border-bottom: 1px solid var(--borde);
+    }
+
+    .titulo { color: var(--bordo); font-size: 1.5rem; font-weight: 700; margin: 0; }
+    .subtitulo { color: #666; font-size: 0.85rem; margin: 5px 0 0 0; }
+
+    /* Botones Superiores */
+    .botones-rapidos {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--fondo);
+        padding: 8px 15px;
+        border-radius: 50px;
+    }
+
+    .label-rapido { font-size: 0.75rem; color: #666; font-weight: 600; text-transform: uppercase; }
+
+    .btn-mini {
+        border: none;
+        background: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: 0.2s;
+    }
+    .btn-mini.color { color: var(--dorado); }
+    .btn-mini.marca { color: var(--ambar); }
+    .btn-mini.tipo { color: var(--bordo); }
+    .btn-mini:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+    /* EL TRUCO DEL GRID PARA form.as_p */
+    .formulario-grid-master {
+        padding: 30px;
+    }
+
+    .grid-django {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 3 o 4 columnas automáticas */
+        gap: 15px 25px;
+    }
+
+    /* Formatear los <p> que genera Django */
+    .grid-django p, .grid-modal p {
+        display: flex;
+        flex-direction: column;
+        margin: 0; /* Quitar margen para ahorrar espacio vertical */
+    }
+
+    .grid-django label, .grid-modal label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #555;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    /* Estilo premium para inputs */
+    .grid-django input, .grid-django select, 
+    .grid-modal input, .grid-modal select {
+        padding: 10px 15px;
+        border: 1px solid var(--borde);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        background: #fcfcfc;
+        transition: 0.3s;
+        height: 42px; /* Altura fija compacta */
+    }
+
+    .grid-django input:focus, .grid-django select:focus,
+    .grid-modal input:focus, .grid-modal select:focus {
+        border-color: var(--ambar);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+        outline: none;
+    }
+
+    /* Footer del Formulario */
+    .footer-acciones {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid var(--borde);
+    }
+
+    .btn-cancelar {
+        color: #666;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .btn-guardar {
+        background: var(--ambar);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn-guardar:hover { background: #b46104; transform: translateY(-1px); }
+
+    /* Modales Nativos Estilizados */
+    dialog.modal-moderno {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        padding: 0;
+        width: 100%;
+        max-width: 400px;
+    }
+    dialog.modal-moderno::backdrop { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); }
+    
+    .modal-header { background: var(--bordo); padding: 15px 20px; }
+    .modal-header h3 { color: white; margin: 0; font-size: 1.1rem; }
+    
+    .grid-modal { padding: 20px; display: grid; gap: 15px; }
+    
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 15px 20px;
+        background: #f9f9f9;
+        border-top: 1px solid var(--borde);
+    }
+    
+    .btn-cerrar { background: white; border: 1px solid #ccc; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+    .btn-confirmar { background: var(--dorado); color: white; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+</style>
 
 <script>
-
-// Seleccionamos todos los formularios flotantes
-
+// El JS se mantiene exactamente igual, es perfecto para lo que necesitas.
 document.querySelectorAll('.form-ajax-flotante').forEach(formulario => {
-
-    
-
     formulario.addEventListener('submit', function(e) {
-
         e.preventDefault(); 
-
         let formData = new FormData(this);
 
-
-
         fetch("{% url 'vehiculo:crear_atributo' %}", {
-
             method: 'POST',
-
             body: formData,
-
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
-
         })
-
         .then(response => response.json())
-
         .then(data => {
-
             if(data.id) {
-
-                // Buscamos el elemento dinámicamente
-
                 let selectAtributo = document.getElementById('id_' + data.tipo); 
-
-                
-
-                // IMPRIMIMOS EN CONSOLA PARA DEPURAR (Presiona F12 en tu navegador para verlo)
-
                 console.log("Elemento capturado para " + data.tipo + ":", selectAtributo);
-
                 
-
-                // Creamos la nueva opción
-
                 let nuevaOpcion = new Option(data.nombre, data.id, true, true);
-
                 
-
-                // Usamos appendChild, que es más seguro y compatible que .add()
-
                 if (selectAtributo) {
-
                     selectAtributo.appendChild(nuevaOpcion);
-
-                    
-
-                    // ⚠️ IMPORTANTE: Si estás usando jQuery o Select2, descomenta la siguiente línea:
-
-                    // $(selectAtributo).trigger('change');
-
                 } else {
-
                     console.error("No se encontró ningún elemento con el ID: id_" + data.tipo);
-
                 }
-
                 
-
-                // Cerramos el modal y limpiamos
-
                 document.getElementById('modal-' + data.tipo).close();
-
-                // this.reset() daba error de scope en funciones flecha a veces, es mejor seleccionar el form:
-
                 document.querySelector('#modal-' + data.tipo + ' form').reset(); 
-
                 
-
             } else if (data.errores) {
-
                 console.log("Errores del formulario Django:", data.errores);
-
                 alert("Verifica los datos ingresados.");
-
             }
-
         })
-
         .catch(error => console.error('Error AJAX:', error));
-
     });
-
-    
-
 });
-
 </script>
-
 {% endblock %}

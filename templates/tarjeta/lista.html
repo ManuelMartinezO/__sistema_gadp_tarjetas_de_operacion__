@@ -1,14 +1,239 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>lista tarjeta</h1>
-    <ul>
+<div class="padron-container py-4">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+        <div>
+            <h2 class="fw-bold mb-0" style="color: var(--bs-dark-red);">
+                <i class="bi bi-wallet2 me-2"></i>Padrón de Tarjetas de Operación
+            </h2>
+            <p class="text-muted small mb-0">Control general de credenciales vehiculares emitidas y pendientes.</p>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-white border-0 rounded-start-pill text-muted">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" class="form-control border-0 rounded-end-pill" placeholder="Buscar placa o ID...">
+            </div>
+            {% if user.rol == 'a' or user.rol == 'sa' %}
+                <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-primary rounded-pill shadow-sm px-4 fw-bold" style="background-color: var(--bs-primary); border:none;">
+                    <i class="bi bi-file-earmark-plus me-1"></i> Ir a Trámites
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="tarjetas-grid">
         {% for tarjeta in tarjetas %}
-            <li>
-                <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}">{{ tarjeta.id }} - {{ tarjeta.vehiculo.placa }}</a>
-            </li>
+            <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}" class="mini-credencial shadow-sm">
+                
+                <div class="credencial-top"></div>
+                
+                <div class="credencial-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-dark text-white fw-bold px-2 py-1 shadow-sm" style="letter-spacing: 1px;">
+                            Nº {{ tarjeta.id|stringformat:"06d" }}
+                        </span>
+                        
+                        {% if tarjeta.fecha_emision %}
+                            <span class="status-dot emited" title="Emitida">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            </span>
+                        {% else %}
+                            <span class="status-dot pending" title="Pendiente de Emisión">
+                                <i class="bi bi-clock-fill text-warning"></i>
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="text-center mb-3">
+                        <div class="mini-placa mx-auto">
+                            <div class="mini-placa-top">BOLIVIA</div>
+                            <div class="mini-placa-number">{{ tarjeta.vehiculo.placa }}</div>
+                        </div>
+                    </div>
+
+                    <div class="credencial-datos">
+                        <div class="dato-item">
+                            <i class="bi bi-person text-muted"></i>
+                            <span class="fw-semibold text-truncate d-block">{{ tarjeta.afiliado.nombre }}</span>
+                        </div>
+                        <div class="dato-item">
+                            <i class="bi bi-tag text-muted"></i>
+                            <span class="text-truncate d-block small" style="color: var(--bs-gold);">{{ tarjeta.get_tipo_tarjeta_display|default:"Servicio" }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="credencial-footer">
+                    <span class="small text-muted fw-bold">VER EXPEDIENTE</span>
+                    <i class="bi bi-arrow-right text-primary"></i>
+                </div>
+            </a>
         {% empty %}
-            <li>No hay tarjetas.</li>
+            <div class="empty-state shadow-sm">
+                <i class="bi bi-inboxes text-muted opacity-25" style="font-size: 5rem;"></i>
+                <h4 class="mt-3 fw-bold" style="color: var(--bs-dark-red);">Archivo Vacío</h4>
+                <p class="text-muted">Aún no se han generado tarjetas de operación en el sistema.</p>
+                <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-outline-dark rounded-pill mt-2 px-4">
+                    Revisar Trámites Pendientes
+                </a>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
+
+</div>
+
+<style>
+    /* Contenedor fluido */
+    .padron-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Input de búsqueda estilizado */
+    .input-group .form-control:focus {
+        box-shadow: none;
+        border-color: transparent;
+    }
+
+    /* --- EL GRID MÁGICO --- */
+    .tarjetas-grid {
+        display: grid;
+        /* auto-fill crea tantas columnas como quepan sin aplastarse, mínimo de 260px */
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 25px;
+        align-items: start;
+    }
+
+    /* --- DISEÑO DE LA MINI-CREDENCIAL --- */
+    .mini-credencial {
+        background: #ffffff;
+        border-radius: 16px;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        display: flex;
+        flex-direction: column;
+        animation: fadeInUP 0.4s ease-out forwards;
+        opacity: 0;
+    }
+
+    /* Efecto de escalera en la animación inicial */
+    .mini-credencial:nth-child(1) { animation-delay: 0.05s; }
+    .mini-credencial:nth-child(2) { animation-delay: 0.10s; }
+    .mini-credencial:nth-child(3) { animation-delay: 0.15s; }
+    .mini-credencial:nth-child(4) { animation-delay: 0.20s; }
+    .mini-credencial:nth-child(5) { animation-delay: 0.25s; }
+
+    /* Hover Neomórfico */
+    .mini-credencial:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -10px rgba(139, 0, 0, 0.15) !important;
+        border-color: var(--bs-gold);
+    }
+
+    /* Barra superior holográfica */
+    .credencial-top {
+        height: 6px;
+        background: linear-gradient(90deg, var(--bs-dark-red), var(--bs-gold), var(--bs-primary));
+        width: 100%;
+    }
+
+    .credencial-body {
+        padding: 20px;
+        flex-grow: 1;
+    }
+
+    /* Mini Placa Realista */
+    .mini-placa {
+        background: #f8fafc;
+        border: 2px solid #1e293b;
+        border-radius: 6px;
+        display: inline-block;
+        padding: 3px 12px 6px;
+        font-family: 'Courier New', Courier, monospace;
+        background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px);
+    }
+
+    .mini-placa-top {
+        font-size: 0.5rem;
+        font-weight: bold;
+        color: #64748b;
+        letter-spacing: 2px;
+        border-bottom: 1px solid #cbd5e1;
+        margin-bottom: 2px;
+    }
+
+    .mini-placa-number {
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: 1px;
+        line-height: 1.1;
+    }
+
+    /* Datos Rápidos (Nombre y Tipo) */
+    .credencial-datos {
+        background: #f9fafb;
+        border-radius: 10px;
+        padding: 12px;
+    }
+
+    .dato-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+    }
+    
+    .dato-item:first-child {
+        margin-bottom: 8px;
+        border-bottom: 1px dashed #e5e7eb;
+        padding-bottom: 8px;
+    }
+
+    /* Footer de la tarjeta */
+    .credencial-footer {
+        background: #fff;
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #f0f0f0;
+        transition: background 0.3s;
+    }
+
+    .mini-credencial:hover .credencial-footer {
+        background: #fffcf5; /* Un fondo dorado muy sutil al hacer hover */
+    }
+
+    .mini-credencial:hover .credencial-footer i {
+        transform: translateX(5px);
+        transition: 0.3s;
+    }
+
+    /* Estado Vacío */
+    .empty-state {
+        grid-column: 1 / -1; /* Ocupa todo el ancho */
+        background: white;
+        border-radius: 20px;
+        text-align: center;
+        padding: 60px 20px;
+        border: 2px dashed #e2e8f0;
+    }
+
+    /* Animación de entrada */
+    @keyframes fadeInUP {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 {% endblock %}

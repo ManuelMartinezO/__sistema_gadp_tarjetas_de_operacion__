@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tarjeta {{ tarjeta.vehiculo.placa }}</title>
+    <style>
+        /* =======================================================
+           CONFIGURACIÓN PÁGINA (XHTML2PDF)
+           ======================================================= */
+        @page {
+            size: A4 portrait;
+            /* Margen izquierdo grande para respetar el papel pre-impreso */
+            margin: 2.5cm 4cm 2cm 1cm; 
+        }
+        
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 9pt; /* Reducido de 10pt a 9pt */
+            color: #000;
+            line-height: 1.0; /* Interlineado mínimo para juntar el texto */
+        }
+
+        /* Título Centrado */
+        .center-header {
+            text-align: center;
+            font-size: 8pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px; /* Reducido drásticamente */
+        }
+
+        /* Tabla de Datos Personales y Vehículo */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5px; /* Reducido */
+        }
+        .data-table td {
+            padding: 1px 2px; /* Padding casi nulo para agrupar filas */
+            vertical-align: top;
+        }
+        .lbl {
+            font-weight: bold;
+            font-size: 8pt;
+            width: 18%; /* Ajustado ligeramente */
+        }
+        .val {
+            font-size: 8pt;
+            text-transform: uppercase;
+        }
+
+        /* Sección de Placa y QR */
+        .placa-qr-table {
+            width: 100%;
+            margin-bottom: 5px; /* Reducido */
+        }
+        .placa-box {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 20pt; /* Reducido de 24pt */
+            font-weight: bold;
+            border: 5px solid #000;
+            padding: 2px 15px; /* Reducido */
+            display: inline-block;
+            letter-spacing: 2px;
+        }
+        .qr-image {
+            width: 70px; /* Reducido para ahorrar espacio */
+            height: 70px;
+        }
+
+        /* Rutas y Fechas */
+        .rutas-box {
+            font-size: 8pt;
+            font-weight: bold;
+            margin-bottom: 10px; /* Reducido */
+        }
+        .rutas-val {
+            font-weight: normal;
+            display: block;
+            margin-top: 2px;
+            text-transform: uppercase;
+        }
+
+        .fechas-table {
+            width: 100%;
+            font-size: 8pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .fechas-table span {
+            font-weight: normal;
+        }
+
+        /* Firmas de Autoridades */
+        .firmas-table {
+            width: 100%;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .firma-nombre {
+            font-size: 8pt;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .firma-cargo {
+            font-size: 7pt;
+            font-weight: normal;
+            color: #333;
+        }
+        .separacion {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div style="text-align: right; font-size: 6pt; margin-bottom: 5px;">
+        {% now "d/m/y, H:i a" %}
+    </div>
+
+    <div class="center-header">
+        IMPRESIÓN DE TARJETAS INTERPROVINCIALES<br>
+        LICENCIA DE OPERACIÓN PARA EL TRANSPORTE AUTOMOTOR<br>
+        INTERPROVINCIAL - CONFEDERADO
+    </div>
+
+    <table class="data-table">
+        <tr>
+            <td class="lbl">OPERADOR:</td>
+            <td class="val" colspan="3">{{ tarjeta.operador.nombre }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">AFILIADO:</td>
+            <td class="val" colspan="3">{{ tarjeta.afiliado.nombre }} {{ tarjeta.afiliado.apellido }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">MODELO:</td>
+            <td class="val" style="width: 32%;">{{ tarjeta.vehiculo.modelo }}</td>
+            <td class="lbl" style="width: 15%;">CAPACIDAD:</td>
+            <td class="val" style="width: 35%;">{{ tarjeta.vehiculo.capacidad|default:"N/D" }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">REGISTRO:</td>
+            <td class="val">{{ tarjeta.id }}</td>
+            <td class="lbl">CHASIS:</td>
+            <td class="val">{{ tarjeta.vehiculo.chasis|default:"N/D" }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">CATEGORÍA:</td>
+            <td class="val">{{ tarjeta.get_tipo_tarjeta_display }}</td>
+            <td class="lbl">MARCA:</td>
+            <td class="val">{{ tarjeta.vehiculo.marca.nombre }}</td>
+        </tr>
+    </table>
+
+    <table class="placa-qr-table">
+        <tr>
+            <td style="width: 50%; text-align: left; vertical-align: middle;">
+                <div class="placa-box">{{ tarjeta.vehiculo.placa }}</div>
+            </td>
+            <td style="width: 50%; text-align: right; vertical-align: middle;">
+                <img src="{{ qr_data_uri }}" alt="QR Code" class="qr-image">
+            </td>
+        </tr>
+    </table>
+
+    <div class="rutas-box">
+        RUTAS AUTORIZADAS:
+        <span class="rutas-val">
+            VILLAZON - TUPIZA - POTOSI Y VICEVERSA HORAS: 08:30, 12:30 Y 20:30
+        </span>
+    </div>
+
+    <table class="fechas-table">
+        <tr>
+            <td style="width: 50%;">
+                LICENCIA VALIDA DE: <span>{{ tarjeta.fecha_emision|date:"d/m/Y"|default:"Pendiente" }}</span>
+            </td>
+            <td style="width: 50%;">
+                AL: <span>{{ tarjeta.valida_hasta|date:"d/m/Y"|default:"Pendiente" }}</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="separacion">.</div>
+
+    <table class="firmas-table">
+        <tr>
+            <td style="width: 50%; vertical-align: top; padding-right: 5px;">
+                <div class="firma-nombre">Abog. Heber Rodriguez Flores</div>
+                <div class="firma-cargo">SECRETARIO DEPARTAMENTAL<br>DE JURÍDICA</div>
+            </td>
+            <td style="width: 50%; vertical-align: top; padding-left: 5px;">
+                <div class="firma-nombre">Oscar Mendoza Mamani</div>
+                <div class="firma-cargo">SECRETARIO DEPARTAMENTAL DE<br>COORDINACIÓN GENERAL</div>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
