@@ -7,4 +7,5 @@ urlpatterns = [
     path('afiliados/', views.lista_afiliados, name='lista_afiliados'),
     path('afiliado/crear/', views.crear_afiliado, name='crear_afiliado'),
     path('afiliado/detalle/<int:id_afiliado>/', views.detalle_afiliado, name='detalle_afiliado'),
+    path('afiliado/editar/<int:id_afiliado>/', views.editar_afiliado, name='editar_afiliado'),
 ]

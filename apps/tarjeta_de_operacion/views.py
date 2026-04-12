@@ -8,12 +8,59 @@ from xhtml2pdf import pisa
 import io
 import qrcode
 import base64
+from django.db.models import Q
 
+from django.http import JsonResponse
+from .forms import RutaForm  # Asegúrate de importar tu formulario
 
-def lista_tarjetas (request):
-    tarjetas = TarjetaDeOperacion.objects.all()
+def lista_tarjetas(request):
+    # Optimización: select_related evita el problema de consultas N+1 al traer datos de llaves foráneas
+    tarjetas = TarjetaDeOperacion.objects.select_related(
+        'vehiculo', 'afiliado', 'operador', 'ruta', 'tramite'
+    ).all().order_by('-id')
+
+    # 1. Capturar parámetros
+    q = request.GET.get('q', '').strip()
+    ruta_q = request.GET.get('ruta', '').strip()
+    tipo = request.GET.get('tipo', 'todos')
+    estado = request.GET.get('estado', 'todos')
+
+    # 2. Búsqueda General (Placa, Nombre Afiliado, Apellido, Operador, ID de Tarjeta)
+    if q:
+        filtros_q = (
+            Q(vehiculo__placa__icontains=q) |
+            Q(afiliado__nombre__icontains=q) |
+            Q(afiliado__apellido__icontains=q) |
+            Q(operador__nombre__icontains=q)
+        )
+        if q.isdigit():
+            filtros_q |= Q(id=q) # Permite buscar por el Número de Tarjeta exacto
+            
+        tarjetas = tarjetas.filter(filtros_q)
+
+    # 3. Búsqueda por Ruta (Texto parcial)
+    if ruta_q:
+        tarjetas = tarjetas.filter(ruta__ruta__icontains=ruta_q)
+
+    # 4. Filtro por Tipo de Tarjeta
+    if tipo and tipo != 'todos':
+        tarjetas = tarjetas.filter(tipo_tarjeta=tipo)
+
+    # 5. Filtro por Estado (Emitida vs Pendiente)
+    if estado != 'todos':
+        if estado == 'emitida':
+            tarjetas = tarjetas.filter(fecha_emision__isnull=False)
+        elif estado == 'pendiente':
+            tarjetas = tarjetas.filter(fecha_emision__isnull=True)
+
     contexto = {
-        'tarjetas': tarjetas
+        'tarjetas': tarjetas,
+        'q': q,
+        'ruta_q': ruta_q,
+        'tipo_actual': tipo,
+        'estado_actual': estado,
+        # Pasamos las opciones del modelo directamente al template
+        'tipos_tarjeta': TarjetaDeOperacion.TIPO_TARJETA, 
     }
     return render(request, 'tarjeta/lista.html', contexto)
     
@@ -36,6 +83,20 @@ def crear_tarjeta (request):
         'form': form,
     }
     return render(request, 'tarjeta/crear.html', contexto)
+
+def editar_tarjeta (request, id_tarjeta):
+    tarjeta = get_object_or_404(TarjetaDeOperacion, id=id_tarjeta)
+    if request.method == 'POST':
+        form = TarjetaDeOperacionForm(request.POST, instance=tarjeta)
+        if form.is_valid():
+            guardado = form.save()
+            return redirect('tarjeta:detalle_tarjeta', tarjeta.id)
+    else:
+        form = TarjetaDeOperacionForm(instance=tarjeta)
+    contexto = {
+        'form': form,
+    }
+    return render(request, 'tarjeta/editar.html', contexto)
 
 
 def generar_pdf_tarjeta (request, id_tarjeta):
@@ -71,3 +132,17 @@ def generar_pdf_tarjeta (request, id_tarjeta):
         return HttpResponse('Error al generar el PDF')
     return response
     
+
+def crear_ruta_ajax(request):
+    # Verificamos que sea POST y que sea una petición AJAX
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        form = RutaForm(request.POST)
+        if form.is_valid():
+            nueva_ruta = form.save()
+            return JsonResponse({
+                'success': True, 
+                'id': nueva_ruta.id, 
+                'nombre': nueva_ruta.ruta
+            })
+        return JsonResponse({'success': False, 'errors': form.errors})
+    return JsonResponse({'success': False, 'error': 'Solicitud no válida'})

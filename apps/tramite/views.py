@@ -1,32 +1,71 @@
-from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-
-from apps.tramite.forms import TramiteEviadoForm, TramiteReportadoForm, DepositoForm
+from .models import Tramite
+from xhtml2pdf import pisa
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Tramite, Deposito
+from apps.tramite.forms import TramiteEviadoForm, TramiteReportadoForm, DepositoForm, EditarTramiteForm, EditarInformeForm, EditarEstadoForm, EditarReporteForm
+from apps.usuario.permisos import es_admin, es_superadmin, es_usuario_normal
+from django.template.loader import get_template
 from apps.tarjeta_de_operacion.forms import TarjetaDeOperacionForm
-from apps.vehiculo.forms import VehiculoForm
-from apps.afiliado.forms import AfiliadoForm
-from apps.operador.forms import OperadorForm
 from apps.tarjeta_de_operacion.models import TarjetaDeOperacion
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Q
+from django.utils.dateparse import parse_date
 
 import qrcode
 import io
 import base64
-from django.template.loader import get_template
-from django.http import HttpResponse, JsonResponse
-from xhtml2pdf import pisa
 
+# ========== TRAMITE VIEWS ==========
+@login_required()
+@user_passes_test(es_usuario_normal)
+def lista_tramites(request):
+    # Por defecto, obtenemos todos y los ordenamos por los más recientes
+    tramites = Tramite.objects.all().order_by('-fecha_registro')
 
-# === TRAMITE VIEWS ===
-def lista_tramites (request):
-    tramites = Tramite.objects.all()
+    # 1. Obtener los parámetros de búsqueda del frontend
+    q = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', 'todos')
+    fecha_inicio = request.GET.get('fecha_inicio', '')
+    fecha_fin = request.GET.get('fecha_fin', '')
+    tipo = request.GET.get('tipo', 'todos')
+
+    # 2. Filtrar por coincidencia de texto (Input)
+    if q:
+        # Buscamos por usuario
+        filtros = Q(usuario__username__icontains=q)
+        # Si el usuario ingresó solo números, también buscamos por N° de trámite
+        if q.isdigit():
+            filtros |= Q(numero_tramite__icontains=q)
+        
+        tramites = tramites.filter(filtros)
+
+    # 3. Filtrar por Estado (Validado, Pendiente, Observado)
+    if estado and estado != 'todos':
+        tramites = tramites.filter(estado_tramite=estado)
+
+    # Filtro por Tipo <-- Nueva lógica
+    if tipo and tipo != 'todos':
+        tramites = tramites.filter(tipo_tramite=tipo)
+
+    # 4. Filtrar por Rango de Fechas
+    if fecha_inicio:
+        tramites = tramites.filter(fecha_registro__date__gte=parse_date(fecha_inicio))
+    if fecha_fin:
+        tramites = tramites.filter(fecha_registro__date__lte=parse_date(fecha_fin))
+
+    # 5. Pasamos los filtros de vuelta al contexto para que los inputs no se borren al recargar
     contexto = {
         'tramites': tramites,
+        'q': q,
+        'estado_actual': estado,
+        'tipo_actual': tipo,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
     }
     return render(request, 'tramite/lista.html', contexto)
 
+@login_required()
+@user_passes_test(es_usuario_normal)
 def detalle_tramite (request, numero_tramite):
     tramite = get_object_or_404(Tramite, numero_tramite=numero_tramite)
     tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
@@ -36,14 +75,14 @@ def detalle_tramite (request, numero_tramite):
             if form_reporte.is_valid():
                 guardado = form_reporte.save()
                 return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
-        if 'btn_tarjeta' in request.POST:
+        if 'btn_tarjeta' in request.POST and request.user.rol == 'a' or request.user.rol == 'sa':
             form_tarjeta = TarjetaDeOperacionForm(request.POST, prefix='tarjeta')
             if form_tarjeta.is_valid():
                 tarjeta_guardado = form_tarjeta.save(commit=False)
                 tarjeta_guardado.tramite = tramite
                 tarjeta_guardado.save()
                 return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
-        if 'btn_deposito' in request.POST:
+        if 'btn_deposito' in request.POST and request.user.rol == 'a' or request.user.rol == 'sa':
             form_deposito = DepositoForm(request.POST, prefix='deposito')
             if form_deposito.is_valid():
                 deposito_guardado = form_deposito.save(commit=False)
@@ -66,6 +105,8 @@ def detalle_tramite (request, numero_tramite):
     }
     return render(request, 'tramite/detalle.html', contexto)
 
+@login_required()
+@user_passes_test(es_admin)
 def crear_tramite (request):
     if request.method == 'POST':
         form = TramiteEviadoForm(request.POST, request.FILES)
@@ -79,7 +120,48 @@ def crear_tramite (request):
     }
     return render(request, 'tramite/crear.html', contexto)
 
+@login_required()
+@user_passes_test(es_usuario_normal)
+def editar_tramite (request, numero_tramite):
+    tramite = get_object_or_404(Tramite, numero_tramite=numero_tramite)
+    if request.method == 'POST':
+        if 'btn_tramite' in request.POST and es_admin:
+            form_tramite = EditarTramiteForm(request.POST, instance=tramite, prefix='editar_tramite')
+            if form_tramite.is_valid():
+                guardado = form_tramite.save()
+                return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
+        if 'btn_informe' in request.POST and es_admin:
+            form_informe = EditarInformeForm(request.POST, instance=tramite, prefix='editar_informe')
+            if form_informe.is_valid():
+                guardado = form_informe.save()
+                return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
+        if 'btn_reporte' in request.POST and es_usuario_normal:
+            form_reporte = EditarReporteForm(request.POST, instance=tramite, prefix='editar_reporte')
+            if form_reporte.is_valid():
+                guardado = form_reporte.save()
+                return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
+        if 'btn_estado' in request.POST and es_usuario_normal:
+            form_estado = EditarEstadoForm(request.POST, instance=tramite, prefix='editar_estado')
+            if form_estado.is_valid():
+                guardado = form_estado.save()
+                return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
+    else:
+        form_tramite = EditarTramiteForm(prefix='editar_tramite')
+        form_informe = EditarInformeForm(prefix='editar_informe')
+        form_reporte = EditarReporteForm(prefix='editar_reporte')
+        form_estado = EditarEstadoForm(prefix='editar_estado')
+    contexto = {
+        'tramite': tramite,
+        'form_tramite': form_tramite,
+        'form_informe': form_informe,
+        'form_reporte': form_reporte,
+        'form_estado': form_estado,
+    }
+    return render(request, 'tramite/editar.html', contexto)
 
+# ========== GENERACION DE PDFs ===========
+@login_required()
+@user_passes_test(es_admin)
 def generar_pdf_tramite (request, numero_tramite):
     tramite = get_object_or_404(Tramite, numero_tramite=numero_tramite)
     tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
@@ -130,141 +212,3 @@ def generar_pdf_tramite (request, numero_tramite):
     if pisa_status.err:
         return HttpResponse('Error al generar el PDF')
     return response
-
-
-
-
-
-
-
-
-# ==========================================
-# 1. MIXINS DE SEGURIDAD (Reglas de Negocio)
-# ==========================================
-
-class CualquierRolRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Permite el acceso a Usuarios, Administradores y Super Administradores"""
-    def test_func(self):
-        if not self.request.user.is_authenticated:
-            return False
-        return self.request.user.rol_usuario in ['usuario', 'administrador', 'super_administrador']
-
-class AdminOrSuperAdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Permite el acceso SOLO a Administradores y Super Administradores"""
-    def test_func(self):
-        if not self.request.user.is_authenticated:
-            return False
-        return self.request.user.rol_usuario in ['administrador', 'super_administrador']
-
-class SoloSuperAdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Permite el acceso EXCLUSIVAMENTE al Super Administrador"""
-    def test_func(self):
-        if not self.request.user.is_authenticated:
-            return False
-        return self.request.user.rol_usuario == 'super_administrador'
-
-
-# ==========================================
-# 2. VISTAS CRUD DE TRÁMITES
-# ==========================================
-
-# VER TODOS (Usuario, Admin, SuperAdmin)
-class TramiteListView(CualquierRolRequiredMixin, ListView):
-    model = Tramite
-    template_name = 'tramite/lista.html'
-    context_object_name = 'tramites'
-
-# VER DETALLE (Usuario, Admin, SuperAdmin)
-class TramiteDetailView(CualquierRolRequiredMixin, DetailView):
-    model = Tramite
-    template_name = 'tramite/detalle.html'
-    context_object_name = 'tramite'
-
-# CREAR (Solo Admin y SuperAdmin)
-# class TramiteCreateView(AdminOrSuperAdminRequiredMixin, CreateView):
-#     model = Tramite
-#     template_name = 'tramite/crear.html'
-#     form_class = TramiteForm
-#     success_url = reverse_lazy('tramite:tramite_lista')
-
-# tramites/views.py
-
-# class TramiteUpdateView(CualquierRolRequiredMixin, UpdateView):
-#     model = Tramite
-#     template_name = 'tramite/editar.html'
-#     success_url = reverse_lazy('tramite:tramite_lista')
-
-#     # ELIMINAMOS la línea "form_class = TramiteForm" y usamos esta función dinámica:
-#     def get_form_class(self):
-#         # Si el que inició sesión es el evaluador (rol 'usuario'):
-#         if self.request.user.rol_usuario == 'usuario':
-#             return TramiteEvaluacionForm
-            
-#         # Si es 'administrador' o 'super_administrador', le damos el poder total:
-#         return TramiteForm
-
-#     # EXTRA PRO: Guardar automáticamente la fecha de validación/observación
-#     def form_valid(self, form):
-#         from django.utils import timezone
-        
-#         tramite = form.save(commit=False)
-#         # Si cambió el estado a validado, registramos la hora exacta
-#         if tramite.estado_tramite == 'validado' and not tramite.fecha_validacion:
-#             tramite.fecha_validacion = timezone.now()
-#         # Si lo observó, registramos la hora exacta
-#         elif tramite.estado_tramite == 'observado' and not tramite.fecha_observacion:
-#             tramite.fecha_observacion = timezone.now()
-            
-#         tramite.save()
-#         return super().form_valid(form)
-
-# ELIMINAR (Solo SuperAdmin)
-class TramiteDeleteView(SoloSuperAdminRequiredMixin, DeleteView):
-    model = Tramite
-    template_name = 'tramite/eliminar.html'
-    success_url = reverse_lazy('tramite:tramite_lista')
-
-# ==========================================
-# 3. VISTAS CRUD DE DEPÓSITOS
-# ==========================================
-
-# VER TODOS LOS DEPÓSITOS (Solo Admin y SuperAdmin - Para control contable)
-class DepositoListView(AdminOrSuperAdminRequiredMixin, ListView):
-    model = Deposito
-    template_name = 'tramite/deposito_lista.html'
-    context_object_name = 'depositos'
-
-# CREAR DEPÓSITO (Solo Admin y SuperAdmin)
-class DepositoCreateView(AdminOrSuperAdminRequiredMixin, CreateView):
-    model = Deposito
-    form_class = DepositoForm
-    template_name = 'tramite/deposito_crear.html'
-    
-    # Truco pro: Si venimos desde la vista de un trámite, pre-seleccionamos el trámite
-    def get_initial(self):
-        initial = super().get_initial()
-        if 'tramite_id' in self.kwargs:
-            initial['tramite'] = self.kwargs['tramite_id']
-        return initial
-
-    def get_success_url(self):
-        # Al guardar, devolvemos al usuario al detalle del trámite al que le hizo el depósito
-        return reverse_lazy('tramite:tramite_detalle', kwargs={'pk': self.object.tramite.id})
-
-# EDITAR DEPÓSITO (Solo Admin y SuperAdmin)
-class DepositoUpdateView(AdminOrSuperAdminRequiredMixin, UpdateView):
-    model = Deposito
-    form_class = DepositoForm
-    template_name = 'tramite/deposito_editar.html'
-
-    def get_success_url(self):
-        return reverse_lazy('tramite:tramite_detalle', kwargs={'pk': self.object.tramite.id})
-
-# ELIMINAR DEPÓSITO (Solo SuperAdmin)
-class DepositoDeleteView(SoloSuperAdminRequiredMixin, DeleteView):
-    model = Deposito
-    template_name = 'tramite/deposito_eliminar.html'
-    
-    def get_success_url(self):
-        # Al eliminar, devolvemos a la lista general de trámites
-        return reverse_lazy('tramite:tramite_lista')

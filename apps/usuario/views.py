@@ -1,19 +1,76 @@
-from django.views.generic import TemplateView
-from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from .models import Usuario
-
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import UsuarioForm, PerfilForm
 from django.db import transaction
+from apps.operador.models import Operador
+from apps.afiliado.models import Afiliado
+from apps.vehiculo.models import Vehiculo
+from apps.tramite.models import Tramite
+from apps.tarjeta_de_operacion.models import TarjetaDeOperacion
+from django.db.models import Count
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models.functions import TruncMonth
+import json
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .permisos import es_admin, es_usuario_normal, es_superadmin
 
 # === HOME ===
+@login_required()
+@user_passes_test(es_usuario_normal)
 def home (request):
-    return render(request, 'home.html')
+    total_operadores = Operador.objects.count() 
+    total_afiliados = Afiliado.objects.count()
+    total_vehiculos = Vehiculo.objects.count()
+    tramites_pendientes = Tramite.objects.filter(estado_tramite='pendiente').count()
+    ultimos_tramites = Tramite.objects.order_by('-fecha_registro')[:5]
+
+    tarjetas_por_tipo = TarjetaDeOperacion.objects.values('tipo_tarjeta').annotate(total=Count('id'))
+    
+    # Diccionario para traducir '001' a 'InterProvincial', etc.
+    tipos_dict = dict(TarjetaDeOperacion.TIPO_TARJETA) 
+    
+    tipo_labels = []
+    tipo_data = []
+    for item in tarjetas_por_tipo:
+        tipo_labels.append(tipos_dict.get(item['tipo_tarjeta'], 'Otros'))
+        tipo_data.append(item['total'])
+
+    # 3. Datos para el Gráfico de Barras (Últimos 6 meses)
+    seis_meses_atras = timezone.now() - timedelta(days=6*30)
+    
+    emisiones = TarjetaDeOperacion.objects.filter(fecha_registro__gte=seis_meses_atras) \
+        .annotate(mes=TruncMonth('fecha_registro')) \
+        .values('mes') \
+        .annotate(total=Count('id')) \
+        .order_by('mes')
+
+    meses_nombres = {1: 'Ene', 2: 'Feb', 3: 'Mar', 4: 'Abr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Ago', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dic'}
+    
+    bar_labels = []
+    bar_data = []
+    for e in emisiones:
+        if e['mes']:
+            nombre_mes = f"{meses_nombres[e['mes'].month]} {e['mes'].year}"
+            bar_labels.append(nombre_mes)
+            bar_data.append(e['total'])
+
+    # 4. Enviar todo al template
+    contexto = {
+        'total_operadores': total_operadores,
+        'total_afiliados': total_afiliados,
+        'total_vehiculos': total_vehiculos,
+        'tramites_pendientes': tramites_pendientes,
+        'ultimos_tramites': ultimos_tramites,
+        # Pasamos las listas convertidas a JSON para que JavaScript las entienda
+        'tipo_labels': json.dumps(tipo_labels),
+        'tipo_data': json.dumps(tipo_data),
+        'bar_labels': json.dumps(bar_labels),
+        'bar_data': json.dumps(bar_data),
+    }
+
+    return render(request, 'home.html', contexto)
 
 # === LOGUP ===
 def logup_view (request):
@@ -62,79 +119,3 @@ def login_view (request):
         'form': form,
     }
     return render(request, 'usuario/login.html', contexto)
-
-
-
-class InicioView(TemplateView):
-    template_name = 'usuario/inicio.html'
-    # Solo con heredar de LoginRequiredMixin, Django enviará al usuario
-    # al login si intenta entrar a '/' sin sesión iniciada.
-
-# ==========================================
-# 1. MIXIN DE SEGURIDAD (Control de Roles)
-# ==========================================
-class SuperAdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """
-    Verifica que el usuario haya iniciado sesión (LoginRequiredMixin)
-    y que su rol sea 'super_administrador' (UserPassesTestMixin).
-    """
-    def test_func(self):
-        return self.request.user.is_authenticated and self.request.user.rol_usuario == 'super_administrador'
-    
-    # Si falla la prueba, a dónde lo enviamos? (Ej: a la página de login)
-    login_url = '/login/' 
-
-# ==========================================
-# 2. VISTAS DE AUTENTICACIÓN (Públicas)
-# ==========================================
-class IniciarSesionView(LoginView):
-    template_name = 'usuario/login.html'
-    redirect_authenticated_user = True # Si ya está logueado, no lo deja ver el login
-
-class CerrarSesionView(LogoutView):
-    next_page = 'login' # A dónde va después de cerrar sesión
-
-# class RegistroUsuarioView(CreateView):
-#     """Vista para el 'Logup' público. Cualquiera puede registrarse aquí."""
-#     model = Usuario
-#     form_class = RegistroForm
-#     template_name = 'usuario/registro.html'
-#     success_url = reverse_lazy('login')
-
-#     def form_valid(self, form):
-#         # Aseguramos que quien se registre por aquí sea solo 'usuario' normal
-#         user = form.save(commit=False)
-#         user.rol_usuario = 'usuario'
-#         user.save()
-#         return super().form_valid(form)
-
-# ==========================================
-# 3. VISTAS CRUD (Protegidas: Solo SuperAdmin)
-# ==========================================
-class UsuarioListView(SuperAdminRequiredMixin, ListView):
-    model = Usuario
-    template_name = 'usuario/lista.html'
-    context_object_name = 'usuarios' # Así llamaremos a la lista en el HTML
-
-class UsuarioDetailView(SuperAdminRequiredMixin, DetailView):
-    model = Usuario
-    template_name = 'usuario/detalle.html'
-    context_object_name = 'usuario'
-
-# class UsuarioCreateView(SuperAdminRequiredMixin, CreateView):
-#     model = Usuario
-#     form_class = RegistroForm # Usamos el mismo form para que encripte la clave
-#     template_name = 'usuario/crear.html'
-#     success_url = reverse_lazy('usuario_lista')
-
-class UsuarioUpdateView(SuperAdminRequiredMixin, UpdateView):
-    model = Usuario
-    # Al editar, permitimos cambiar casi todo (la clave se cambia en otra vista por seguridad)
-    fields = ['username', 'email', 'nombre', 'apellido', 'numero_carnet_ci', 'numero_celular', 'rol_usuario', 'is_active']
-    template_name = 'usuario/editar.html'
-    success_url = reverse_lazy('usuario_lista')
-
-class UsuarioDeleteView(SuperAdminRequiredMixin, DeleteView):
-    model = Usuario
-    template_name = 'usuario/eliminar.html'
-    success_url = reverse_lazy('usuario_lista')

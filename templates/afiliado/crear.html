@@ -26,9 +26,6 @@
                                 <i class="bi bi-building me-2"></i>Empresa Operadora
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px;">
-                                    <i class="bi bi-link-45deg"></i>
-                                </span>
                                 {{ form.operador }}
                             </div>
                             <div class="form-text small">Seleccione la empresa a la que pertenece este afiliado.</div>
@@ -95,5 +92,60 @@
         margin-bottom: 0.5rem;
         display: block;
     }
+
+    input.form-control, select.form-control {
+        border-radius: 12px !important;
+        padding: 0.7rem 1rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+    }
+
+    input.form-control:focus, select.form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.1);
+    }
+
+    /* Pequeño ajuste para que Select2 se vea igual que tus otros inputs */
+    .select2-container--bootstrap-5 .select2-selection {
+        border-radius: 12px !important;
+        border: 1px solid #e2e8f0 !important;
+        min-height: 45px !important;
+        padding-top: 4px;
+    }
+    .select2-container--bootstrap-5.select2-container--focus .select2-selection {
+        border-color: var(--bs-primary) !important;
+        box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.1) !important;
+    }
 </style>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
+<script>
+    // Sintaxis corregida: $(document).ready(...)
+    $(document).ready(function() {
+        
+        // Verificamos si el elemento existe para evitar errores
+        if ($('#id_operador').length) {
+            $('#id_operador').select2({
+                theme: 'bootstrap-5', // Usa el tema que combina con tu diseño
+                width: '100%',        // Ocupa todo el ancho disponible
+                placeholder: "Escriba para buscar una empresa...",
+                allowClear: true,     // Permite borrar la selección con una 'X'
+                language: {
+                    noResults: function() {
+                        return "No se encontraron empresas con ese nombre";
+                    }
+                }
+            });
+        } else {
+            console.error("No se encontró el campo con ID 'id_operador'.");
+        }
+        
+    });
+</script>
 {% endblock %}

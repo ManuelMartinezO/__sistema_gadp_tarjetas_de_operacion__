@@ -56,7 +56,7 @@ class Vehiculo(models.Model):
     tipo_transporte = models.CharField(max_length=20, choices=TIPO_TRANSPORTE, default='pasajeros')
 
     modelo = models.PositiveIntegerField()
-    placa = models.CharField(max_length=20, unique=True)
+    placa = models.CharField(max_length=7, unique=True)
     chasis = models.CharField(max_length=100, unique=True)
     capacidad = models.PositiveIntegerField()
     

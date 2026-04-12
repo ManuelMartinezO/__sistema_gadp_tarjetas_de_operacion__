@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if user.rol == 'a' or user.rol == 'sa' %}
+<form method="POST">
+    {% csrf_token %}
+    {{ form_tramite.as_p }}
+    <button type="submit" name="btn_tramite">
+        MODIFICAR
+    </button>
+</form>
+{% endif %}
+
+{% if user.rol == 'a' or user.rol == 'sa' %}
+<form method="POST">
+    {% csrf_token %}
+    {{ form_informe.as_p }}
+    <button type="submit" name="btn_informe">
+        MODIFICAR
+    </button>
+</form>
+{% endif %}
+
+{% if user.rol == 'u' %}
+<form method="POST">
+    {% csrf_token %}
+    {{ form_reporte.as_p }}
+    <button type="submit" name="btn_reporte">
+        MODIFICAR
+    </button>
+</form>
+{% endif %}
+
+{% if tramite.estado_tramite == 'observado' or user.rol == 'a' or user.rol == 'sa' %}
+<form method="POST">
+    {% csrf_token %}
+    {{ form_estado.as_p }}
+    <button type="submit" name="btn_estado">
+        MODIFICAR
+    </button>
+</form>
+{% endif %}
+
+{% endblock %}

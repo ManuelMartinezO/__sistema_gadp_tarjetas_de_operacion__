@@ -44,12 +44,13 @@
                         <span>{{ afiliado.fecha_registro|date:"d M, Y" }}</span>
                     </div>
                 </div>
-
+                {% if user.rol == 'a' or user.rol == 'sa'%}
                 <div class="d-grid gap-2 mt-4">
-                    <button class="btn btn-primary rounded-pill" style="background-color: var(--bs-primary); border:none;">
+                    <a href="{% url 'afiliado:editar_afiliado' afiliado.id %}" class="btn btn-primary rounded-pill" style="background-color: var(--bs-primary); border:none;">
                         <i class="bi bi-pencil me-2"></i>Editar Perfil
-                    </button>
+                    </a>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -58,7 +59,6 @@
         <div class="card border-0 shadow-sm" style="border-radius: 20px;">
             <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0"><i class="bi bi-car-front-fill me-2 text-primary"></i>Vehículos Registrados</h5>
-                <a href="#" class="btn btn-sm btn-outline-dark rounded-pill">Asignar Nuevo</a>
             </div>
             
             <div class="card-body p-0">
@@ -69,12 +69,12 @@
                                 <th class="ps-4 small">PLACA</th>
                                 <th class="small">MARCA / MODELO</th>
                                 <th class="small text-center">CAPACIDAD</th>
-                                <th class="text-end pe-4 small">ESTADO</th>
+                                <th class="text-end pe-4 small">ACCION</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for vehiculo in afiliado.vehiculo_set.all %}
-                            <tr style="cursor: pointer;">
+                            <tr">
                                 <td class="ps-4">
                                     <span class="badge bg-dark px-3 py-2 fw-bold" style="letter-spacing: 1px;">{{ vehiculo.placa }}</span>
                                 </td>
@@ -86,7 +86,9 @@
                                     <span class="small">{{ vehiculo.capacidad }} pasajeros</span>
                                 </td>
                                 <td class="text-end pe-4">
-                                    <i class="bi bi-check-circle-fill text-success" title="Activo"></i>
+                                    <a href="{% url 'vehiculo:detalle_vehiculo' vehiculo.placa %}" class="btn btn-sm btn-outline-primary border-0 rounded-circle">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
                                 </td>
                             </tr>
                             {% empty %}

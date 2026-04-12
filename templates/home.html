@@ -1,9 +1,397 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-{% if user.is_authenticated %}
-<p>AUTENTICADO {{ user.perfil.nombre }} - {{ user.rol }}</p>
-{% endif %}
+<div class="dashboard-wrapper pb-5">
+    
+    <div class="welcome-banner shadow-sm animate-up">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <p class="text-gold fw-bold mb-1 text-uppercase tracking-wider">Secretaría Departamental de Transporte</p>
+                <h2 class="text-white fw-bolder mb-2">
+                    {% if user.is_authenticated %}
+                        Bienvenido, {{ user.perfil.nombre|default:user.username|title }} {{ user.perfil.apellido|default:user.username|title }}
+                    {% else %}
+                        Panel de Control Institucional
+                    {% endif %}
+                </h2>
+                <p class="text-white-50 mb-0">
+                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> Gobierno Autónomo Departamental de Potosí
+                    <span class="mx-2">|</span>
+                    <i class="bi bi-shield-check text-success me-1"></i> Rol: <span class="text-white fw-bold">{{ user.get_rol_display|default:"Administrador"|upper }}</span>
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0 d-none d-md-block">
+                <div class="current-date-box">
+                    <div id="reloj-vivo" class="fw-bold fs-4">--:--:--</div>
+                    <div class="text-uppercase small" style="color: var(--bs-gold);">{% now "l, d de F de Y" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6 animate-up delay-1">
+            <div class="kpi-card h-100">
+                <div class="kpi-icon bg-primary-soft text-primary">
+                    <i class="bi bi-buildings-fill"></i>
+                </div>
+                <div class="kpi-data">
+                    <h3 class="kpi-value">{{ total_operadores }}</h3>
+                    <p class="kpi-label">Operadores / Sindicatos</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 animate-up delay-2">
+            <div class="kpi-card h-100">
+                <div class="kpi-icon bg-success-soft text-success">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="kpi-data">
+                    <h3 class="kpi-value">{{ total_afiliados }}</h3>
+                    <p class="kpi-label">Afiliados Registrados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 animate-up delay-3">
+            <div class="kpi-card h-100">
+                <div class="kpi-icon bg-warning-soft text-warning">
+                    <i class="bi bi-car-front-fill"></i>
+                </div>
+                <div class="kpi-data">
+                    <h3 class="kpi-value">{{ total_vehiculos }}</h3>
+                    <p class="kpi-label">Parque Automotor</p>
+                </div>
+                <div class="kpi-trend text-muted">
+                    <i class="bi bi-dash"></i> Unidades verificadas
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 animate-up delay-4">
+            <div class="kpi-card h-100 border-start border-4 border-danger">
+                <div class="kpi-icon bg-danger-soft text-danger">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                </div>
+                <div class="kpi-data">
+                    <h3 class="kpi-value text-danger">{{ tramites_pendientes }}</h3>
+                    <p class="kpi-label">Trámites Pendientes</p>
+                </div>
+                <div class="kpi-trend text-danger">
+                    <i class="bi bi-exclamation-circle"></i> Requieren atención
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 animate-up delay-5">
+        
+        <div class="col-lg-8">
+            <div class="dashboard-panel h-100">
+                
+                <div class="panel-header d-flex justify-content-between align-items-center">
+                    <h5 class="panel-title mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Trámites Recientes</h5>
+                    <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-sm btn-light rounded-pill border">Ver todos</a>
+                </div>
+                <div class="panel-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Trámite Nº</th>
+                                    <th>Tipo</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                    <th class="pe-4 text-end">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tramite in ultimos_tramites %}
+                                <tr>
+                                    <td class="ps-4 fw-bold text-dark">#{{ tramite.numero_tramite|stringformat:"06d" }}</td>
+                                    <td>
+                                        <span class="text-muted small fw-semibold">
+                                            {{ tramite.get_tipo_tramite_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if tramite.estado_tramite == 'pendiente' %}
+                                            <span class="badge bg-warning text-dark px-2 py-1 rounded-pill">Pendiente</span>
+                                        {% elif tramite.estado_tramite == 'validado' %}
+                                            <span class="badge bg-success px-2 py-1 rounded-pill">Validado</span>
+                                        {% elif tramite.estado_tramite == 'observado' %}
+                                            <span class="badge bg-danger px-2 py-1 rounded-pill">Observado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>{{ tramite.fecha_registro|date:"d M Y" }}</span></td>
+                                    <td class="pe-4 text-end">
+                                        <a href="{% url 'tramite:detalle_tramite' tramite.numero_tramite %}" class="btn btn-sm btn-outline-secondary rounded-circle" title="Ver Detalle">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-2 d-block mb-2 text-black-50"></i>
+                                        No hay trámites recientes en el sistema.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            <div class="col-lg-4">
+                <div class="dashboard-panel mb-4">
+                    <div class="panel-header">
+                        <h5 class="panel-title mb-0"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Acciones Rápidas</h5>
+                    </div>
+                    <div class="panel-body">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'tramite:crear_tramite' %}" class="btn btn-primary btn-action text-start">
+                                <i class="bi bi-plus-circle me-2"></i> Iniciar Nuevo Trámite
+                            </a>
+                            <a href="{% url 'vehiculo:crear_vehiculo' %}" class="btn btn-outline-dark btn-action text-start">
+                                <i class="bi bi-car-front me-2"></i> Registrar Vehículo
+                            </a>
+                            <a href="{% url 'tarjeta:lista_tarjetas' %}" class="btn btn-outline-dark btn-action text-start">
+                                <i class="bi bi-search me-2"></i> Consultar Padrón
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<style>
+    .dashboard-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Banner Superior */
+    .welcome-banner {
+        background: linear-gradient(135deg, var(--bs-dark-red) 0%, #4a0000 100%);
+        border-radius: 20px;
+        padding: 30px 40px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .welcome-banner::after {
+        content: '';
+        position: absolute;
+        top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(197, 160, 89, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .text-gold { color: var(--bs-gold); }
+    .tracking-wider { letter-spacing: 2px; }
+    
+    .current-date-box {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 15px 20px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        display: inline-block;
+    }
+
+    /* Tarjetas KPI */
+    .kpi-card {
+        background: #fff;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.02);
+        position: relative;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    }
+
+    .kpi-icon {
+        width: 50px; height: 50px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        position: absolute;
+        top: 25px; right: 25px;
+    }
+
+    .bg-primary-soft { background-color: rgba(217, 119, 6, 0.1); color: var(--bs-primary) !important; }
+    .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+    .bg-warning-soft { background-color: rgba(197, 160, 89, 0.1); color: var(--bs-gold) !important; }
+    .bg-danger-soft { background-color: rgba(139, 0, 0, 0.1); color: var(--bs-dark-red) !important; }
+
+    .kpi-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 5px;
+    }
+
+    .kpi-label {
+        color: #64748b;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+    }
+
+    .kpi-trend {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Paneles de Contenido */
+    .dashboard-panel {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.02);
+        overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 20px 25px;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fafafb;
+    }
+
+    .panel-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .panel-body {
+        padding: 25px;
+    }
+
+    .btn-action {
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+    .btn-action:hover { transform: translateX(5px); }
+
+    /* Sistema de Animaciones en Cascada */
+    .animate-up {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+
+    @keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // 1. Reloj en tiempo real
+        function actualizarReloj() {
+            const ahora = new Date();
+            const opciones = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            document.getElementById('reloj-vivo').textContent = ahora.toLocaleTimeString('es-BO', opciones);
+        }
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+
+        // 2. Gráfico Principal (Emisión de Tarjetas)
+        const ctxMain = document.getElementById('mainChart').getContext('2d');
+        
+        // Creamos un gradiente dorado para las barras
+        let gradientGold = ctxMain.createLinearGradient(0, 0, 0, 400);
+        gradientGold.addColorStop(0, '#d97706'); // Ámbar
+        gradientGold.addColorStop(1, '#c5a059'); // Dorado
+
+        new Chart(ctxMain, {
+            type: 'bar',
+            data: {
+                labels: ['Octubre', 'Noviembre', 'Diciembre', 'Enero', 'Febrero', 'Marzo'],
+                datasets: [{
+                    label: 'Tarjetas Emitidas',
+                    data: [65, 89, 120, 95, 140, 112], // Dummy data (reemplazar con data real de la view)
+                    backgroundColor: gradientGold,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [5, 5], color: '#f1f5f9' },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        // 3. Gráfico Circular (Distribución)
+        const ctxDonut = document.getElementById('donutChart').getContext('2d');
+        new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Interprovincial', 'Cooperativas', 'Confederado'],
+                datasets: [{
+                    data: [45, 25, 30], // Dummy data
+                    backgroundColor: ['#8b0000', '#d97706', '#1e293b'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                },
+                animation: { animateScale: true, animateRotate: true }
+            }
+        });
+    });
+</script>
 {% endblock %}

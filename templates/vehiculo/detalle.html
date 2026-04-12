@@ -12,9 +12,6 @@
         <h2 class="fw-bold" style="color: var(--bs-dark-red);">UNIDAD: {{ vehiculo.placa }}</h2>
     </div>
     <div class="d-flex gap-2">
-        <button class="btn btn-outline-dark rounded-pill px-4">
-            <i class="bi bi-printer me-2"></i>Imprimir Ficha
-        </button>
         <a href="{% url 'vehiculo:lista_vehiculos' %}" class="btn btn-light border rounded-circle">
             <i class="bi bi-x-lg"></i>
         </a>
@@ -106,11 +103,13 @@
                     </div>
                 </div>
             </div>
-            <div class="card-footer bg-white border-0 pb-4 px-4 text-end">
-                <button class="btn btn-primary rounded-pill px-4" style="background-color: var(--bs-primary); border:none;">
-                    <i class="bi bi-pencil-square me-2"></i>Actualizar Datos
-                </button>
-            </div>
+            {% if user.rol == 'a' or user.rol == 'sa'%}
+                <div class="card-footer bg-white border-0 pb-4 px-4 text-end">
+                    <a href="{% url 'vehiculo:editar_vehiculo' vehiculo.placa %}" class="btn btn-primary rounded-pill px-4" style="background-color: var(--bs-primary); border:none;">
+                        <i class="bi bi-pencil-square me-2"></i>Actualizar Datos
+                    </a>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

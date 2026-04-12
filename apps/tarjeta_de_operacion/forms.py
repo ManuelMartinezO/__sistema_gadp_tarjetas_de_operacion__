@@ -1,7 +1,22 @@
 from django import forms
 from .models import TarjetaDeOperacion, Ruta
 
-class RutaForm(forms.ModelForm):
+class BootstrapFormMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            # Verificamos si el widget es un Checkbox
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({
+                    'class': 'form-check-input', # Clase correcta para checkbox
+                })
+            else:
+                field.widget.attrs.update({
+                    'class': 'form-control',
+                    'style': 'border-radius: 10px;'
+                })
+
+class RutaForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Ruta
         fields = ['ruta']
@@ -22,16 +37,22 @@ class RutaForm(forms.ModelForm):
 # =======================================================
 # 5. TARJETA DE OPERACIÓN (El formulario avanzado)
 # =======================================================
-class TarjetaDeOperacionForm(forms.ModelForm):
+class TarjetaDeOperacionForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = TarjetaDeOperacion
         fields = ['operador', 
                   'afiliado', 
                   'vehiculo', 
-                  'tipo_tarjeta', 
+                  'tipo_tarjeta',
+                  'ruta',
+                  'hora_recorrido',
+                  'viceversa',
                   'monto',
                   'validez_periodo', 
                   'validez_tiempo']
+        widgets = {
+            'viceversa': forms.CheckboxInput(attrs={'class': 'form-check-input'})
+        }
         
     #     widgets = {
     #         # 'tramite': forms.Select(attrs={'class': 'form-select'}),

@@ -14,6 +14,55 @@
         </a>
     {% endif %}
 </div>
+<div class="card mb-4 border-0 shadow-sm" style="border-radius: 15px; background-color: #f8f9fa;">
+    <div class="card-body">
+        <form method="GET" id="filterForm" class="row g-2 align-items-end">
+            
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted mb-1">Buscar</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" id="q" name="q" 
+                           value="{{ q }}" placeholder="N° o Usuario...">
+                </div>
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted mb-1">Tipo</label>
+                <select class="form-select form-select-sm" id="tipo" name="tipo">
+                    <option value="todos" {% if tipo_actual == 'todos' %}selected{% endif %}>Todos</option>
+                    <option value="otorgacion" {% if tipo_actual == 'otorgacion' %}selected{% endif %}>Otorgación</option>
+                    <option value="renovacion" {% if tipo_actual == 'renovacion' %}selected{% endif %}>Renovación</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted mb-1">Estado</label>
+                <select class="form-select form-select-sm" id="estado" name="estado">
+                    <option value="todos" {% if estado_actual == 'todos' %}selected{% endif %}>Todos</option>
+                    <option value="pendiente" {% if estado_actual == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                    <option value="validado" {% if estado_actual == 'validado' %}selected{% endif %}>Validado</option>
+                    <option value="observado" {% if estado_actual == 'observado' %}selected{% endif %}>Observado</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted mb-1">Desde</label>
+                <input type="date" class="form-control form-control-sm" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted mb-1">Hasta</label>
+                <input type="date" class="form-control form-control-sm" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+            </div>
+
+            <div class="col-md-1 text-end">
+                <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-sm btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 
 <div class="table-responsive">
     <table class="table table-hover align-middle" style="border-radius: 15px; overflow: hidden;">
@@ -90,4 +139,36 @@
         transform: scale(1.002);
     }
 </style>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const form = document.getElementById('filterForm');
+        const searchInput = document.getElementById('q');
+        const selectAndDates = form.querySelectorAll('select, input[type="date"]');
+
+        // 1. Auto-submit cuando cambian los combos (Select) o las Fechas
+        selectAndDates.forEach(element => {
+            element.addEventListener('change', () => {
+                form.submit();
+            });
+        });
+
+        // 2. "Debounce" para el input de texto.
+        // Esto evita que se sature el servidor por cada letra. Espera 500ms a que el usuario termine de escribir.
+        let timeout = null;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                form.submit();
+            }, 500); // Se enviará medio segundo después de que dejes de teclear
+        });
+        
+        // 3. Truco de UX: Mantener el cursor al final de la palabra al recargar
+        if (searchInput.value) {
+            const tempValue = searchInput.value;
+            searchInput.value = '';
+            searchInput.focus();
+            searchInput.value = tempValue;
+        }
+    });
+</script>
 {% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="error-container d-flex align-items-center justify-content-center" style="min-height: 75vh;">
+    <div class="text-center px-4">
+        
+        <div class="error-code mb-4 animate-bounce">
+            <span class="digit">4</span>
+            <i class="bi bi-sign-stop-fill text-warning mx-2 icon-sign"></i>
+            <span class="digit">4</span>
+        </div>
+        
+        <h2 class="fw-bold mb-3" style="color: var(--bs-dark-red);">¡Desvío Inesperado!</h2>
+        <p class="text-muted mb-5 lead max-w-text mx-auto">
+            Parece que el vehículo se salió de la ruta autorizada. La página, credencial o trámite que intentas buscar no existe en los registros de la Secretaría de Transporte o ha sido movida.
+        </p>
+        
+        <a href="{% url 'home' %}" class="btn-return-home shadow-lg">
+            <i class="bi bi-geo-alt-fill me-2"></i> Volver al Centro de Mando
+        </a>
+
+        <div class="mt-5 text-muted small">
+            <i class="bi bi-shield-lock-fill text-success me-1"></i> Sistema de Gestión - G.A.D. Potosí
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos exclusivos para el 404 */
+    .error-code {
+        font-size: 8rem;
+        font-weight: 900;
+        color: #8b0000;
+        text-shadow: 0 10px 20px rgba(139, 0, 0, 0.15);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        line-height: 1;
+    }
+
+    .digit {
+        background: linear-gradient(135deg, #8b0000 0%, #4a0000 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .icon-sign {
+        font-size: 6.5rem;
+        filter: drop-shadow(0 10px 15px rgba(217, 119, 6, 0.3));
+    }
+
+    .max-w-text {
+        max-width: 600px;
+    }
+
+    .btn-return-home {
+        background: linear-gradient(45deg, #8b0000, #c5a059);
+        color: white;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-decoration: none;
+        letter-spacing: 1px;
+        display: inline-block;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-return-home:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px rgba(197, 160, 89, 0.4) !important;
+        color: white;
+    }
+
+    /* Pequeña animación de flotación */
+    .animate-bounce {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+</style>
+{% endblock %}

@@ -2,7 +2,6 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
 
-# Create your models here.
 class Tramite(models.Model):
 
     TIPO_TRAMITE = (

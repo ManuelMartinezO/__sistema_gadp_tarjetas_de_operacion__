@@ -7,6 +7,11 @@
         <a href="{% url 'tarjeta:lista_tarjetas' %}" class="btn-nav-fresh">
             <i class="bi bi-arrow-left me-2"></i> Volver al Padrón
         </a>
+        {% if user.rol == 'a' or user.rol == 'sa'%}
+            <a href="{% url 'tarjeta:editar_tarjeta' tarjeta.id %}" class="btn-nav-outline">
+                <i class="bi bi-folder2-open me-2"></i> EDITAR TARJETA
+            </a>
+        {% endif %}
         <a href="{% url 'tramite:detalle_tramite' tarjeta.tramite.numero_tramite %}" class="btn-nav-outline">
             <i class="bi bi-folder2-open me-2"></i> Ver Expediente #{{ tarjeta.tramite.numero_tramite }}
         </a>
@@ -139,11 +144,13 @@
         </div>
     </div>
 
-    <div class="text-center mt-5 print-hide">
-        <a href="{% url 'tarjeta:tarjeta_pdf' tarjeta.id %}" target="_blank" class="btn-print-wow shadow-lg" style="display: inline-block; text-decoration: none;">
-            <i class="bi bi-printer-fill me-2"></i> IMPRIMIR TARJETA
-        </a>
-    </div>
+    {% if user.rol == 'a' or user.rol == 'sa'%}
+        <div class="text-center mt-5 print-hide">
+            <a href="{% url 'tarjeta:tarjeta_pdf' tarjeta.id %}" target="_blank" class="btn-print-wow shadow-lg" style="display: inline-block; text-decoration: none;">
+                <i class="bi bi-printer-fill me-2"></i> IMPRIMIR TARJETA
+            </a>
+        </div>
+    {% endif %}
 
 </div>
 

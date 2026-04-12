@@ -2,14 +2,40 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import ColorVehiculo, TipoVehiculo, MarcaVehiculo, Vehiculo
 from .forms import ColorVehiculoForm, TipoVehiculoForm, MarcaVehiculoForm, VehiculoForm
 from django.http import JsonResponse
+from django.db.models import Q
 
-def lista_vehiculos (request):
-    vehiculos = Vehiculo.objects.all()
+def lista_vehiculos(request):
+    # Optimizamos consultas trayendo los datos relacionados de una vez
+    vehiculos = Vehiculo.objects.select_related(
+        'marca', 'tipo_vehiculo', 'propietario'
+    ).all().order_by('-fecha_registro')
+    
+    # 1. Capturar parámetros de búsqueda
+    q = request.GET.get('q', '').strip()
+    tipo = request.GET.get('tipo', 'todos')
+    
+    # 2. Búsqueda de texto (Placa, Marca, Modelo)
+    if q:
+        # Nota: Asumo que el modelo MarcaVehiculo tiene un campo llamado 'nombre'
+        filtros = Q(placa__icontains=q) | Q(marca__nombre__icontains=q)
+        
+        # Como modelo es un campo Integer, solo lo buscamos si el texto ingresado son números
+        if q.isdigit():
+            filtros |= Q(modelo=q) # Usamos = o icontains si prefieres coincidencia parcial
+            
+        vehiculos = vehiculos.filter(filtros)
+        
+    # 3. Búsqueda por Tipo de Transporte (Select)
+    if tipo and tipo != 'todos':
+        vehiculos = vehiculos.filter(tipo_transporte=tipo)
+        
     contexto = {
-        'vehiculos': vehiculos
+        'vehiculos': vehiculos,
+        'q': q,
+        'tipo_actual': tipo,
     }
     return render(request, 'vehiculo/lista.html', contexto)
-    
+
 def detalle_vehiculo (request, placa):
     vehiculo = get_object_or_404(Vehiculo, placa=placa)
     contexto = {
@@ -33,22 +59,21 @@ def crear_vehiculo (request):
     }
     return render(request, 'vehiculo/crear.html', contexto)
 
+def editar_vehiculo (request, placa):
+    vehiculo = get_object_or_404(Vehiculo, placa=placa)
+    if request.method == 'POST':
+        form = VehiculoForm(request.POST, instance=vehiculo)
+        if form.is_valid():
+            guardado = form.save()
+            return redirect('vehiculo:detalle_vehiculo', vehiculo.placa)
+    else:
+        form = VehiculoForm(instance=vehiculo)
+    contexto = {
+        'form': form,
+    }
+    return render(request, 'vehiculo/editar.html', contexto)
 
 # === AJAX ===
-
-# def crear_color(request):
-#     if request.method == 'POST':
-#         # Obtenemos el dato que envía el modal
-#         nombre_color = request.POST.get('nombre')
-        
-#         if nombre_color:
-#             # Creamos el registro en la base de datos
-#             nuevo_color = ColorVehiculo.objects.create(nombre=nombre_color)
-            
-#             # Devolvemos el ID y el Nombre para que JS actualice el formulario
-#             return JsonResponse({'id': nuevo_color.id, 'nombre': nuevo_color.nombre})
-            
-#     return JsonResponse({'error': 'Error al crear'}, status=400)
 
 def crear_atributo (request):
     if request.method == 'POST':
