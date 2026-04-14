@@ -1,80 +1,170 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
     <style>
         :root {
-            --bs-primary: #d97706;    /* Ámbar */
-            --bs-dark-red: #8b0000;  /* Bordó */
-            --bs-gold: #c5a059;      /* Dorado */
-            --bs-body-bg: #fdfdfd;   /* Fondo minimalista */
+            /* PALETA DE COLORES (Granate y Dorado) */
+            --primary: #8b0000;          /* Color Primario: Granate */
+            --primary-dark: #660000;     /* Granate más oscuro para hovers */
+            --secondary: #c5a059;        /* Color Secundario: Dorado */
+            --tertiary: #c5a059;         /* Color Terciario */
+            
+            /* FONDOS (Claros y Cenizados) */
+            --bg-body: #f4f6f8;          /* Cenizado muy claro para el fondo principal */
+            --bg-sidebar: #ffffff;       /* Blanco puro para el menú lateral */
+            --bg-surface: #ffffff;       /* Blanco para tarjetas y contenedores */
+            
+            /* TEXTOS */
+            --text-main: #334155;        /* Gris oscuro/Pizarra para lectura cómoda */
+            --text-muted: #64748b;       /* Gris medio para textos secundarios */
+            --border-color: #e2e8f0;     /* Color de bordes suaves */
+            --white: #ffffff;
         }
 
         body {
-            background-color: var(--bs-body-bg);
+            background-color: var(--bg-body);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 14.5px; 
+            color: var(--text-main);
             min-height: 100vh;
         }
 
-        /* Dashboard Elegante a la Izquierda */
+        /* --- SIDEBAR INSTITUCIONAL --- */
         .sidebar {
-            width: 280px;
-            background-color: var(--bs-dark-red);
-            min-height: 100vh;
+            width: 260px; 
+            background-color: var(--bg-sidebar);
+            height: 100vh; /* CAMBIO 1: De min-height a height estricto */
             position: fixed;
-            transition: all 0.3s;
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto; /* CAMBIO 2: Habilita el scroll vertical interno */
+            transition: all 0.3s ease;
+            z-index: 1030;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.03);
+            border-right: 1px solid var(--border-color);
+        }
+
+        /* --- SCROLLBAR PREMIUM PARA EL SIDEBAR --- */
+        /* Esto hace que la barra de desplazamiento sea delgada y elegante */
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(139, 0, 0, 0.15); /* Tono granate muy sutil */
+            border-radius: 10px;
+        }
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(139, 0, 0, 0.3); /* Un poco más oscuro al pasar el mouse */
         }
 
         .sidebar .logo-area {
-            padding: 2rem 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            color: var(--bs-gold);
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid var(--border-color);
             text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
+        .logo-img {
+            max-width: 110px; 
+            height: auto;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); 
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05); 
+        }
+
+        .nav-pills { 
+            padding: 0 0.8rem; 
+        }
+
+        /* Enlaces del menú por defecto */
         .nav-pills .nav-link {
-            color: rgba(255,255,255,0.8);
-            border-radius: 10px; /* Bordes redondeados */
-            margin: 0.2rem 1rem;
-            transition: 0.3s;
+            color: var(--text-main);
+            border-radius: 8px;
+            margin: 0.25rem 0;
+            padding: 0.75rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
         }
 
+        .nav-pills .nav-link i { 
+            font-size: 1.15rem; 
+            transition: transform 0.3s ease; 
+            color: var(--text-muted);
+        }
+
+        /* Efecto Hover (Usa el color Secundario/Dorado) */
         .nav-pills .nav-link:hover {
-            background-color: rgba(255,255,255,0.1);
-            color: var(--bs-gold);
+            background-color: rgba(197, 160, 89, 0.08); /* Fondo dorado transparente */
+            color: var(--secondary);
+            transform: translateX(4px); 
+        }
+        .nav-pills .nav-link:hover i { 
+            color: var(--secondary);
+            transform: scale(1.1); 
         }
 
+        /* Efecto Activo (Usa el color Primario/Granate) */
         .nav-pills .nav-link.active {
-            background-color: var(--bs-primary) !important;
-            color: white;
+            background-color: var(--primary) !important;
+            color: var(--white);
+            box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2); 
+        }
+        .nav-pills .nav-link.active i {
+            color: var(--white);
         }
 
-        /* Contenido a la Derecha */
-        .main-wrapper {
-            margin-left: 280px; /* Ancho del sidebar */
-            padding: 2rem;
-        }
-
-        .content-card {
-            background: white;
-            border-radius: 15px; /* Bordes redondeados */
-            border: 1px solid rgba(0,0,0,0.05);
-            padding: 2rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.02);
-        }
-
+        /* Divisores de Sección */
         .section-divider {
-            color: var(--bs-gold);
-            font-size: 0.75rem;
-            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 800;
             text-transform: uppercase;
-            padding: 1rem 1.5rem 0.5rem;
-            letter-spacing: 1px;
+            padding: 1.8rem 1.2rem 0.5rem;
+            letter-spacing: 1.5px;
+            opacity: 0.7;
+        }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        .main-wrapper {
+            margin-left: 260px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        /* --- RESPONSIVIDAD --- */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .main-wrapper {
+                margin-left: 0;
+                padding: 1rem;
+            }
         }
     </style>
 </head>
@@ -82,39 +172,46 @@
 
     <div class="sidebar d-flex flex-column">
         <div class="logo-area">
-            <h4 class="mb-0 fw-bold">SISTEMA <span style="color:white">PRO</span></h4>
+            <img src="{% static 'img/7.png' %}" alt="Logo Sistema" class="img-fluid logo-img">
         </div>
 
-        <ul class="nav nav-pills flex-column mb-auto mt-3">
+        <ul class="nav nav-pills flex-column mb-auto mt-2 pb-4">
+            
             <li class="nav-item">
                 <a href="{% url 'home' %}" class="nav-link active">
-                    <i class="bi bi-house-door me-2"></i> Inicio
+                    <i class="bi bi-house-door me-3"></i> Inicio
+                </a>
+            </li>
+            
+            <li>
+                <a href="{% url 'gestion:historial_list' %}" class="nav-link">
+                    <i class="bi bi-clock-history me-3"></i> Gestión
                 </a>
             </li>
 
             {% if user.is_authenticated %}
-                <div class="section-divider">Trámites</div>
-                <li><a href="{% url 'tramite:lista_tramites' %}" class="nav-link"><i class="bi bi-file-earmark-text me-2"></i> Lista Trámites</a></li>
-                <li><a href="{% url 'operador:lista_operadores' %}" class="nav-link"><i class="bi bi-person-badge me-2"></i> Operadores</a></li>
-                <li><a href="{% url 'afiliado:lista_afiliados' %}" class="nav-link"><i class="bi bi-people me-2"></i> Afiliados</a></li>
-                <li><a href="{% url 'vehiculo:lista_vehiculos' %}" class="nav-link"><i class="bi bi-car-front me-2"></i> Vehículos</a></li>
-                <li><a href="{% url 'tarjeta:lista_tarjetas' %}" class="nav-link"><i class="bi bi-credit-card me-2"></i> Tarjetas</a></li>
+                <div class="section-divider">Gestión Principal</div>
+                <li><a href="{% url 'tramite:lista_tramites' %}" class="nav-link"><i class="bi bi-file-earmark-text me-3"></i> Trámites</a></li>
+                <li><a href="{% url 'operador:lista_operadores' %}" class="nav-link"><i class="bi bi-person-badge me-3"></i> Operadores</a></li>
+                <li><a href="{% url 'afiliado:lista_afiliados' %}" class="nav-link"><i class="bi bi-people me-3"></i> Afiliados</a></li>
+                <li><a href="{% url 'vehiculo:lista_vehiculos' %}" class="nav-link"><i class="bi bi-car-front me-3"></i> Vehículos</a></li>
+                <li><a href="{% url 'tarjeta:lista_tarjetas' %}" class="nav-link"><i class="bi bi-credit-card me-3"></i> Tarjetas</a></li>
                 
                 <li class="mt-4">
-                    <a href="{% url 'logout' %}" class="nav-link text-warning">
-                        <i class="bi bi-box-arrow-left me-2"></i> Logout
+                    <a href="{% url 'logout' %}" class="nav-link text-danger" style="opacity: 0.9;">
+                        <i class="bi bi-box-arrow-left me-3 text-danger"></i> Cerrar Sesión
                     </a>
                 </li>
             {% else %}
                 <div class="section-divider">Acceso</div>
-                <li><a href="{% url 'login' %}" class="nav-link">Login</a></li>
-                <li><a href="{% url 'logup' %}" class="nav-link">Logup</a></li>
+                <li><a href="{% url 'login' %}" class="nav-link"><i class="bi bi-box-arrow-in-right me-3"></i> Iniciar Sesión</a></li>
+                <li><a href="{% url 'logup' %}" class="nav-link"><i class="bi bi-person-plus me-3"></i> Registrarse</a></li>
             {% endif %}
         </ul>
     </div>
 
     <main class="main-wrapper">
-        <div class="container-fluid">
+        <div class="container-fluid px-0">
             {% block content %}
             {% endblock %}
         </div>

@@ -1,126 +1,211 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-end mb-4">
-    <div>
-        <h2 class="fw-bold mb-0" style="color: var(--bs-dark-red);">Parque Automotor</h2>
-        <p class="text-muted small mb-0">Control y registro de unidades vehiculares afiliadas</p>
+<div class="vehiculos-container pb-5 animate-up">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div class="mb-3 mb-md-0">
+            <h2 class="fw-bold mb-1 text-slate-900"><i class="bi bi-car-front-fill me-2 text-indigo"></i>Parque Automotor</h2>
+            <p class="text-slate-500 mb-0 fs-7">Control y registro de unidades vehiculares afiliadas al sistema</p>
+        </div>
+        
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            <a href="{% url 'vehiculo:crear_vehiculo' %}" class="btn btn-indigo shadow-sm d-flex align-items-center justify-content-center">
+                <i class="bi bi-plus-circle me-2"></i> Registrar Vehículo
+            </a>
+        {% endif %}
     </div>
-    
-    {% if user.rol == 'a' or user.rol == 'sa' %}
-        <a href="{% url 'vehiculo:crear_vehiculo' %}" class="btn btn-primary shadow-sm" 
-           style="background-color: var(--bs-primary); border: none; border-radius: 12px; padding: 0.7rem 1.5rem;">
-            <i class="bi bi-car-front-fill me-2"></i>REGISTRAR VEHÍCULO
-        </a>
-    {% endif %}
-</div>
-<div class="card mb-4 border-0 shadow-sm" style="border-radius: 15px; background-color: #f8f9fa;">
-    <div class="card-body p-3">
-        <form method="GET" id="searchForm" class="row g-2 align-items-center m-0">
-            
-            <div class="col-md-8">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text" class="form-control border-start-0 ps-0 form-control-lg fs-6" id="q" name="q" 
-                           value="{{ q }}" placeholder="Buscar por placa, marca o modelo..." autocomplete="off">
+
+    <div class="search-card mb-4 animate-up delay-1">
+        <form method="GET" id="searchForm" class="m-0 p-1">
+            <div class="row g-3">
+                
+                <div class="col-md-8">
+                    <div class="input-group input-group-custom">
+                        <span class="input-group-text bg-transparent border-end-0 text-slate-400 ps-4">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0 ps-2 py-3" id="q" name="q" 
+                               value="{{ q }}" placeholder="Buscar por placa, marca o modelo..." autocomplete="off">
+                        {% if q %}
+                            <a href="{% url 'vehiculo:lista_vehiculos' %}" class="input-group-text bg-transparent border-start-0 text-slate-400 pe-4 hover-indigo text-decoration-none" title="Limpiar búsqueda">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="input-group">
-                    <span class="input-group-text bg-white text-muted">
-                        <i class="bi bi-funnel"></i>
-                    </span>
-                    <select class="form-select form-select-lg fs-6" id="tipo" name="tipo">
-                        <option value="todos" {% if tipo_actual == 'todos' %}selected{% endif %}>Todos los tipos</option>
-                        <option value="pasajeros" {% if tipo_actual == 'pasajeros' %}selected{% endif %}>Pasajeros</option>
-                        <option value="carga" {% if tipo_actual == 'carga' %}selected{% endif %}>Carga</option>
-                    </select>
+                
+                <div class="col-md-4">
+                    <div class="input-group input-group-custom">
+                        <span class="input-group-text bg-transparent border-end-0 text-slate-400 ps-4">
+                            <i class="bi bi-funnel"></i>
+                        </span>
+                        <select class="form-select border-start-0 ps-2 py-3 fw-medium text-slate-600 cursor-pointer" id="tipo" name="tipo">
+                            <option value="todos" {% if tipo_actual == 'todos' %}selected{% endif %}>Todos los tipos</option>
+                            <option value="pasajeros" {% if tipo_actual == 'pasajeros' %}selected{% endif %}>Transporte de Pasajeros</option>
+                            <option value="carga" {% if tipo_actual == 'carga' %}selected{% endif %}>Transporte de Carga</option>
+                        </select>
+                    </div>
                 </div>
+                
             </div>
-            
         </form>
     </div>
-</div>
-<div class="card border-0 shadow-sm" style="border-radius: 20px;">
-    <div class="card-body p-0">
-        <div class="list-group list-group-flush" style="border-radius: 20px;">
-            
-            {% for vehiculo in vehiculos %}
-            <div class="list-group-item list-group-item-action p-4 border-0 position-relative vehicle-item" 
-                 onclick="window.location='{% url 'vehiculo:detalle_vehiculo' vehiculo.placa %}'"
-                 style="cursor: pointer; border-bottom: 1px solid #f0f0f0 !important;">
-                
-                <div class="row align-items-center">
-                    <div class="col-md-2 text-center border-end">
-                        <div class="mb-1 small text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Placa</div>
-                        <span class="badge bg-dark px-3 py-2 fs-5 shadow-sm" 
-                              style="font-family: 'Courier New', Courier, monospace; letter-spacing: 2px; border: 2px solid #555;">
-                            {{ vehiculo.placa }}
-                        </span>
-                    </div>
 
-                    <div class="col-md-3 ps-md-4">
-                        <h5 class="fw-bold mb-0 text-dark">{{ vehiculo.marca }}</h5>
-                        <p class="text-muted small mb-0">{{ vehiculo.tipo_vehiculo }} | Mod. {{ vehiculo.modelo }}</p>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-light rounded-circle p-2 me-3">
-                                <i class="bi bi-person-circle text-secondary"></i>
+    <div class="table-card animate-up delay-2">
+        <div class="table-responsive">
+            <table class="table custom-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Placa de Control</th>
+                        <th>Marca y Modelo</th>
+                        <th>Propietario / Afiliado</th>
+                        <th class="text-center">Tipo / Capacidad</th>
+                        <th class="text-end pe-4">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehiculo in vehiculos %}
+                    <tr class="table-row-hover" onclick="window.location='{% url 'vehiculo:detalle_vehiculo' vehiculo.placa %}'">
+                        
+                        <td class="ps-4">
+                            <div class="placa-badge shadow-sm">
+                                <span class="placa-text">{{ vehiculo.placa }}</span>
+                                <div class="placa-footer">BOLIVIA</div>
                             </div>
-                            <div>
-                                <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Propietario</div>
-                                <div class="fw-semibold text-dark">{{ vehiculo.propietario }}</div>
+                        </td>
+                        
+                        <td>
+                            <div class="fw-bold text-slate-800">{{ vehiculo.marca }}</div>
+                            <div class="text-slate-500 fs-8 text-uppercase tracking-wider">Mod: {{ vehiculo.modelo }}</div>
+                        </td>
+                        
+                        <td>
+                            <div class="d-flex align-items-center py-1">
+                                <div class="avatar-sm me-3">
+                                    <span class="fw-bold">{{ vehiculo.propietario.nombre|make_list|first|upper }}</span>
+                                </div>
+                                <span class="fw-medium text-slate-700">{{ vehiculo.propietario }}</span>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-2 text-center">
-                        <span class="badge rounded-pill px-3 py-2 {% if vehiculo.tipo_transporte == 'pasajeros' %}bg-info-subtle text-info{% else %}bg-warning-subtle text-warning{% endif %}">
-                            <i class="bi {% if vehiculo.tipo_transporte == 'pasajeros' %}bi-people{% else %}bi-box-seam{% endif %} me-1"></i>
-                            {{ vehiculo.get_tipo_transporte_display }}
-                        </span>
-                    </div>
-
-                    <div class="col-md-1 text-end">
-                        <i class="bi bi-chevron-right text-muted fs-4"></i>
-                    </div>
-                </div>
-            </div>
-            {% empty %}
-            <div class="p-5 text-center">
-                <i class="bi bi-car-front text-muted display-1 opacity-25"></i>
-                <p class="mt-3 text-muted">No hay vehículos registrados en la base de datos.</p>
-            </div>
-            {% endfor %}
-
+                        </td>
+                        
+                        <td class="text-center">
+                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                {% if vehiculo.tipo_transporte == 'pasajeros' %}
+                                    <span class="badge badge-pasajeros rounded-pill px-3 py-1 mb-1 shadow-sm">
+                                        <i class="bi bi-people-fill me-1"></i> Pasajeros
+                                    </span>
+                                    <span class="text-slate-500 fs-8 fw-medium">{{ vehiculo.capacidad }} pasajeros</span>
+                                {% else %}
+                                    <span class="badge badge-carga rounded-pill px-3 py-1 mb-1 shadow-sm">
+                                        <i class="bi bi-box-seam-fill me-1"></i> Carga
+                                    </span>
+                                    <span class="text-slate-500 fs-8 fw-medium">{{ vehiculo.capacidad }} toneladas</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        
+                        <td class="text-end pe-4">
+                            <a href="{% url 'vehiculo:detalle_vehiculo' vehiculo.placa %}" class="btn btn-sm btn-icon btn-light rounded-circle" title="Ver Expediente">
+                                <i class="bi bi-chevron-right text-slate-600"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="empty-state">
+                                <div class="empty-icon-wrapper mb-3">
+                                    <i class="bi bi-car-front text-indigo fs-1"></i>
+                                </div>
+                                <h5 class="fw-bold text-slate-700">No hay vehículos registrados</h5>
+                                <p class="text-slate-500 mb-0">No se encontraron unidades que coincidan con los filtros actuales.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
 <style>
-    /* Efecto de hover elegante */
-    .vehicle-item {
-        transition: all 0.3s ease;
-    }
-    
-    .vehicle-item:hover {
-        background-color: #fff !important;
-        transform: scale(1.01);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        z-index: 2;
-        border-radius: 12px;
-        border-left: 5px solid var(--bs-primary) !important;
+    /* VARIABLES LOCALES (Consistencia Slate & Indigo) */
+    .vehiculos-container {
+        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #a5b4fc;
+        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-500: #64748b; --slate-400: #94a3b8; --slate-100: #f1f5f9; --slate-50: #f8fafc;
     }
 
-    /* Colores para los badges de tipo de transporte */
-    .bg-info-subtle { background-color: #e0f7fa !important; color: #00838f !important; border: 1px solid #b2ebf2; }
-    .bg-warning-subtle { background-color: #fff8e1 !important; color: #f57f17 !important; border: 1px solid #ffecb3; }
+    .text-indigo { color: var(--indigo); }
+    .text-slate-900 { color: var(--slate-900); }
+    .text-slate-800 { color: var(--slate-800); }
+    .text-slate-700 { color: var(--slate-700); }
+    .text-slate-600 { color: #475569; }
+    .text-slate-500 { color: var(--slate-500); }
+    .text-slate-400 { color: var(--slate-400); }
+    
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+
+    /* BOTONES */
+    .btn-indigo { background-color: var(--indigo); color: white; border: none; border-radius: 10px; padding: 0.6rem 1.2rem; font-weight: 600; transition: all 0.2s; }
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+
+    /* BARRA DE BÚSQUEDA Y FILTROS */
+    .search-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; padding: 0.5rem; }
+    
+    .input-group-custom { border: 1px solid transparent; border-radius: 12px; transition: all 0.2s ease; }
+    .input-group-custom .form-control, .input-group-custom .form-select { border: none; background: transparent; color: var(--slate-700); }
+    .input-group-custom .form-control:focus, .input-group-custom .form-select:focus { box-shadow: none; outline: none; }
+    .input-group-custom .input-group-text { border: none; background: transparent; }
+    
+    /* Efecto Focus en el Buscador */
+    .input-group-custom:focus-within { background-color: #fff; border-color: var(--indigo); box-shadow: 0 0 0 3px #e0e7ff; }
+    .input-group-custom:focus-within .input-group-text i { color: var(--indigo); }
+    
+    .hover-indigo:hover { color: var(--indigo) !important; cursor: pointer; }
+    .cursor-pointer { cursor: pointer; }
+
+    /* TABLA Y FILAS */
+    .table-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
+    .custom-table { border-collapse: separate; border-spacing: 0; }
+    .custom-table thead { background-color: #f8fafc; }
+    .custom-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); font-weight: 600; border-bottom: 1px solid #e2e8f0; padding: 1.2rem 0.5rem; }
+    .custom-table td { border-bottom: 1px solid var(--slate-50); vertical-align: middle; padding: 1rem 0.5rem;}
+    
+    .table-row-hover { cursor: pointer; transition: all 0.2s ease; }
+    .table-row-hover:hover td { background-color: #fbfbff; }
+    .table-row-hover:hover td:first-child { box-shadow: inset 4px 0 0 var(--indigo); }
+
+    /* DISEÑO PLACA MATRÍCULA */
+    .placa-badge { display: inline-flex; flex-direction: column; background-color: #f8fafc; border: 2px solid #cbd5e1; border-radius: 6px; overflow: hidden; min-width: 100px; }
+    .placa-text { font-family: 'Courier New', Courier, monospace; font-weight: 800; font-size: 1.1rem; color: #1e293b; padding: 4px 10px; letter-spacing: 2px; background-color: #fff; text-align: center;}
+    .placa-footer { background-color: #1e293b; color: #fff; font-size: 0.5rem; font-weight: 700; text-transform: uppercase; width: 100%; text-align: center; padding: 2px 0; letter-spacing: 1px; }
+
+    /* AVATARES E ICONOS */
+    .avatar-sm { width: 38px; height: 38px; border-radius: 10px; background-color: rgba(99, 102, 241, 0.1); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+    
+    .btn-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; padding: 0; background-color: var(--slate-50); border: 1px solid #e2e8f0; transition: 0.2s;}
+    .table-row-hover:hover .btn-icon { background-color: var(--indigo); color: white; border-color: var(--indigo); }
+    .table-row-hover:hover .btn-icon i { color: white !important; }
+
+    /* BADGES DE TIPO DE TRANSPORTE */
+    .badge-pasajeros { background-color: #8b000010; color: #8b0000; border: 1px solid #8b0000ee; }
+    .badge-carga { background-color: #ffedd5; color: #b45309; border: 1px solid #fed7aa; }
+
+    /* EMPTY STATE */
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+    .empty-icon-wrapper { width: 80px; height: 80px; background-color: rgba(99, 102, 241, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+    /* ANIMACIONES */
+    .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 </style>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const form = document.getElementById('searchForm');
@@ -132,16 +217,16 @@
             form.submit();
         });
 
-        // Debounce para el input de texto
+        // Debounce search
         let timeout = null;
         searchInput.addEventListener('input', () => {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
                 form.submit();
-            }, 500); // 500ms de espera
+            }, 500); 
         });
         
-        // Mantener el foco y cursor tras recargar
+        // Mantener cursor al recargar
         if (searchInput.value) {
             const tempValue = searchInput.value;
             searchInput.value = '';

@@ -1,11 +1,160 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">
-        ACTUALIZAR
-    </button>
-</form>
+<div class="row justify-content-center form-container py-4 animate-up">
+    <div class="col-lg-7 col-md-9">
+        
+        <div class="d-flex align-items-center mb-4">
+            <a href="javascript:history.back()" class="btn btn-back rounded-circle me-3 shadow-sm d-flex align-items-center justify-content-center" title="Volver">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="fw-bold mb-1 text-slate-900">Modificar Afiliado</h2>
+                <p class="text-slate-500 fs-7 mb-0">Actualice la información personal o cambie la empresa vinculada</p>
+            </div>
+        </div>
+
+        <div class="card form-card border-0 shadow-sm mb-4">
+            <div class="card-decorator"></div>
+            
+            <div class="card-body p-4 p-md-5">
+                
+                <div class="text-center mb-4">
+                    <div class="icon-circle-large bg-indigo-50 text-indigo mx-auto mb-3">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </div>
+                </div>
+
+                <form method="POST" class="custom-form">
+                    {% csrf_token %}
+
+                    <div class="form-inputs-wrapper bg-slate-50 p-4 p-md-5 rounded-4 border border-slate-100 mb-4 shadow-sm">
+                        {{ form.as_p }}
+                    </div>
+
+                    <div class="d-grid gap-3 mt-4">
+                        <button type="submit" class="btn btn-indigo btn-lg shadow-sm">
+                            <i class="bi bi-save me-2"></i> Actualizar Afiliado
+                        </button>
+                        
+                        <a href="javascript:history.back()" class="text-center text-slate-500 text-decoration-none fs-7 hover-indigo transition-all">
+                            Cancelar y descartar cambios
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* VARIABLES LOCALES (Mantiene Congruencia) */
+    .form-container {
+        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #e0e7ff;
+        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-500: #64748b; --slate-400: #94a3b8; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+    }
+
+    .text-indigo { color: var(--indigo); }
+    .text-slate-900 { color: var(--slate-900); }
+    .text-slate-800 { color: var(--slate-800); }
+    .text-slate-500 { color: var(--slate-500); }
+    .text-slate-400 { color: var(--slate-400); }
+    
+    .bg-indigo-50 { background-color: #e0e7ff; }
+    .bg-slate-50 { background-color: var(--slate-50); }
+    .border-slate-100 { border-color: var(--slate-100) !important; }
+    
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+
+    /* TARJETA Y DECORACIÓN */
+    .form-card { border-radius: 20px; overflow: hidden; background-color: #fff; }
+    .card-decorator { height: 6px; background: #8b0000; }
+
+    /* ICONOS */
+    .icon-circle-large { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+
+    /* BOTONES */
+    .btn-back { width: 45px; height: 45px; background-color: #fff; border: 1px solid var(--slate-100); color: var(--slate-700); transition: all 0.2s; }
+    .btn-back:hover { background-color: var(--slate-50); color: var(--indigo); transform: translateX(-3px); }
+
+    .btn-indigo { background-color: var(--indigo); color: white; border: none; border-radius: 12px; font-weight: 600; padding: 0.8rem 1.5rem; transition: all 0.2s; }
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25); }
+
+    .hover-indigo:hover { color: var(--indigo) !important; font-weight: 500; }
+    .transition-all { transition: all 0.2s ease; }
+
+    /* INTERCEPCIÓN DEL FORM.AS_P DE DJANGO */
+    .form-inputs-wrapper p { margin-bottom: 1.5rem; position: relative; }
+    .form-inputs-wrapper p:last-child { margin-bottom: 0; }
+    
+    /* Etiquetas limpias y corporativas */
+    .form-inputs-wrapper p label {
+        font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.5rem; display: block; letter-spacing: 0.5px;
+    }
+    
+    /* Inputs premium */
+    .custom-form input[type="text"], 
+    .custom-form input[type="email"], 
+    .custom-form input[type="number"], 
+    .custom-form select,
+    .custom-form textarea {
+        width: 100%; background-color: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.8rem 1.2rem; color: var(--slate-700); transition: 0.2s; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+    }
+    
+    /* Efecto Focus (Halo de luz azul) */
+    .custom-form input:focus, 
+    .custom-form select:focus,
+    .custom-form textarea:focus {
+        background-color: #fff; border-color: var(--indigo); box-shadow: 0 0 0 4px var(--indigo-light); outline: none;
+    }
+    
+    /* Estilo para los mensajes de ayuda (help_text) de Django */
+    .helptext { display: block; font-size: 0.75rem; color: var(--slate-400); margin-top: 0.4rem; }
+
+    /* Estilo para los mensajes de error de Django */
+    .errorlist { list-style: none; padding: 0; margin-top: 0.5rem; margin-bottom: 0; }
+    .errorlist li { color: #dc2626; font-size: 0.8rem; font-weight: 500; background-color: #fef2f2; padding: 0.4rem 0.8rem; border-radius: 6px; display: inline-block;}
+
+    /* ESTILOS PARA SELECT2 */
+    .select2-container--bootstrap-5 .select2-selection {
+        background-color: #fff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important;
+        min-height: 48px !important; 
+        padding: 0.3rem 0.5rem;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+    }
+    .select2-container--bootstrap-5.select2-container--focus .select2-selection {
+        background-color: #fff !important;
+        border-color: var(--indigo) !important;
+        box-shadow: 0 0 0 4px var(--indigo-light) !important;
+    }
+
+    /* ANIMACIÓN */
+    .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
+<script>
+    $(document).ready(function() {
+        // Inicializamos Select2 para el campo operador si existe en el formulario de edición
+        if ($('#id_operador').length) {
+            $('#id_operador').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: "Seleccione una empresa...",
+                allowClear: false // Generalmente en edición no se permite dejarlo vacío
+            });
+        }
+    });
+</script>
 {% endblock %}

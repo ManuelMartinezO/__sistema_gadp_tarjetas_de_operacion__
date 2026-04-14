@@ -1,344 +1,324 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="credential-wrapper py-5">
+<div class="tarjeta-detalle-container pb-5 animate-up">
     
-    <div class="d-flex justify-content-between align-items-center mb-4 max-w-custom mx-auto print-hide">
-        <a href="{% url 'tarjeta:lista_tarjetas' %}" class="btn-nav-fresh">
-            <i class="bi bi-arrow-left me-2"></i> Volver al Padrón
-        </a>
-        {% if user.rol == 'a' or user.rol == 'sa'%}
-            <a href="{% url 'tarjeta:editar_tarjeta' tarjeta.id %}" class="btn-nav-outline">
-                <i class="bi bi-folder2-open me-2"></i> EDITAR TARJETA
-            </a>
-        {% endif %}
-        <a href="{% url 'tramite:detalle_tramite' tarjeta.tramite.numero_tramite %}" class="btn-nav-outline">
-            <i class="bi bi-folder2-open me-2"></i> Ver Expediente #{{ tarjeta.tramite.numero_tramite }}
-        </a>
-    </div>
-
-    <div class="official-card-container mx-auto">
-        
-        <div class="watermark-logo">
-            <i class="bi bi-shield-check"></i>
-        </div>
-
-        <div class="card-header-official">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="text-uppercase mb-0 text-white fw-bold" style="letter-spacing: 2px;">Tarjeta de Operación</h5>
-                    <small class="text-white-50">Gobierno Autónomo Departamental</small>
-                </div>
-                <div class="text-end">
-                    <span class="badge bg-light text-dark fw-bold fs-6 shadow-sm px-3 py-2" style="letter-spacing: 1px;">
-                        Nº {{ tarjeta.id|stringformat:"06d" }}
-                    </span>
-                </div>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-4 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2 fs-7 fw-medium">
+                    <li class="breadcrumb-item"><a href="{% url 'tarjeta:lista_tarjetas' %}" class="text-indigo text-decoration-none"><i class="bi bi-wallet2 me-1"></i>Padrón</a></li>
+                    <li class="breadcrumb-item text-slate-500 active" aria-current="page">Detalle de Tarjeta</li>
+                </ol>
+            </nav>
+            <div class="d-flex align-items-center gap-3">
+                <h2 class="fw-bold text-slate-900 mb-0">Tarjeta Nº {{ tarjeta.id|stringformat:"06d" }}</h2>
+                {% if tarjeta.fecha_emision %}
+                    <span class="badge bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-2 rounded-pill fs-8 tracking-wider"><i class="bi bi-check-circle-fill me-1"></i> EMITIDA</span>
+                {% else %}
+                    <span class="badge bg-warning-50 text-warning border border-warning-200 px-3 py-2 rounded-pill fs-8 tracking-wider"><i class="bi bi-clock-fill me-1"></i> PENDIENTE</span>
+                {% endif %}
             </div>
         </div>
+        
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+            <a href="{% url 'tarjeta:lista_tarjetas' %}" class="btn btn-light-action rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+            {% if user.rol == 'a' or user.rol == 'sa' and not tarjeta.tramite.estado_deposito %}
+                <a href="{% url 'tarjeta:editar_tarjeta' tarjeta.id %}" class="btn btn-outline-indigo rounded-pill px-3">
+                    <i class="bi bi-pencil-square me-1"></i> Editar
+                </a>
+            {% endif %}
+            {% if user.rol == 'a' or user.rol == 'sa'%}
+            <a href="{% url 'tarjeta:tarjeta_pdf' tarjeta.id %}" target="_blank" class="btn btn-indigo rounded-pill px-4 shadow-sm">
+                <i class="bi bi-printer-fill me-1"></i> Imprimir
+            </a>
+            {% endif %}
+        </div>
+    </div>
 
-        <div class="card-body-official position-relative z-1">
-            <div class="row g-4">
-                
-                <div class="col-md-4 text-center border-end border-2 border-light border-opacity-50 pe-md-4">
-                    
-                    <p class="text-muted small text-uppercase fw-bold mb-1">Placa Asignada</p>
-                    <div class="license-plate shadow-sm mb-4 mx-auto">
-                        <div class="plate-top">BOLIVIA</div>
-                        <div class="plate-number">{{ tarjeta.vehiculo.placa }}</div>
-                    </div>
-                    
-                    <hr class="opacity-25 my-4">
-
-                    <div class="text-start">
-                        <div class="mb-3">
-                            <label class="info-label">Fecha de Emisión</label>
-                            <div class="info-value text-dark fw-bold">
-                                {% if tarjeta.fecha_emision %}
-                                    {{ tarjeta.fecha_emision|date:"d/m/Y" }}
-                                {% else %}
-                                    <span class="text-muted fst-italic">Pendiente</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="info-label">Válida Hasta</label>
-                            <div class="info-value {% if tarjeta.valida_hasta %}text-danger fw-bold{% else %}text-muted fst-italic{% endif %}">
-                                {% if tarjeta.valida_hasta %}
-                                    {{ tarjeta.valida_hasta|date:"d/m/Y" }}
-                                {% else %}
-                                    Pendiente
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div>
-                            <label class="info-label">Periodo de Validez</label>
-                            <div class="info-value fw-semibold text-primary">
-                                {{ tarjeta.validez_tiempo }} {{ tarjeta.get_validez_periodo_display }}
-                            </div>
-                        </div>
-                    </div>
+    <div class="row g-4 g-xl-5">
+        
+        <div class="col-lg-8">
+            
+            <div class="card modern-card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-0">
+                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-0">
+                        <i class="bi bi-info-square text-indigo me-2"></i>Información Operativa
+                    </h6>
                 </div>
-
-                <div class="col-md-8 ps-md-4">
-                    
-                    <div class="row g-4 mb-4">
-                        <div class="col-sm-12">
-                            <div class="data-group p-3 bg-light rounded-3">
-                                <label>Titular / Propietario</label>
-                                <h4 class="mb-0 text-dark">{{ tarjeta.afiliado.nombre }} {{ tarjeta.afiliado.apellido }}</h4>
-                            </div>
-                        </div>
+                
+                <div class="card-body p-4">
+                    <div class="row g-3">
                         
-                        <div class="col-sm-12">
-                            <div class="data-group p-3 bg-light rounded-3">
-                                <label>Empresa Operadora</label>
-                                <h5 class="mb-0 text-dark">{{ tarjeta.operador.nombre }}</h5>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-4">
-                        <div class="col-sm-6">
-                            <div class="data-group">
-                                <label>Tipo de Servicio</label>
-                                <h6 class="fw-bold mb-0 text-uppercase" style="color: var(--bs-dark-red);">
-                                    {{ tarjeta.get_tipo_tarjeta_display }}
-                                </h6>
-                            </div>
-                        </div>
-                        
-                        <div class="col-sm-6">
-                            <div class="data-group">
-                                <label>Monto Abonado</label>
-                                <h6 class="fw-bold mb-0">
-                                    Bs. {{ tarjeta.monto }}
-                                </h6>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-5">
-                        <div class="col-12">
-                            <div class="alert alert-success bg-success bg-opacity-10 border-0 d-flex align-items-center mb-0 shadow-sm" style="border-radius: 12px;">
-                                <i class="bi bi-shield-check text-success fs-2 me-3"></i>
-                                <div>
-                                    <h6 class="mb-0 fw-bold text-success text-uppercase">Documento Oficial de Transporte</h6>
-                                    <small class="text-success text-opacity-75">
-                                        Expediente Origen: Trámite Nº <strong>{{ tarjeta.tramite.numero_tramite }}</strong><br>
-                                        Registrado el: {{ tarjeta.fecha_registro|date:"d/m/Y H:i" }}
-                                    </small>
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <label class="info-label">Titular / Afiliado</label>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-3 flex-shrink-0">
+                                        <span class="fw-bold">{{ tarjeta.afiliado.nombre|make_list|first|upper }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold text-slate-800 d-block lh-1">{{ tarjeta.afiliado.nombre }} {{ tarjeta.afiliado.apellido }}</span>
+                                        <a href="{% url 'afiliado:detalle_afiliado' tarjeta.afiliado.id %}" class="text-indigo fs-8 text-decoration-none hover-underline mt-1 d-inline-block">Ver perfil del afiliado</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <label class="info-label">Sindicato / Empresa</label>
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle-sm bg-white text-slate-500 shadow-sm me-3 flex-shrink-0">
+                                        <i class="bi bi-buildings-fill"></i>
+                                    </div>
+                                    <span class="fw-bold text-slate-700">{{ tarjeta.operador.nombre }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <label class="info-label">Clasificación</label>
+                                <span class="fw-bold text-indigo fs-6 d-block">{{ tarjeta.get_tipo_tarjeta_display }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <label class="info-label">Ruta Asignada</label>
+                                <span class="fw-medium text-slate-700 text-truncate d-block" title="{{ tarjeta.ruta.nombre|default:'No especificada' }}">
+                                    <i class="bi bi-signpost-split text-slate-400 me-1"></i> {{ tarjeta.ruta.nombre|default:"No especificada" }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="info-box highlight-box">
+                                <label class="info-label">Derechos Abonados</label>
+                                <span class="fw-bolder text-slate-800 font-monospace fs-5">Bs. {{ tarjeta.monto }}</span>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
+
+            <div class="card modern-card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-bottom border-slate-100 pt-4 px-4 pb-3 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-0">
+                        <i class="bi bi-car-front-fill text-indigo me-2"></i>Unidad Autorizada
+                    </h6>
+                    <a href="{% url 'vehiculo:detalle_vehiculo' tarjeta.vehiculo.placa %}" class="btn btn-sm btn-light-action rounded-pill fs-8 px-3">
+                        Ver Ficha <span class="d-none d-sm-inline">del Vehículo</span>
+                    </a>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        
+                        <div class="col-sm-6 col-md-4">
+                            <div class="info-box">
+                                <label class="info-label">Placa</label>
+                                <span class="badge bg-slate-800 text-white font-monospace fs-6 px-3 py-2 rounded-3 shadow-sm tracking-wider">{{ tarjeta.vehiculo.placa }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-sm-6 col-md-4">
+                            <div class="info-box">
+                                <label class="info-label">Marca y Modelo</label>
+                                <span class="fw-bold text-slate-800 d-block">{{ tarjeta.vehiculo.marca }}</span>
+                                <span class="text-slate-500 fs-8">Año: {{ tarjeta.vehiculo.modelo }}</span>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-md-4">
+                            <div class="info-box">
+                                <label class="info-label">Tipo de Vehículo</label>
+                                <span class="fw-medium text-slate-700 d-block">{{ tarjeta.vehiculo.tipo_vehiculo }}</span>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-md-4">
+                            <div class="info-box">
+                                <label class="info-label">Color</label>
+                                <span class="fw-medium text-slate-700 d-block"><i class="bi bi-palette-fill text-slate-300 me-1"></i> {{ tarjeta.vehiculo.color }}</span>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-md-4">
+                            <div class="info-box">
+                                <label class="info-label">Capacidad Autorizada</label>
+                                <span class="fw-bold text-slate-800 d-block">
+                                    {{ tarjeta.vehiculo.capacidad }} 
+                                    {% if tarjeta.vehiculo.tipo_transporte == 'pasajeros' %}
+                                        <span class="text-slate-500 fw-medium">Pasajeros</span>
+                                    {% else %}
+                                        <span class="text-slate-500 fw-medium">Toneladas</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-md-4">
+                            <div class="info-box">
+                                <label class="info-label">Número de Chasis</label>
+                                <code class="text-slate-600 bg-white px-2 py-1 rounded border border-slate-200">{{ tarjeta.vehiculo.chasis }}</code>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
-        
-        <div class="card-footer-official text-center d-flex justify-content-between px-5">
-            <span class="small opacity-50">COD. SEG: {{ tarjeta.id }}x{{ tarjeta.vehiculo.id }}</span>
-            <span>ESTE DOCUMENTO ES INTRANSFERIBLE Y DEBE SER EXHIBIDO</span>
-            <span class="small opacity-50">SISTEMA G.A.D.P.</span>
+
+        <div class="col-lg-4">
+            
+            <div class="card modern-card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-0">
+                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-0">
+                        <i class="bi bi-calendar-check text-indigo me-2"></i>Vigencia
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="info-box mb-3 bg-white border border-slate-200">
+                        <label class="info-label">Periodo Aprobado</label>
+                        <span class="fs-5 fw-bold text-slate-800">{{ tarjeta.validez_tiempo }} {{ tarjeta.get_validez_periodo_display }}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-slate-100 px-1">
+                        <span class="text-slate-500 fs-7">Fecha Emisión:</span>
+                        <span class="fw-bold text-slate-900 fs-7">
+                            {% if tarjeta.fecha_emision %}{{ tarjeta.fecha_emision|date:"d/m/Y" }}{% else %}<span class="text-warning">Pendiente</span>{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center px-1">
+                        <span class="text-slate-500 fs-7">Válida Hasta:</span>
+                        <span class="fw-bold {% if tarjeta.valida_hasta %}text-danger{% else %}text-slate-900{% endif %} fs-7">
+                            {% if tarjeta.valida_hasta %}{{ tarjeta.valida_hasta|date:"d/m/Y" }}{% else %}Pendiente{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card modern-card border-0 shadow-sm bg-indigo-50 border border-indigo-100">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-indigo-dark text-uppercase tracking-wider fs-8 mb-3">
+                        <i class="bi bi-shield-check me-2"></i>Trazabilidad
+                    </h6>
+                    <p class="text-slate-600 fs-7 mb-4 lh-sm">
+                        Esta tarjeta fue generada a partir de un trámite aprobado en el sistema.
+                    </p>
+                    <a href="{% url 'tramite:detalle_tramite' tarjeta.tramite.numero_tramite %}" class="btn btn-white w-100 rounded-pill shadow-sm fs-7 fw-bold text-indigo">
+                        Ver Trámite #{{ tarjeta.tramite.numero_tramite }}
+                    </a>
+                    
+                    <div class="mt-4 pt-3 border-top border-indigo-200 text-center">
+                        <span class="text-slate-400 fs-8 fw-bold d-block mb-1">CÓDIGO DE VERIFICACIÓN</span>
+                        <code class="text-slate-500 bg-transparent p-0 fs-8">TRJ-{{ tarjeta.id }}X{{ tarjeta.vehiculo.id }}</code>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-
-    {% if user.rol == 'a' or user.rol == 'sa'%}
-        <div class="text-center mt-5 print-hide">
-            <a href="{% url 'tarjeta:tarjeta_pdf' tarjeta.id %}" target="_blank" class="btn-print-wow shadow-lg" style="display: inline-block; text-decoration: none;">
-                <i class="bi bi-printer-fill me-2"></i> IMPRIMIR TARJETA
-            </a>
-        </div>
-    {% endif %}
-
 </div>
 
 <style>
-    body {
-        background-color: #f0f4f8; /* Fondo fresco */
+    /* VARIABLES LOCALES */
+    .tarjeta-detalle-container {
+        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #e0e7ff;
+        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-600: #475569; --slate-500: #64748b; --slate-400: #94a3b8; --slate-300: #cbd5e1; --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+        --emerald-600: #059669; --emerald-200: #a7f3d0; --emerald-50: #ecfdf5;
+        --warning-main: #d97706; --warning-200: #fde68a; --warning-50: #fffbeb;
     }
 
-    .max-w-custom {
-        max-width: 900px;
-    }
+    .text-indigo { color: var(--indigo); }
+    .text-indigo-dark { color: var(--indigo-dark); }
+    .text-slate-900 { color: var(--slate-900); }
+    .text-slate-800 { color: var(--slate-800); }
+    .text-slate-700 { color: var(--slate-700); }
+    .text-slate-600 { color: var(--slate-600); }
+    .text-slate-500 { color: var(--slate-500); }
+    .text-slate-400 { color: var(--slate-400); }
+    .text-emerald-600 { color: var(--emerald-600); }
+    .text-warning { color: var(--warning-main) !important; }
+    
+    .bg-slate-50 { background-color: var(--slate-50); }
+    .bg-slate-800 { background-color: var(--slate-800); }
+    .bg-indigo-50 { background-color: var(--indigo-light); }
+    .bg-emerald-50 { background-color: var(--emerald-50); }
+    .bg-warning-50 { background-color: var(--warning-50); }
+    .bg-white { background-color: #fff; }
+    
+    .border-slate-100 { border-color: var(--slate-100) !important; }
+    .border-slate-200 { border-color: var(--slate-200) !important; }
+    .border-emerald-200 { border-color: var(--emerald-200) !important; }
+    .border-warning-200 { border-color: var(--warning-200) !important; }
+    .border-indigo-100 { border-color: #c7d2fe !important; }
+    .border-indigo-200 { border-color: #a5b4fc !important; }
 
-    /* Navegación flotante */
-    .btn-nav-fresh, .btn-nav-outline {
-        padding: 10px 20px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+    .font-monospace { font-family: 'Courier New', Courier, monospace; }
+    .hover-underline:hover { text-decoration: underline !important; }
 
-    .btn-nav-fresh {
-        background-color: white;
-        color: #4b5563;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
-    .btn-nav-fresh:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        color: var(--bs-dark-red);
-    }
+    /* TARJETAS LIMPIAS */
+    .modern-card { border-radius: 16px; background-color: #fff; }
 
-    .btn-nav-outline {
-        border: 2px solid var(--bs-gold);
-        color: var(--bs-gold);
-        background: white;
+    /* ESPACIADO Y CAJAS DE INFORMACIÓN (LA SOLUCIÓN AL PROBLEMA) */
+    .info-box {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-100);
+        border-radius: 12px;
+        padding: 1.25rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: all 0.2s ease;
     }
-    .btn-nav-outline:hover {
-        background-color: var(--bs-gold);
-        color: white;
+    
+    .info-box.highlight-box {
+        background-color: #fff;
+        border-color: var(--slate-200);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.01);
     }
-
-    /* --- EL DISEÑO DEL DOCUMENTO (WOW FACTOR) --- */
-    .official-card-container {
-        max-width: 900px;
-        background: #ffffff;
-        border-radius: 20px;
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
-        overflow: hidden;
-        position: relative;
-        border: 1px solid #e5e7eb;
-    }
-
-    /* Marca de agua / Holograma */
-    .watermark-logo {
-        position: absolute;
-        top: 50%;
-        left: 60%;
-        transform: translate(-50%, -50%) rotate(-15deg);
-        font-size: 30rem;
-        color: var(--bs-gold);
-        opacity: 0.03;
-        z-index: 0;
-        pointer-events: none;
-    }
-
-    /* Cabecera del Documento */
-    .card-header-official {
-        background: linear-gradient(135deg, var(--bs-dark-red) 0%, #7a0000 100%);
-        padding: 25px 40px;
-        border-bottom: 6px solid var(--bs-gold);
-        position: relative;
-        z-index: 1;
-    }
-
-    .card-body-official {
-        padding: 40px;
-    }
-
-    /* Tipografía interna de los datos */
-    .info-label, .data-group label {
+    
+    .info-label {
+        color: var(--slate-400);
         font-size: 0.75rem;
         font-weight: 700;
-        color: #9ca3af;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-bottom: 5px;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
         display: block;
     }
+
+    /* AVATARES E ICONOS */
+    .avatar-sm { width: 42px; height: 42px; border-radius: 10px; background-color: rgba(99, 102, 241, 0.1); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .icon-circle-sm { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+
+    /* BOTONES */
+    .btn-light-action { background-color: #fff; border: 1px solid var(--slate-200); color: var(--slate-700); font-weight: 600; transition: all 0.2s; }
+    .btn-light-action:hover { background-color: var(--slate-50); color: var(--indigo); border-color: var(--slate-300); transform: translateY(-2px); }
     
-    .info-value {
-        font-size: 1.1rem;
-        letter-spacing: 0.5px;
-    }
+    .btn-outline-indigo { border: 1px solid var(--indigo); color: var(--indigo); transition: 0.2s; font-weight: 600; background: transparent;}
+    .btn-outline-indigo:hover { background: var(--indigo); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
 
-    .data-group h4 {
-        font-weight: 800;
-        font-size: 1.6rem;
-    }
+    .btn-indigo { background-color: var(--indigo); color: white; transition: 0.2s; font-weight: 600; border: none;}
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
     
-    .data-group h5 {
-        font-weight: 700;
-        color: #4b5563 !important;
-    }
+    .btn-white { background-color: #fff; border: 1px solid transparent; transition: 0.2s; }
+    .btn-white:hover { border-color: var(--indigo-light); transform: translateY(-2px); }
 
-    /* Estilo de la Placa Vehicular Realista */
-    .license-plate {
-        background: #f8fafc;
-        border: 4px solid #1e293b;
-        border-radius: 8px;
-        display: inline-block;
-        padding: 5px 20px 10px;
-        font-family: 'Courier New', Courier, monospace;
-    }
-
-    .plate-top {
-        font-size: 0.7rem;
-        font-weight: bold;
-        color: #64748b;
-        letter-spacing: 6px;
-        border-bottom: 2px solid #cbd5e1;
-        margin-bottom: 5px;
-        padding-bottom: 2px;
-    }
-
-    .plate-number {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: #0f172a;
-        letter-spacing: 3px;
-        line-height: 1;
-    }
-
-    /* Pie del Documento */
-    .card-footer-official {
-        background-color: #f9fafb;
-        padding: 15px;
-        font-size: 0.75rem;
-        color: #6b7280;
-        border-top: 1px dashed #d1d5db;
-        font-weight: 600;
-        letter-spacing: 1px;
-    }
-
-    /* Botón de Impresión Mágico */
-    .btn-print-wow {
-        background: linear-gradient(45deg, var(--bs-gold), #e0c283);
-        color: #1a202c;
-        border: none;
-        padding: 15px 40px;
-        border-radius: 50px;
-        font-size: 1.1rem;
-        font-weight: 800;
-        letter-spacing: 1px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .btn-print-wow:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(197, 160, 89, 0.4) !important;
-    }
-
-    /* --- ESTILOS DE IMPRESIÓN --- */
-    @media print {
-        body { background: white; padding: 0; margin: 0; }
-        .print-hide, nav, aside { display: none !important; }
-        .main-wrapper { margin-left: 0 !important; padding: 0 !important; } /* Si usas sidebar */
-        
-        .credential-wrapper { padding: 0 !important; }
-        .official-card-container { 
-            box-shadow: none; 
-            border: 2px solid black; 
-            margin: 0 auto;
-            max-width: 100%;
-            border-radius: 10px;
-        }
-        .card-header-official {
-            background: #8b0000 !important; /* Fuerza color en impresión */
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        .bg-success {
-            background-color: #d1e7dd !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-    }
+    /* ANIMACIONES */
+    .animate-up { opacity: 0; transform: translateY(15px); animation: fadeInUp 0.5s ease forwards; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 </style>
 {% endblock %}

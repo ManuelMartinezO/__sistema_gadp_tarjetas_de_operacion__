@@ -1,186 +1,277 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-start mb-4">
-    <div>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="{% url 'tramite:lista_tramites' %}" class="text-decoration-none" style="color: var(--bs-gold);">Trámites</a></li>
-                <li class="breadcrumb-item active">Detalle #{{ tramite.numero_tramite }}</li>
-            </ol>
-        </nav>
-        <h2 class="fw-bold" style="color: var(--bs-dark-red);">Expediente N° {{ tramite.numero_tramite }}</h2>
-    </div>
-    <div class="text-end">
-        {% if tramite.estado_tramite == 'pendiente' %}
-            <span class="badge bg-warning text-dark p-2 px-3 rounded-pill">PENDIENTE DE REVISIÓN</span>
-        {% elif tramite.estado_tramite == 'validado' %}
-            <span class="badge bg-success p-2 px-3 rounded-pill">TRÁMITE VALIDADO</span>
-        {% else %}
-            <span class="badge bg-danger p-2 px-3 rounded-pill">TRÁMITE OBSERVADO</span>
-        {% endif %}
-    </div>
-</div>
-
-<div class="row g-4">
-    <div class="col-lg-7">
-        <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
-            <div class="card-body p-4">
-                <h5 class="fw-bold mb-3 border-bottom pb-2">Información del Trámite</h5>
-                <div class="row">
-                    <div class="col-6 mb-3">
-                        <label class="text-muted small d-block">Tipo de Trámite</label>
-                        <span class="fw-semibold">{{ tramite.get_tipo_tramite_display }}</span>
-                    </div>
-                    <div class="col-6 mb-3">
-                        <label class="text-muted small d-block">Fecha de Registro</label>
-                        <span class="fw-semibold">{{ tramite.fecha_registro|date:"d/m/Y H:i" }}</span>
-                    </div>
-                </div>
-
-                <h5 class="fw-bold mb-3 border-bottom pb-2 mt-2">Documentos Adjuntos</h5>
-                <div class="d-flex gap-3">
-                    <div class="flex-fill p-3 border rounded-3 text-center">
-                        <i class="bi bi-file-earmark-pdf text-danger fs-3"></i>
-                        <p class="small mb-2">Informe Técnico</p>
-                        {% if tramite.tramite_file %}
-                            <a href="{{ tramite.tramite_file.url }}" target="_blank" class="btn btn-sm btn-outline-dark rounded-pill w-100">Ver PDF</a>
-                        {% else %}
-                            <span class="badge bg-light text-muted w-100">No subido</span>
-                        {% endif %}
-                    </div>
-                    <div class="flex-fill p-3 border rounded-3 text-center">
-                        <i class="bi bi-clipboard-check text-primary fs-3"></i>
-                        <p class="small mb-2">Reporte Final</p>
-                        {% if tramite.reporte_file %}
-                            <a href="{{ tramite.reporte_file.url }}" target="_blank" class="btn btn-sm btn-outline-dark rounded-pill w-100">Ver Reporte</a>
-                        {% else %}
-                            <span class="badge bg-light text-muted w-100">No subido</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% if not tramite.estado_deposito and tramite.reporte_file %}
-                <a href="{% url 'tramite:editar_tramite' tramite.numero_tramite %}">
-                    {%  if user.rol == 'u' %}
-                        EDITAR REPORTE
-                    {% else %}
-                        EDITAR TRAMITE
-                    {% endif %}
-                </a>
-            {% endif %}
-        </div>
-
-        {% if tarjetas and tramite.estado_tramite == 'validado' %}
-            {% if user.rol == 'a' or user.rol == 'sa' %}
-                <a href="{% url 'tramite:tramite_pdf' tramite.numero_tramite %}" target="_blank">IMPRIMIR</a>
-            {% endif %}
-            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                <div class="card-body p-4">
-                    <h5 class="fw-bold mb-3" style="color: var(--bs-gold);">Tarjetas de Operación Asociadas</h5>
-                    <div class="list-group list-group-flush">
-                        {% for tarjeta in tarjetas %}
-                        <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 border-start-0 border-end-0">
-                            <div>
-                                <i class="bi bi-credit-card-2-front me-2 text-muted"></i>
-                                <strong>{{ tarjeta.vehiculo.placa }}</strong> 
-                                <span class="text-muted small ms-2">| {{ tarjeta.vehiculo.tipo_vehiculo }}</span>
-                            </div>
-                            <span class="badge bg-light text-dark border">{{ tarjeta.monto }} Bs.</span>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        {% endif %}
-    </div>
-
-    <div class="col-lg-5">
-        {% if user.rol == 'a' or user.rol == 'sa' %}
-            {% if tramite.estado_tramite == 'validado' and tramite.reporte_file and tramite.tramite_file and not tramite.estado_deposito %}
-                <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; background-color: {% if tramite.estado_deposito %}#e8f5e9{% else %}#fff9c4{% endif %};">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold text-uppercase small mb-2">Estado Financiero</h6>
-                        {% if n_tarjetas > 0 %}
-                            {% if tramite.estado_deposito %}
-                                <div class="d-flex align-items-center text-success">
-                                    <i class="bi bi-check-circle-fill fs-4 me-2"></i>
-                                    <span class="fw-bold">PAGO CONFIRMADO Y PROCESADO</span>
-                                </div>
-                            {% else %}
-                                <p class="small mb-3">Pendiente de registro de comprobante bancario.</p>
-                                <form method="POST" class="bg-white p-3 rounded-3 shadow-sm">
-                                    {% csrf_token %}
-                                    <h6 class="small fw-bold mb-3">Registrar Depósito</h6>
-                                    {{ form_deposito.as_p }}
-                                    <button type="submit" name="btn_deposito" class="btn btn-primary w-100 rounded-pill" style="background-color: var(--bs-primary); border:none;">
-                                        Notificar Depósito
-                                    </button>
-                                </form>
-                            {% endif %}
-                        {% else %}
-                            <div class="text-muted small text-center py-2">
-                                <i class="bi bi-info-circle me-1"></i> Debe agregar tarjetas para habilitar el pago.
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endif %}
-        {% endif %}
-
-        {% if user.rol == 'u' and not tramite.reporte_file %}
-        <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; border-left: 5px solid var(--bs-dark-red) !important;">
-            <div class="card-body p-4">
-                <h6 class="fw-bold mb-3">Cargar Reporte Final</h6>
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form_reporte.as_p }}
-                    <button type="submit" name="btn_reporte" class="btn btn-dark w-100 rounded-pill mt-2">
-                        Enviar Reporte <i class="bi bi-send ms-1"></i>
-                    </button>
-                </form>
+<div class="tramite-detalle-container pb-5 animate-up">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-4 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2 fs-7 fw-medium">
+                    <li class="breadcrumb-item"><a href="{% url 'tramite:lista_tramites' %}" class="text-indigo text-decoration-none"><i class="bi bi-folder2-open me-1"></i>Trámites</a></li>
+                    <li class="breadcrumb-item text-slate-500 active" aria-current="page">Detalle #{{ tramite.numero_tramite|stringformat:"06d" }}</li>
+                </ol>
+            </nav>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <h2 class="fw-bold text-slate-900 mb-0">Expediente Nº {{ tramite.numero_tramite }}</h2>
+                {% if tramite.estado_tramite == 'pendiente' %}
+                    <span class="badge bg-warning-50 text-warning border border-warning-200 px-3 py-2 rounded-pill fs-8 tracking-wider"><i class="bi bi-hourglass-split me-1"></i> PENDIENTE DE REVISIÓN</span>
+                {% elif tramite.estado_tramite == 'validado' %}
+                    <span class="badge bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-2 rounded-pill fs-8 tracking-wider"><i class="bi bi-check-circle-fill me-1"></i> TRÁMITE VALIDADO</span>
+                {% else %}
+                    <span class="badge bg-red-50 text-danger border border-red-200 px-3 py-2 rounded-pill fs-8 tracking-wider"><i class="bi bi-exclamation-octagon-fill me-1"></i> TRÁMITE OBSERVADO</span>
+                {% endif %}
             </div>
         </div>
-        {% endif %}
+        
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
+            <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-light-action rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+            {% if tarjetas and tramite.estado_tramite == 'validado' %}
+                {% if user.rol == 'a' or user.rol == 'sa' %}
+                    <a href="{% url 'tramite:tramite_pdf' tramite.numero_tramite %}" target="_blank" class="btn btn-indigo btn-lg rounded-pill px-4 shadow-sm ms-2">
+                        <i class="bi bi-printer-fill me-2"></i> IMPRIMIR TODO
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
 
-        {% if user.rol == 'a' or user.rol == 'sa' %}
-            {% if tramite.estado_tramite == 'validado' and tramite.reporte_file and tramite.tramite_file and not tramite.estado_deposito %}
-            <div class="card border-0 shadow-sm" style="border-radius: 15px; border-top: 4px solid var(--bs-gold) !important;">
+    <div class="row g-4 g-xl-5">
+        
+        <div class="col-lg-8">
+            
+            <div class="card modern-card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-0">
+                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-0">
+                        <i class="bi bi-info-square text-indigo me-2"></i>Información del Trámite
+                    </h6>
+                </div>
+                
                 <div class="card-body p-4">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-plus-square me-2"></i>Nueva Tarjeta de Operación</h6>
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div class="small-forms">
-                            {{ form_tarjeta.as_p }}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <label class="info-label">Tipo de Trámite</label>
+                                <span class="fw-bold text-indigo fs-6 d-block">{{ tramite.get_tipo_tramite_display }}</span>
+                            </div>
                         </div>
-                        <button type="submit" name="btn_tarjeta" class="btn btn-primary w-100 rounded-pill mt-3" style="background-color: var(--bs-primary); border:none;">
-                            Registrar Tarjeta
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <label class="info-label">Fecha de Registro</label>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-calendar-event text-slate-400 me-2 fs-5"></i>
+                                    <span class="fw-bold text-slate-800 fs-6">{{ tramite.fecha_registro|date:"d \d\e F \d\e Y, H:i" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-slate-700 text-uppercase tracking-wider fs-8 mb-3 mt-4 pt-4 border-top border-slate-100">
+                        <i class="bi bi-file-earmark-medical text-slate-400 me-2"></i>Documentos Adjuntos
+                    </h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="file-box p-3 rounded-4 border border-slate-200 transition-all d-flex align-items-center justify-content-between h-100">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle-sm bg-red-50 text-danger me-3 flex-shrink-0">
+                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold text-slate-800 d-block lh-1 mb-1">Informe Técnico</span>
+                                        {% if not tramite.tramite_file %}<span class="badge bg-slate-100 text-slate-500 fw-medium">No subido</span>{% endif %}
+                                    </div>
+                                </div>
+                                {% if tramite.tramite_file %}
+                                    <a href="{{ tramite.tramite_file.url }}" target="_blank" class="btn btn-sm btn-light-action rounded-circle"><i class="bi bi-eye"></i></a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="file-box p-3 rounded-4 border border-slate-200 transition-all d-flex align-items-center justify-content-between h-100">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle-sm bg-indigo-50 text-indigo me-3 flex-shrink-0">
+                                        <i class="bi bi-clipboard-check-fill"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold text-slate-800 d-block lh-1 mb-1">Reporte Final</span>
+                                        {% if not tramite.reporte_file %}<span class="badge bg-slate-100 text-slate-500 fw-medium">No subido</span>{% endif %}
+                                    </div>
+                                </div>
+                                {% if tramite.reporte_file %}
+                                    <a href="{{ tramite.reporte_file.url }}" target="_blank" class="btn btn-sm btn-light-action rounded-circle"><i class="bi bi-eye"></i></a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if not tramite.estado_deposito and tramite.reporte_file %}
+                    <div class="card-footer bg-slate-50 border-top border-slate-100 p-3 text-end rounded-bottom-4">
+                        <a href="{% url 'tramite:editar_tramite' tramite.numero_tramite %}" class="btn btn-sm btn-outline-indigo rounded-pill px-4 fw-medium">
+                            <i class="bi bi-pencil-square me-2"></i> {% if user.rol == 'u' %} Editar Reporte {% else %} Editar Trámite {% endif %}
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if tarjetas and tramite.estado_tramite == 'validado' %}
+                <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
+                    <h5 class="fw-bold text-slate-800 mb-0 d-flex align-items-center">
+                        <i class="bi bi-credit-card-2-front text-indigo me-2"></i> Tarjetas Asociadas
+                    </h5>
+                    <span class="badge bg-slate-800 text-white rounded-pill px-3 py-2 fs-8">{{ tarjetas.count }} Generadas</span>
+                </div>
+                
+                <div class="row g-3">
+                    {% for tarjeta in tarjetas %}
+                    <div class="col-12">
+                        <div class="p-3 border border-slate-200 rounded-4 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between bg-white shadow-sm transition-all hover-lift">
+                            
+                            <div class="d-flex align-items-center mb-3 mb-sm-0">
+                                <div class="placa-badge shadow-sm me-4 flex-shrink-0">
+                                    <span class="placa-text">{{ tarjeta.vehiculo.placa }}</span>
+                                    <div class="placa-footer">BOLIVIA</div>
+                                </div>
+                                
+                                <div>
+                                    <span class="fw-bold text-slate-800 d-block fs-6 mb-1">{{ tarjeta.vehiculo.marca }} <span class="text-slate-400 fw-normal">|</span> {{ tarjeta.vehiculo.tipo_vehiculo }}</span>
+                                    <div class="text-slate-500 fs-8 d-flex align-items-center text-truncate" style="max-width: 250px;" title="{{ tarjeta.ruta.nombre }}">
+                                        <i class="bi bi-signpost-split text-indigo me-1"></i> {{ tarjeta.ruta.nombre|default:"Ruta no especificada" }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-start text-sm-end border-top border-sm-0 pt-2 pt-sm-0 mt-2 mt-sm-0 border-slate-100">
+                                <label class="info-label mb-0">Monto Abonado</label>
+                                <div class="fw-bolder text-slate-900 font-monospace fs-5 mb-1">Bs. {{ tarjeta.monto }}</div>
+                                <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}" class="text-indigo fs-8 fw-bold text-decoration-none hover-underline">
+                                    Ver credencial <i class="bi bi-arrow-right-short"></i>
+                                </a>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        </div>
+
+        <div class="col-lg-4">
+            
+            {% if user.rol == 'a' or user.rol == 'sa' %}
+                {% if tramite.estado_tramite == 'validado' and tramite.reporte_file and tramite.tramite_file %}
+                    
+                    <div class="card modern-card border-0 shadow-sm mb-4 status-indicator {% if tramite.estado_deposito %}is-success{% else %}is-warning{% endif %}">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-4 border-bottom border-slate-100 pb-2">
+                                <i class="bi bi-wallet2 text-slate-400 me-2"></i>Estado Financiero
+                            </h6>
+                            
+                            {% if n_tarjetas > 0 %}
+                                {% if tramite.estado_deposito %}
+                                    <div class="text-center py-3">
+                                        <div class="icon-circle-large bg-emerald-50 text-emerald-600 mx-auto mb-3 shadow-sm border border-emerald-100">
+                                            <i class="bi bi-check-lg"></i>
+                                        </div>
+                                        <h5 class="fw-bold text-slate-800 mb-1">Pago Confirmado</h5>
+                                        <p class="text-slate-500 fs-7 mb-0 lh-sm">El comprobante ha sido procesado exitosamente. El trámite está finalizado.</p>
+                                    </div>
+                                {% else %}
+                                    <div class="alert bg-warning-50 border border-warning-200 text-warning rounded-3 fs-7 fw-medium mb-4 p-3 shadow-sm d-flex align-items-start">
+                                        <i class="bi bi-exclamation-triangle-fill fs-5 me-2 mt-1"></i> 
+                                        <span>Pendiente de registro de comprobante bancario.</span>
+                                    </div>
+                                    <form method="POST" class="custom-form">
+                                        {% csrf_token %}
+                                        <label class="info-label text-slate-500 mb-2">Registrar Depósito</label>
+                                        <div class="mb-3 form-inputs-wrapper bg-white p-2 rounded-3 border border-slate-100 shadow-sm">
+                                            {{ form_deposito.as_p }}
+                                        </div>
+                                        <button type="submit" name="btn_deposito" class="btn btn-warning-custom w-100 rounded-pill shadow-sm fw-bold">
+                                            Notificar Depósito <i class="bi bi-arrow-right ms-1"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <div class="text-center py-4 bg-slate-50 rounded-4 border border-slate-200 border-dashed">
+                                    <i class="bi bi-credit-card-2-front text-slate-300 fs-1 d-block mb-2"></i>
+                                    <p class="text-slate-500 fs-7 mb-0 px-3">Debe agregar tarjetas al trámite para habilitar el pago.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            {% if user.rol == 'u' and not tramite.reporte_file %}
+            <div class="card modern-card border-0 shadow-sm mb-4 status-indicator is-indigo">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-3">
+                        <i class="bi bi-cloud-arrow-up text-indigo me-2"></i>Cargar Reporte Final
+                    </h6>
+                    <form method="POST" enctype="multipart/form-data" class="custom-form file-input-modern">
+                        {% csrf_token %}
+                        <div class="form-inputs-wrapper mb-3 bg-slate-50 p-3 rounded-4 border border-slate-100">
+                            {{ form_reporte.as_p }}
+                        </div>
+                        <button type="submit" name="btn_reporte" class="btn btn-indigo w-100 rounded-pill shadow-sm">
+                            Subir Documento <i class="bi bi-send ms-1"></i>
                         </button>
                     </form>
                 </div>
             </div>
             {% endif %}
-        {% endif %}
 
+            {% if user.rol == 'a' or user.rol == 'sa' %}
+                {% if tramite.estado_tramite == 'validado' and tramite.reporte_file and tramite.tramite_file and not tramite.estado_deposito %}
+                <div class="card modern-card border-0 shadow-sm bg-indigo-50 border border-indigo-100">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-indigo-dark text-uppercase tracking-wider fs-8 mb-4 d-flex align-items-center">
+                            <div class="icon-circle-sm bg-white text-indigo shadow-sm me-2"><i class="bi bi-plus-lg"></i></div>
+                            Añadir Tarjeta de Operación
+                        </h6>
+                        <form method="POST" class="custom-form small-forms">
+                            {% csrf_token %}
+                            <div class="form-inputs-wrapper bg-white p-3 rounded-4 shadow-sm mb-3">
+                                {{ form_tarjeta.as_p }}
+                            </div>
+                            <button type="submit" name="btn_tarjeta" class="btn btn-indigo w-100 rounded-pill shadow-sm">
+                                Registrar Nueva Tarjeta
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
+
+        </div>
     </div>
 </div>
+
 <div class="modal fade" id="modalNuevaRuta" tabindex="-1" aria-labelledby="modalNuevaRutaLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header" style="background-color: var(--bs-gold); color: white;">
-                <h5 class="modal-title" id="modalNuevaRutaLabel">Agregar Nueva Ruta</h5>
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-slate-100 bg-slate-50 px-4 py-3">
+                <h6 class="modal-title fw-bold text-slate-800 d-flex align-items-center" id="modalNuevaRutaLabel">
+                    <div class="icon-circle-sm bg-indigo-50 text-indigo me-2" style="width:30px;height:30px;font-size:0.9rem;"><i class="bi bi-signpost-split"></i></div>
+                    Agregar Nueva Ruta
+                </h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form id="formNuevaRuta">
+            <div class="modal-body p-4">
+                <form id="formNuevaRuta" class="custom-form">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="id_nueva_ruta" class="form-label">Nombre de la Ruta</label>
-                        <input type="text" class="form-control" id="id_nueva_ruta" name="ruta" required>
+                    <div class="mb-4">
+                        <label for="id_nueva_ruta" class="form-label text-slate-500 fw-bold fs-8 text-uppercase tracking-wider">Nombre de la Ruta</label>
+                        <input type="text" class="form-control" id="id_nueva_ruta" name="ruta" required placeholder="Ej: Potosí - Uyuni">
                     </div>
-                    <div class="text-end">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" id="btnGuardarRuta">Guardar</button>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-light-action rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-indigo rounded-pill px-4" id="btnGuardarRuta">Guardar Ruta</button>
                     </div>
                 </form>
             </div>
@@ -189,69 +280,163 @@
 </div>
 
 <style>
-    /* Estilizar los forms dentro de la tarjeta lateral */
-    .small-forms p label {
-        font-size: 0.8rem;
-        font-weight: bold;
-        text-transform: uppercase;
-        color: #666;
-        margin-bottom: 2px;
-    }
-    .small-forms p input, .small-forms p select {
-        font-size: 0.9rem;
-        padding: 5px 10px;
-        margin-bottom: 10px;
-    }
-    /* Estilizar los forms dentro de la tarjeta lateral */
-    .small-forms p label {
-        font-size: 0.8rem;
-        font-weight: bold;
-        text-transform: uppercase;
-        color: #666;
-        margin-bottom: 2px;
-    }
-    .small-forms p input, .small-forms p select {
-        font-size: 0.9rem;
-        padding: 5px 10px;
-        margin-bottom: 10px;
+    /* VARIABLES LOCALES (Minimalista Slate & Indigo) */
+    .tramite-detalle-container {
+        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #e0e7ff;
+        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-600: #475569; --slate-500: #64748b; --slate-400: #94a3b8; --slate-300: #cbd5e1; --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+        --emerald-600: #059669; --emerald-200: #a7f3d0; --emerald-100: #d1fae5; --emerald-50: #ecfdf5;
+        --warning-main: #d97706; --warning-200: #fde68a; --warning-50: #fffbeb;
+        --red-main: #dc2626; --red-200: #fecaca; --red-50: #fef2f2;
     }
 
-    /* Ajustes visuales para Select2 dentro de small-forms */
+    .text-indigo { color: var(--indigo); }
+    .text-indigo-light { color: #818cf8; }
+    .text-indigo-dark { color: var(--indigo-dark); }
+    .text-slate-900 { color: var(--slate-900); }
+    .text-slate-800 { color: var(--slate-800); }
+    .text-slate-700 { color: var(--slate-700); }
+    .text-slate-600 { color: var(--slate-600); }
+    .text-slate-500 { color: var(--slate-500); }
+    .text-slate-400 { color: var(--slate-400); }
+    
+    .text-emerald-600 { color: var(--emerald-600); }
+    .text-warning { color: var(--warning-main) !important; }
+    .text-danger { color: var(--red-main) !important; }
+    
+    .bg-slate-50 { background-color: var(--slate-50); }
+    .bg-slate-100 { background-color: var(--slate-100); }
+    .bg-slate-800 { background-color: var(--slate-800); }
+    .bg-indigo-50 { background-color: var(--indigo-light); }
+    .bg-emerald-50 { background-color: var(--emerald-50); }
+    .bg-warning-50 { background-color: var(--warning-50); }
+    .bg-red-50 { background-color: var(--red-50); }
+    .bg-white { background-color: #fff; }
+    
+    .border-slate-100 { border-color: var(--slate-100) !important; }
+    .border-slate-200 { border-color: var(--slate-200) !important; }
+    .border-emerald-200 { border-color: var(--emerald-200) !important; }
+    .border-emerald-100 { border-color: var(--emerald-100) !important; }
+    .border-warning-200 { border-color: var(--warning-200) !important; }
+    .border-red-200 { border-color: var(--red-200) !important; }
+    .border-indigo-100 { border-color: #c7d2fe !important; }
+    .border-dashed { border-style: dashed !important; border-width: 2px !important; }
+
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+    .font-monospace { font-family: 'Courier New', Courier, monospace; }
+    .hover-underline:hover { text-decoration: underline !important; }
+
+    /* TARJETAS LIMPIAS */
+    .modern-card { border-radius: 16px; background-color: #fff; overflow: hidden;}
+    
+    /* INDICADORES DE ESTADO (Borde superior) */
+    .status-indicator { position: relative; overflow: hidden; }
+    .status-indicator::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+    .status-indicator.is-success::before { background-color: var(--emerald-600); }
+    .status-indicator.is-warning::before { background-color: var(--warning-main); }
+    .status-indicator.is-indigo::before { background-color: var(--indigo); }
+
+    /* ESPACIADO Y CAJAS DE INFORMACIÓN */
+    .info-box {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-100);
+        border-radius: 12px;
+        padding: 1.25rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .info-label {
+        color: var(--slate-400);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    /* CAJAS DE DOCUMENTOS (PDF) */
+    .file-box:hover { background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border-color: var(--slate-300) !important; }
+
+    /* DISEÑO PLACA MATRÍCULA (Para la lista de tarjetas) */
+    .placa-badge { display: inline-flex; flex-direction: column; background-color: #f8fafc; border: 2px solid #cbd5e1; border-radius: 6px; overflow: hidden; min-width: 90px; }
+    .placa-text { font-family: 'Courier New', Courier, monospace; font-weight: 800; font-size: 1rem; color: #1e293b; padding: 2px 8px; letter-spacing: 1px; background-color: #fff; text-align: center;}
+    .placa-footer { background-color: #1e293b; color: #fff; font-size: 0.45rem; font-weight: 700; text-transform: uppercase; width: 100%; text-align: center; padding: 1px 0; letter-spacing: 1px; }
+
+    /* HOVER EFFECT EN LISTAS DE TARJETAS */
+    .hover-lift { transition: all 0.2s ease; }
+    .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; border-color: var(--indigo-light) !important; }
+
+    /* AVATARES E ICONOS */
+    .icon-circle-large { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+    .icon-circle-sm { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+
+    /* BOTONES */
+    .btn-light-action { background-color: #fff; border: 1px solid var(--slate-200); color: var(--slate-700); font-weight: 600; transition: all 0.2s; }
+    .btn-light-action:hover { background-color: var(--slate-50); color: var(--indigo); border-color: var(--slate-300); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
+    
+    .btn-outline-indigo { border: 1px solid var(--indigo); color: var(--indigo); transition: 0.2s; font-weight: 600; background: transparent;}
+    .btn-outline-indigo:hover { background: var(--indigo); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+
+    .btn-indigo { background-color: var(--indigo); color: white; transition: 0.2s; font-weight: 600; border: none;}
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+    
+    .btn-warning-custom { background-color: var(--warning-main); color: white; border: none; transition: 0.2s; }
+    .btn-warning-custom:hover { background-color: #b45309; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25); }
+
+    /* FORMULARIOS (Intercepta Django) */
+    .form-inputs-wrapper p { margin-bottom: 1rem; }
+    .form-inputs-wrapper p label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.3rem; display: block; }
+    .custom-form input[type="text"], .custom-form input[type="number"], .custom-form input[type="file"], .custom-form select {
+        width: 100%; background-color: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.6rem 1rem; color: var(--slate-700); transition: 0.2s; font-size: 0.9rem;
+    }
+    .custom-form input:focus, .custom-form select:focus { background-color: #fff; border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-light); outline: none; }
+
+    /* ESTILO PARA INPUT FILE NATIVO */
+    .file-input-modern input[type="file"] { width: 100%; font-size: 0.85rem; color: var(--slate-500); background: transparent; border: none; padding: 0;}
+    .file-input-modern input[type="file"]::file-selector-button {
+        background-color: #fff; color: var(--slate-700); border: 1px solid #cbd5e1; padding: 0.4rem 0.8rem; border-radius: 8px; margin-right: 1rem; cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 0.85rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .file-input-modern input[type="file"]::file-selector-button:hover { background-color: var(--slate-50); border-color: var(--indigo-light); color: var(--indigo);}
+
+    /* SELECT2 CUSTOMIZACIÓN */
     .select2-container--bootstrap-5 .select2-selection {
-        border-radius: 8px !important;
-        border: 1px solid #ced4da !important;
-        min-height: 35px !important; /* Más compacto para la barra lateral */
-        font-size: 0.9rem;
-        padding-top: 2px;
+        background-color: #fff !important; border: 1px solid #e2e8f0 !important; border-radius: 10px !important; min-height: 40px !important; padding: 0.2rem 0.5rem; display: flex; align-items: center;
     }
     .select2-container--bootstrap-5.select2-container--focus .select2-selection {
-        border-color: var(--bs-gold) !important;
-        box-shadow: 0 0 0 0.25rem rgba(197, 160, 89, 0.25) !important;
+        background-color: #fff !important; border-color: var(--indigo) !important; box-shadow: 0 0 0 3px var(--indigo-light) !important;
     }
+
+    /* ANIMACIÓN */
+    .animate-up { opacity: 0; transform: translateY(15px); animation: fadeInUp 0.5s ease forwards; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 </style>
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     
-    // 1. Inyectar el botón "+" al lado del select de "Ruta"
     const rutaSelect = document.getElementById('id_tarjeta-ruta');
     
     if (rutaSelect) {
-        // Creamos el botón
         const btnAñadirRuta = document.createElement('button');
         btnAñadirRuta.type = 'button';
-        btnAñadirRuta.className = 'btn btn-sm btn-success ms-2';
+        btnAñadirRuta.className = 'btn btn-indigo ms-2 d-flex align-items-center justify-content-center px-3';
         btnAñadirRuta.setAttribute('data-bs-toggle', 'modal');
         btnAñadirRuta.setAttribute('data-bs-target', '#modalNuevaRuta');
+        btnAñadirRuta.style.borderRadius = '10px';
         btnAñadirRuta.innerHTML = '<i class="bi bi-plus-lg"></i>';
 
-        // Envolvemos el select y el botón
         const wrapper = document.createElement('div');
-        // Agregamos w-100 para que el wrapper ocupe todo el ancho y Select2 no se comprima
-        wrapper.className = 'd-flex align-items-center mb-2 w-100'; 
+        wrapper.className = 'd-flex align-items-stretch w-100'; 
         rutaSelect.parentNode.insertBefore(wrapper, rutaSelect);
         wrapper.appendChild(rutaSelect);
         wrapper.appendChild(btnAñadirRuta);
@@ -259,45 +444,41 @@ document.addEventListener("DOMContentLoaded", function() {
         rutaSelect.style.marginBottom = '0'; 
     }
 
-    // 2. Inicializar Select2 DESPUÉS de haber modificado el DOM (el botón +)
     $('.small-forms select').select2({
         theme: 'bootstrap-5',
-        width: '100%', // Asegura que ocupe todo el ancho disponible
-        placeholder: "Buscar...",
+        width: '100%',
+        placeholder: "Buscar y seleccionar...",
         allowClear: true
     });
 
-    // 3. Procesar el guardado por AJAX
     const formNuevaRuta = document.getElementById('formNuevaRuta');
     
     if (formNuevaRuta) {
         formNuevaRuta.addEventListener('submit', function(e) {
             e.preventDefault(); 
-            
             const formData = new FormData(formNuevaRuta);
             
             fetch("{% url 'tarjeta:crear_ruta_ajax' %}", {
                 method: "POST",
                 body: formData,
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
+                headers: { "X-Requested-With": "XMLHttpRequest" }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Crear la nueva opción en el selector <select>
                     const nuevaOpcion = new Option(data.nombre, data.id, true, true);
                     rutaSelect.add(nuevaOpcion); 
-                    
-                    // IMPORTANTE: Le avisamos a Select2 que se añadió una nueva ruta
                     $(rutaSelect).trigger('change');
                     
-                    // Ocultar el modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalNuevaRuta'));
-                    modal.hide();
+                    const modalElement = document.getElementById('modalNuevaRuta');
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstance) { modalInstance.hide(); }
+
+                    document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
                     
-                    // Limpiar el formulario
                     formNuevaRuta.reset();
                 } else {
                     alert("Hubo un error al guardar: " + JSON.stringify(data.errors));
@@ -308,6 +489,4 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 </script>
-
-
 {% endblock %}

@@ -9,7 +9,6 @@ import io
 import qrcode
 import base64
 from django.db.models import Q
-
 from django.http import JsonResponse
 from .forms import RutaForm  # Asegúrate de importar tu formulario
 

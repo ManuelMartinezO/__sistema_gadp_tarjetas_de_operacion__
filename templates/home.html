@@ -7,81 +7,111 @@
     
     <div class="welcome-banner shadow-sm animate-up">
         <div class="row align-items-center">
-            <div class="col-md-8">
-                <p class="text-gold fw-bold mb-1 text-uppercase tracking-wider">Secretaría Departamental de Transporte</p>
-                <h2 class="text-white fw-bolder mb-2">
+            <div class="col-md-8 position-relative z-1">
+                <p class="text-granate fw-bold mb-1 text-uppercase tracking-wider fs-8">Secretaría Departamental de Transporte</p>
+                <h2 class="text-slate-900 fw-bolder mb-3 fs-3">
                     {% if user.is_authenticated %}
                         Bienvenido, {{ user.perfil.nombre|default:user.username|title }} {{ user.perfil.apellido|default:user.username|title }}
                     {% else %}
                         Panel de Control Institucional
                     {% endif %}
                 </h2>
-                <p class="text-white-50 mb-0">
-                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> Gobierno Autónomo Departamental de Potosí
-                    <span class="mx-2">|</span>
-                    <i class="bi bi-shield-check text-success me-1"></i> Rol: <span class="text-white fw-bold">{{ user.get_rol_display|default:"Administrador"|upper }}</span>
-                </p>
+                <div class="d-flex align-items-center flex-wrap gap-3 mt-2">
+                    <span class="badge-custom bg-slate-50 text-slate-700 border border-slate-200">
+                        <i class="bi bi-geo-alt-fill text-granate me-1"></i> G.A.D. Potosí
+                    </span>
+                    <span class="badge-custom bg-slate-50 text-slate-700 border border-slate-200">
+                        <i class="bi bi-shield-check text-dorado me-1"></i> Rol: {{ user.get_rol_display|default:"Administrador"|upper }}
+                    </span>
+                </div>
             </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0 d-none d-md-block">
-                <div class="current-date-box">
-                    <div id="reloj-vivo" class="fw-bold fs-4">--:--:--</div>
-                    <div class="text-uppercase small" style="color: var(--bs-gold);">{% now "l, d de F de Y" %}</div>
+            <div class="col-md-4 text-md-end mt-4 mt-md-0 d-none d-md-block position-relative z-1">
+                <div class="current-date-box text-start text-md-end">
+                    <div id="reloj-vivo" class="fw-bolder fs-2 text-granate tracking-tight font-monospace">--:--:--</div>
+                    <div class="text-uppercase fs-8 text-slate-500 mt-1 fw-bold tracking-wider">{% now "l, d \d\e F \d\e Y" %}</div>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="row g-4 mb-4">
+        
         <div class="col-xl-3 col-md-6 animate-up delay-1">
             <div class="kpi-card h-100">
-                <div class="kpi-icon bg-primary-soft text-primary">
+                <div class="kpi-icon bg-granate-soft text-granate">
                     <i class="bi bi-buildings-fill"></i>
                 </div>
                 <div class="kpi-data">
-                    <h3 class="kpi-value">{{ total_operadores }}</h3>
                     <p class="kpi-label">Operadores / Sindicatos</p>
+                    <h3 class="kpi-value text-slate-900">{{ total_operadores }}</h3>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6 animate-up delay-2">
             <div class="kpi-card h-100">
-                <div class="kpi-icon bg-success-soft text-success">
+                <div class="kpi-icon bg-granate-soft text-granate">
                     <i class="bi bi-people-fill"></i>
                 </div>
                 <div class="kpi-data">
-                    <h3 class="kpi-value">{{ total_afiliados }}</h3>
                     <p class="kpi-label">Afiliados Registrados</p>
+                    <h3 class="kpi-value text-slate-900">{{ total_afiliados }}</h3>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6 animate-up delay-3">
             <div class="kpi-card h-100">
-                <div class="kpi-icon bg-warning-soft text-warning">
+                <div class="kpi-icon bg-dorado-soft text-dorado">
                     <i class="bi bi-car-front-fill"></i>
                 </div>
                 <div class="kpi-data">
-                    <h3 class="kpi-value">{{ total_vehiculos }}</h3>
                     <p class="kpi-label">Parque Automotor</p>
+                    <h3 class="kpi-value text-slate-900">{{ total_vehiculos }}</h3>
                 </div>
-                <div class="kpi-trend text-muted">
-                    <i class="bi bi-dash"></i> Unidades verificadas
+                <div class="kpi-trend text-slate-500 mt-2 fs-8 fw-medium">
+                    <i class="bi bi-check2-circle text-dorado me-1"></i> Unidades verificadas
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6 animate-up delay-4">
-            <div class="kpi-card h-100 border-start border-4 border-danger">
-                <div class="kpi-icon bg-danger-soft text-danger">
+            <div class="kpi-card h-100">
+                <div class="kpi-icon bg-warning-soft text-warning">
                     <i class="bi bi-file-earmark-text-fill"></i>
                 </div>
                 <div class="kpi-data">
-                    <h3 class="kpi-value text-danger">{{ tramites_pendientes }}</h3>
                     <p class="kpi-label">Trámites Pendientes</p>
+                    <h3 class="kpi-value text-slate-900">{{ tramites_pendientes }}</h3>
                 </div>
-                <div class="kpi-trend text-danger">
-                    <i class="bi bi-exclamation-circle"></i> Requieren atención
+                <div class="kpi-trend text-warning mt-2 fs-8 fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> Requieren atención
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4 animate-up delay-4">
+        <div class="col-lg-8">
+            <div class="dashboard-panel h-100">
+                <div class="panel-header">
+                    <h5 class="panel-title mb-0"><i class="bi bi-bar-chart-fill text-granate me-2"></i>Evolución de Emisión de Tarjetas</h5>
+                </div>
+                <div class="panel-body">
+                    <canvas id="mainChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="dashboard-panel h-100">
+                <div class="panel-header">
+                    <h5 class="panel-title mb-0"><i class="bi bi-pie-chart-fill text-dorado me-2"></i>Distribución por Sector</h5>
+                </div>
+                <div class="panel-body d-flex justify-content-center align-items-center">
+                    <div style="max-width: 250px; width: 100%;">
+                        <canvas id="donutChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -91,15 +121,14 @@
         
         <div class="col-lg-8">
             <div class="dashboard-panel h-100">
-                
                 <div class="panel-header d-flex justify-content-between align-items-center">
-                    <h5 class="panel-title mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Trámites Recientes</h5>
-                    <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-sm btn-light rounded-pill border">Ver todos</a>
+                    <h5 class="panel-title mb-0"><i class="bi bi-clock-history me-2 text-granate"></i>Trámites Recientes</h5>
+                    <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-sm btn-light-action rounded-pill px-3 shadow-sm">Ver todos</a>
                 </div>
                 <div class="panel-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
+                        <table class="table table-hover align-middle mb-0 custom-table">
+                            <thead class="table-light-custom">
                                 <tr>
                                     <th class="ps-4">Trámite Nº</th>
                                     <th>Tipo</th>
@@ -110,25 +139,29 @@
                             </thead>
                             <tbody>
                                 {% for tramite in ultimos_tramites %}
-                                <tr>
-                                    <td class="ps-4 fw-bold text-dark">#{{ tramite.numero_tramite|stringformat:"06d" }}</td>
+                                <tr class="table-row-hover" onclick="window.location='{% url 'tramite:detalle_tramite' tramite.numero_tramite %}'">
+                                    <td class="ps-4">
+                                        <span class="badge bg-slate-50 border border-slate-200 text-slate-700 font-monospace fs-8 px-2 py-1">
+                                            #{{ tramite.numero_tramite|stringformat:"06d" }}
+                                        </span>
+                                    </td>
                                     <td>
-                                        <span class="text-muted small fw-semibold">
+                                        <span class="text-slate-700 small fw-bold text-uppercase tracking-wider">
                                             {{ tramite.get_tipo_tramite_display }}
                                         </span>
                                     </td>
                                     <td>
                                         {% if tramite.estado_tramite == 'pendiente' %}
-                                            <span class="badge bg-warning text-dark px-2 py-1 rounded-pill">Pendiente</span>
+                                            <span class="badge badge-soft-warning">Pendiente</span>
                                         {% elif tramite.estado_tramite == 'validado' %}
-                                            <span class="badge bg-success px-2 py-1 rounded-pill">Validado</span>
+                                            <span class="badge badge-soft-success">Validado</span>
                                         {% elif tramite.estado_tramite == 'observado' %}
-                                            <span class="badge bg-danger px-2 py-1 rounded-pill">Observado</span>
+                                            <span class="badge badge-soft-danger">Observado</span>
                                         {% endif %}
                                     </td>
-                                    <td><span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>{{ tramite.fecha_registro|date:"d M Y" }}</span></td>
+                                    <td><span class="text-slate-500 small"><i class="bi bi-calendar-event me-1"></i>{{ tramite.fecha_registro|date:"d M Y" }}</span></td>
                                     <td class="pe-4 text-end">
-                                        <a href="{% url 'tramite:detalle_tramite' tramite.numero_tramite %}" class="btn btn-sm btn-outline-secondary rounded-circle" title="Ver Detalle">
+                                        <a href="{% url 'tramite:detalle_tramite' tramite.numero_tramite %}" class="btn btn-sm btn-icon btn-light rounded-circle" title="Ver Detalle">
                                             <i class="bi bi-chevron-right"></i>
                                         </a>
                                     </td>
@@ -136,8 +169,10 @@
                                 {% empty %}
                                 <tr>
                                     <td colspan="5" class="text-center py-5 text-muted">
-                                        <i class="bi bi-inbox fs-2 d-block mb-2 text-black-50"></i>
-                                        No hay trámites recientes en el sistema.
+                                        <div class="empty-state">
+                                            <i class="bi bi-inbox fs-1 d-block mb-3 text-slate-300"></i>
+                                            <p class="mb-0 fw-medium">No hay trámites recientes en el sistema.</p>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -150,20 +185,32 @@
 
         {% if user.rol == 'a' or user.rol == 'sa' %}
             <div class="col-lg-4">
-                <div class="dashboard-panel mb-4">
-                    <div class="panel-header">
-                        <h5 class="panel-title mb-0"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Acciones Rápidas</h5>
+                <div class="dashboard-panel mb-4 h-100">
+                    <div class="panel-header border-bottom-0 pb-0">
+                        <h5 class="panel-title mb-0"><i class="bi bi-lightning-charge-fill text-dorado me-2"></i>Acciones Rápidas</h5>
                     </div>
                     <div class="panel-body">
-                        <div class="d-grid gap-2">
-                            <a href="{% url 'tramite:crear_tramite' %}" class="btn btn-primary btn-action text-start">
-                                <i class="bi bi-plus-circle me-2"></i> Iniciar Nuevo Trámite
+                        <div class="d-grid gap-3">
+                            <a href="{% url 'tramite:crear_tramite' %}" class="btn btn-granate btn-action text-start d-flex align-items-center shadow-sm">
+                                <div class="action-icon me-3"><i class="bi bi-plus-lg"></i></div>
+                                <div>
+                                    <span class="d-block fw-bold text-white tracking-wider text-uppercase fs-8 mb-1">Nuevo Trámite</span>
+                                    <span class="d-block fs-8 opacity-75 fw-normal">Iniciar gestión de solicitud</span>
+                                </div>
                             </a>
-                            <a href="{% url 'vehiculo:crear_vehiculo' %}" class="btn btn-outline-dark btn-action text-start">
-                                <i class="bi bi-car-front me-2"></i> Registrar Vehículo
+                            <a href="{% url 'vehiculo:crear_vehiculo' %}" class="btn btn-light-action text-start d-flex align-items-center border border-slate-200">
+                                <div class="action-icon bg-slate-50 text-granate me-3 border border-slate-200"><i class="bi bi-car-front"></i></div>
+                                <div>
+                                    <span class="d-block fw-bold text-slate-800 tracking-wider text-uppercase fs-8 mb-1">Registrar Vehículo</span>
+                                    <span class="d-block fs-8 text-slate-500 fw-normal">Añadir al parque automotor</span>
+                                </div>
                             </a>
-                            <a href="{% url 'tarjeta:lista_tarjetas' %}" class="btn btn-outline-dark btn-action text-start">
-                                <i class="bi bi-search me-2"></i> Consultar Padrón
+                            <a href="{% url 'tarjeta:lista_tarjetas' %}" class="btn btn-light-action text-start d-flex align-items-center border border-slate-200">
+                                <div class="action-icon bg-slate-50 text-granate me-3 border border-slate-200"><i class="bi bi-wallet2"></i></div>
+                                <div>
+                                    <span class="d-block fw-bold text-slate-800 tracking-wider text-uppercase fs-8 mb-1">Consultar Padrón</span>
+                                    <span class="d-block fs-8 text-slate-500 fw-normal">Búsqueda de tarjetas emitidas</span>
+                                </div>
                             </a>
                         </div>
                     </div>
@@ -175,143 +222,198 @@
 </div>
 
 <style>
+    /* VARIABLES LOCALES (Estilo Institucional Minimalista) */
     .dashboard-wrapper {
+        --granate: #8b0000;
+        --granate-dark: #660000;
+        --dorado: #c5a059;
+        --slate-900: #0f172a;
+        --slate-800: #1e293b;
+        --slate-700: #475569;
+        --slate-600: #64748b;
+        --slate-500: #94a3b8;
+        --slate-400: #cbd5e1;
+        --slate-300: #e2e8f0;
+        --slate-200: #f1f5f9;
+        --slate-100: #f8fafc;
+        --slate-50:  #ffffff; /* Ajuste a blanco absoluto para limpieza */
+        --white: #ffffff;
+        
         max-width: 1400px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 0;
     }
 
-    /* Banner Superior */
+    /* Clases de texto y color */
+    .text-granate { color: var(--granate) !important; }
+    .text-dorado { color: var(--dorado) !important; }
+    .text-slate-900 { color: var(--slate-900) !important; }
+    .text-slate-800 { color: var(--slate-800) !important; }
+    .text-slate-700 { color: var(--slate-700) !important; }
+    .text-slate-600 { color: var(--slate-600) !important; }
+    .text-slate-500 { color: var(--slate-500) !important; }
+    .text-warning { color: #d97706 !important; }
+    .text-success { color: #059669 !important; }
+    
+    .bg-granate { background-color: var(--granate) !important; }
+    .bg-dorado { background-color: var(--dorado) !important; }
+    
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+    .tracking-tight { letter-spacing: -0.5px; }
+    .font-monospace { font-family: 'Courier New', Courier, monospace; }
+
+    /* --- BANNER SUPERIOR (Blanco, sin degradado) --- */
     .welcome-banner {
-        background: linear-gradient(135deg, var(--bs-dark-red) 0%, #4a0000 100%);
-        border-radius: 20px;
-        padding: 30px 40px;
-        margin-bottom: 30px;
+        background-color: var(--white);
+        border-top: 4px solid var(--granate);
+        border-radius: 16px;
+        padding: 2.2rem 2rem;
+        margin-bottom: 2.5rem;
         position: relative;
         overflow: hidden;
+        border-left: 1px solid var(--slate-200);
+        border-right: 1px solid var(--slate-200);
+        border-bottom: 1px solid var(--slate-200);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02) !important;
     }
     
-    .welcome-banner::after {
-        content: '';
-        position: absolute;
-        top: -50%; right: -10%;
-        width: 300px; height: 300px;
-        background: radial-gradient(circle, rgba(197, 160, 89, 0.15) 0%, transparent 70%);
-        border-radius: 50%;
+    .badge-custom {
+        padding: 0.5rem 1rem;
+        border-radius: 50rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    .text-gold { color: var(--bs-gold); }
-    .tracking-wider { letter-spacing: 2px; }
-    
-    .current-date-box {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        padding: 15px 20px;
-        border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: white;
-        display: inline-block;
-    }
-
-    /* Tarjetas KPI */
+    /* --- TARJETAS KPI (Minimalistas, sin bordes laterales) --- */
     .kpi-card {
-        background: #fff;
-        border-radius: 20px;
-        padding: 25px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-        border: 1px solid rgba(0,0,0,0.02);
-        position: relative;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: var(--white);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.015);
+        border: 1px solid var(--slate-200);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .kpi-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.05);
+        border-color: var(--slate-300); 
     }
 
     .kpi-icon {
-        width: 50px; height: 50px;
+        width: 48px; height: 48px;
         border-radius: 12px;
         display: flex; align-items: center; justify-content: center;
         font-size: 1.5rem;
-        position: absolute;
-        top: 25px; right: 25px;
+        margin-bottom: 1.2rem; 
     }
 
-    .bg-primary-soft { background-color: rgba(217, 119, 6, 0.1); color: var(--bs-primary) !important; }
-    .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
-    .bg-warning-soft { background-color: rgba(197, 160, 89, 0.1); color: var(--bs-gold) !important; }
-    .bg-danger-soft { background-color: rgba(139, 0, 0, 0.1); color: var(--bs-dark-red) !important; }
+    /* Fondos pasteles sólidos para que resalte el icono, sin degradados */
+    .bg-granate-soft { background-color: rgba(139, 0, 0, 0.08); }
+    .bg-dorado-soft { background-color: rgba(197, 160, 89, 0.12); }
+    .bg-warning-soft { background-color: #fffbeb; }
+
+    .kpi-label {
+        color: var(--slate-500);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 0.3rem;
+        letter-spacing: 0.5px;
+    }
 
     .kpi-value {
         font-size: 2.2rem;
         font-weight: 800;
-        color: #1e293b;
-        margin-bottom: 5px;
+        margin-bottom: 0;
+        line-height: 1;
     }
 
-    .kpi-label {
-        color: #64748b;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        margin-bottom: 15px;
-    }
-
-    .kpi-trend {
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-
-    /* Paneles de Contenido */
+    /* --- PANELES Y TABLAS --- */
     .dashboard-panel {
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-        border: 1px solid rgba(0,0,0,0.02);
+        background: var(--white);
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.015);
+        border: 1px solid var(--slate-200);
         overflow: hidden;
     }
 
     .panel-header {
-        padding: 20px 25px;
-        border-bottom: 1px solid #f1f5f9;
-        background: #fafafb;
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid var(--slate-200);
+        background: var(--white);
     }
 
     .panel-title {
-        font-size: 1rem;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--slate-800);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .panel-body { padding: 1.5rem; }
+
+    /* Estilos de Tabla Mejorados */
+    .custom-table { border-collapse: separate; border-spacing: 0; }
+    .custom-table th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--slate-500);
         font-weight: 700;
-        color: #334155;
+        border-bottom: 1px solid var(--slate-200);
+        padding: 1rem 0.5rem;
     }
-
-    .panel-body {
-        padding: 25px;
+    .custom-table td {
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid var(--slate-100);
+        vertical-align: middle;
     }
+    .custom-table tr:last-child td { border-bottom: none; }
+    
+    .table-row-hover { cursor: pointer; transition: all 0.2s ease; }
+    .table-row-hover:hover td { background-color: var(--slate-100); }
+    
+    /* Badges de Estado (Colores Sólidos sin borde) */
+    .badge-soft-warning { background-color: #fef3c7; color: #d97706; padding: 0.4em 0.8em; border-radius: 6px; font-weight: 700; }
+    .badge-soft-success { background-color: #d1fae5; color: #059669; padding: 0.4em 0.8em; border-radius: 6px; font-weight: 700; }
+    .badge-soft-danger { background-color: #fef2f2; color: #dc2626; padding: 0.4em 0.8em; border-radius: 6px; font-weight: 700; }
 
+    /* Botones de Acción en Tablas */
+    .btn-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--slate-200); background: #fff; color: var(--slate-500);}
+    .table-row-hover:hover .btn-icon { background: var(--granate); border-color: var(--granate); color: white;}
+
+    /* Botones de Acción Rápidas */
     .btn-action {
-        padding: 12px 20px;
         border-radius: 12px;
-        font-weight: 600;
-        transition: 0.2s;
-    }
-    .btn-action:hover { transform: translateX(5px); }
-
-    /* Sistema de Animaciones en Cascada */
-    .animate-up {
-        opacity: 0;
-        transform: translateY(30px);
-        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        padding: 1rem;
+        transition: all 0.2s;
+        border: none;
     }
     
+    .btn-granate { background-color: var(--granate); color: white; }
+    .btn-granate:hover { background-color: var(--granate-dark); color: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(139, 0, 0, 0.25); }
+    .btn-granate .action-icon { background: rgba(255,255,255,0.15); color: white; width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+
+    .btn-light-action { background-color: #fff; text-decoration: none; border-radius: 12px; padding: 1rem; transition: 0.2s;}
+    .btn-light-action:hover { background-color: var(--slate-100); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.03); border-color: var(--slate-300) !important; }
+    .btn-light-action .action-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+
+    /* --- ANIMACIONES --- */
+    .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.2s; }
     .delay-3 { animation-delay: 0.3s; }
     .delay-4 { animation-delay: 0.4s; }
     .delay-5 { animation-delay: 0.5s; }
-
-    @keyframes fadeInUp {
-        to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 </style>
 
 <script>
@@ -326,72 +428,87 @@
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
 
-        // 2. Gráfico Principal (Emisión de Tarjetas)
-        const ctxMain = document.getElementById('mainChart').getContext('2d');
+        // 2. Variables de Color (Colores Planos / Flat Design)
+        const colorGranate = '#8b0000';
+        const colorDorado = '#c5a059';
+        const colorSlate = '#334155';
+        const colorGrisClaro = '#cbd5e1';
         
-        // Creamos un gradiente dorado para las barras
-        let gradientGold = ctxMain.createLinearGradient(0, 0, 0, 400);
-        gradientGold.addColorStop(0, '#d97706'); // Ámbar
-        gradientGold.addColorStop(1, '#c5a059'); // Dorado
+        // Datos de Django
+        const barrasLabels = {{ bar_labels|safe }};
+        const barrasData = {{ bar_data|safe }};
+        const donaLabels = {{ tipo_labels|safe }};
+        const donaData = {{ tipo_data|safe }};
 
-        new Chart(ctxMain, {
-            type: 'bar',
-            data: {
-                labels: ['Octubre', 'Noviembre', 'Diciembre', 'Enero', 'Febrero', 'Marzo'],
-                datasets: [{
-                    label: 'Tarjetas Emitidas',
-                    data: [65, 89, 120, 95, 140, 112], // Dummy data (reemplazar con data real de la view)
-                    backgroundColor: gradientGold,
-                    borderRadius: 8,
-                    borderSkipped: false,
-                    barPercentage: 0.6
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false }
+        // 3. Gráfico Principal (Sólido y sin degradados fuertes)
+        const canvasMain = document.getElementById('mainChart');
+        if (canvasMain) {
+            const ctxMain = canvasMain.getContext('2d');
+            
+            // Degradado apenas perceptible (casi Flat)
+            let gradientGranate = ctxMain.createLinearGradient(0, 0, 0, 400);
+            gradientGranate.addColorStop(0, 'rgba(139, 0, 0, 0.9)'); 
+            gradientGranate.addColorStop(1, 'rgba(139, 0, 0, 0.7)'); 
+
+            new Chart(ctxMain, {
+                type: 'bar',
+                data: {
+                    labels: barrasLabels,
+                    datasets: [{
+                        label: 'Tarjetas Emitidas',
+                        data: barrasData,
+                        backgroundColor: gradientGranate,
+                        borderColor: colorGranate,
+                        borderWidth: 1,
+                        borderRadius: 4, 
+                        barPercentage: 0.4
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { borderDash: [5, 5], color: '#f1f5f9' },
-                        border: { display: false }
-                    },
-                    x: {
-                        grid: { display: false },
-                        border: { display: false }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: '#f1f5f9' }, 
+                            border: { display: false },
+                            ticks: { precision: 0 }
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            border: { display: false } 
+                        }
                     }
-                },
-                animation: {
-                    duration: 2000,
-                    easing: 'easeOutQuart'
                 }
-            }
-        });
+            });
+        }
 
-        // 3. Gráfico Circular (Distribución)
-        const ctxDonut = document.getElementById('donutChart').getContext('2d');
-        new Chart(ctxDonut, {
-            type: 'doughnut',
-            data: {
-                labels: ['Interprovincial', 'Cooperativas', 'Confederado'],
-                datasets: [{
-                    data: [45, 25, 30], // Dummy data
-                    backgroundColor: ['#8b0000', '#d97706', '#1e293b'],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                cutout: '75%',
-                plugins: {
-                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+        // 4. Gráfico Circular (Minimalista Institucional)
+        const canvasDonut = document.getElementById('donutChart');
+        if (canvasDonut) {
+            const ctxDonut = canvasDonut.getContext('2d');
+            new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    labels: donaLabels,
+                    datasets: [{
+                        data: donaData,
+                        backgroundColor: [colorGranate, colorSlate, colorDorado, colorGrisClaro, '#94a3b8'], 
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
                 },
-                animation: { animateScale: true, animateRotate: true }
-            }
-        });
+                options: {
+                    responsive: true,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { family: "'Plus Jakarta Sans', sans-serif" } } }
+                    },
+                    animation: { animateScale: true, animateRotate: true }
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

@@ -1,110 +1,231 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="{% url 'operador:lista_operadores' %}" class="text-decoration-none" style="color: var(--bs-gold);">Operadores</a></li>
-                <li class="breadcrumb-item active">Expediente Empresa</li>
-            </ol>
-        </nav>
-        <h2 class="fw-bold" style="color: var(--bs-dark-red);">{{ operador.nombre|upper }}</h2>
-        <span class="badge bg-light text-muted border">ID de Registro: #{{ operador.id }}</span>
-    </div>
-    <a href="{% url 'operador:lista_operadores' %}" class="btn btn-outline-secondary rounded-pill">
-        <i class="bi bi-arrow-left me-1"></i> Volver al Listado
-    </a>
-</div>
+<div class="operador-detalle-container pb-5 animate-up">
 
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm text-center p-3" style="border-radius: 15px; border-bottom: 4px solid var(--bs-primary) !important;">
-            <div class="text-muted small text-uppercase fw-bold">Afiliados Totales</div>
-            <div class="display-6 fw-bold text-dark">{{ operador.afiliados.count }}</div>
-            <i class="bi bi-people text-primary opacity-50"></i>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-4">
+        <div class="mb-3 mb-md-0">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2 fs-7 fw-medium">
+                    <li class="breadcrumb-item"><a href="{% url 'operador:lista_operadores' %}" class="text-indigo text-decoration-none"><i class="bi bi-buildings me-1"></i>Operadores</a></li>
+                    <li class="breadcrumb-item text-slate-500 active" aria-current="page">Expediente Empresa</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold text-slate-900 mb-2 d-flex align-items-center">
+                {{ operador.nombre|upper }}
+            </h2>
+            <span class="badge bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1 rounded-pill fw-medium">
+                ID de Registro: #{{ operador.id }}
+            </span>
+        </div>
+        
+        <div class="mt-2 mt-md-0">
+            <a href="{% url 'operador:lista_operadores' %}" class="btn btn-light-action rounded-pill px-4">
+                <i class="bi bi-arrow-left me-2"></i> Volver al Directorio
+            </a>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm text-center p-3" style="border-radius: 15px; border-bottom: 4px solid var(--bs-dark-red) !important;">
-            <div class="text-muted small text-uppercase fw-bold">Tarjetas de Operación</div>
-            <div class="display-6 fw-bold text-dark">{{ operador.tarjetas_de_operacion.count }}</div>
-            <i class="bi bi-card-checklist text-danger opacity-50"></i>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-lg-5">
-        <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
-            <div class="card-body p-4">
-                <h5 class="fw-bold mb-4 border-bottom pb-2">
-                    <i class="bi bi-info-circle me-2 text-primary"></i>Datos Generales
-                </h5>
-                <div class="mb-3">
-                    <label class="text-muted small d-block">Razón Social / Nombre</label>
-                    <p class="fs-5 fw-semibold">{{ operador.nombre }}</p>
-                </div>
-                <div class="mb-3">
-                    <label class="text-muted small d-block">Fecha de Incorporación al Sistema</label>
-                    <p class="fw-semibold">{{ operador.fecha_registro|date:"d \d\e F \d\e Y" }}</p>
-                </div>
-                <hr>
-                {% if user.rol == 'a' or user.rol == 'sa'%}
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'operador:editar_operador' operador.id %}" class="btn btn-light border btn-sm rounded-pill">
-                            <i class="bi bi-pencil-square me-1"></i> Editar Información
-                        </a>
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card kpi-card border-0 shadow-sm h-100">
+                <div class="card-body p-4 d-flex align-items-center position-relative overflow-hidden">
+                    <div class="icon-circle-large bg-indigo-50 text-indigo me-4 z-1">
+                        <i class="bi bi-people-fill"></i>
                     </div>
-                {% endif %}
+                    <div class="z-1">
+                        <span class="text-slate-400 text-uppercase tracking-wider fs-8 fw-bold d-block mb-1">Afiliados Totales</span>
+                        <h3 class="fw-bolder text-slate-800 mb-0 display-6">{{ operador.afiliados.count }}</h3>
+                    </div>
+                    <i class="bi bi-people-fill position-absolute text-slate-50 opacity-25" style="font-size: 8rem; right: -20px; bottom: -30px;"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card kpi-card border-0 shadow-sm h-100">
+                <div class="card-body p-4 d-flex align-items-center position-relative overflow-hidden">
+                    <div class="icon-circle-large bg-emerald-50 text-emerald-600 me-4 z-1">
+                        <i class="bi bi-credit-card-2-front-fill"></i>
+                    </div>
+                    <div class="z-1">
+                        <span class="text-slate-400 text-uppercase tracking-wider fs-8 fw-bold d-block mb-1">Tarjetas de Operación</span>
+                        <h3 class="fw-bolder text-slate-800 mb-0 display-6">{{ operador.tarjetas_de_operacion.count }}</h3>
+                    </div>
+                    <i class="bi bi-credit-card-2-front-fill position-absolute text-slate-50 opacity-25" style="font-size: 8rem; right: -20px; bottom: -30px;"></i>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-7">
-        <div class="card border-0 shadow-sm" style="border-radius: 20px;">
-            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0">Afiliados Vinculados</h5>
-                <span class="badge bg-dark rounded-pill">{{ operador.afiliados.count }}</span>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="ps-4 small">NOMBRE COMPLETO</th>
-                                <th class="small">FECHA REGISTRO</th>
-                                <th class="text-end pe-4 small">ACCIÓN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for afiliado in operador.afiliados.all|slice:":5" %}
-                            <tr>
-                                <td class="ps-4">
-                                    <div class="fw-bold">{{ afiliado.nombre }} {{ afiliado.apellido }}</div>
-                                </td>
-                                <td class="text-muted small">{{ afiliado.fecha_registro|date:"d/m/Y" }}</td>
-                                <td class="text-end pe-4">
-                                    <a href="{% url 'afiliado:detalle_afiliado' afiliado.id %}" class="btn btn-sm btn-outline-primary border-0 rounded-circle">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="3" class="text-center py-4 text-muted small">No hay afiliados registrados para esta empresa.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card modern-card border-0 shadow-sm h-100">
+                <div class="card-body p-4 p-md-5 d-flex flex-column">
+                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-7 mb-4 border-bottom pb-3">
+                        <i class="bi bi-building-check text-indigo me-2"></i>Datos Generales
+                    </h6>
+                    
+                    <div class="mb-4">
+                        <label class="text-slate-400 text-uppercase tracking-wider fs-8 fw-bold d-block mb-2">Razón Social / Sindicato</label>
+                        <div class="bg-slate-50 p-3 rounded-4 border border-slate-100">
+                            <span class="fs-6 fw-semibold text-slate-800">{{ operador.nombre }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="text-slate-400 text-uppercase tracking-wider fs-8 fw-bold d-block mb-2">Fecha de Incorporación</label>
+                        <div class="d-flex align-items-center fs-6 fw-medium text-slate-700">
+                            <i class="bi bi-calendar-event text-indigo-light me-2 fs-5"></i>
+                            {{ operador.fecha_registro|date:"d \d\e F \d\e Y" }}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-auto pt-4 border-top">
+                        {% if user.rol == 'a' or user.rol == 'sa' %}
+                            <a href="{% url 'operador:editar_operador' operador.id %}" class="btn btn-outline-indigo w-100 rounded-pill fw-medium">
+                                <i class="bi bi-pencil-square me-2"></i> Editar Información de Empresa
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card modern-card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-7 mb-0">
+                        Afiliados Vinculados
+                    </h6>
+                    <span class="badge bg-slate-800 text-white rounded-pill px-3">{{ operador.afiliados.count }} Registros</span>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table custom-table align-middle mb-0">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="ps-4">Nombre Completo</th>
+                                    <th>Fecha Registro</th>
+                                    <th class="text-end pe-4">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for afiliado in operador.afiliados.all|slice:":5" %}
+                                <tr class="table-row-hover">
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center py-1">
+                                            <div class="avatar-sm me-3">
+                                                <span class="fw-bold">{{ afiliado.nombre|make_list|first|upper }}</span>
+                                            </div>
+                                            <span class="fw-bold text-slate-800">{{ afiliado.nombre }} {{ afiliado.apellido }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-slate-500 fs-7"><i class="bi bi-calendar3 me-1 opacity-75"></i> {{ afiliado.fecha_registro|date:"d/m/Y" }}</span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a href="{% url 'afiliado:detalle_afiliado' afiliado.id %}" class="btn btn-sm btn-icon btn-light rounded-circle" title="Ver Expediente Afiliado">
+                                            <i class="bi bi-chevron-right text-slate-600"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-5">
+                                        <div class="empty-state">
+                                            <div class="empty-icon-wrapper mb-3">
+                                                <i class="bi bi-people text-slate-300 fs-1"></i>
+                                            </div>
+                                            <h6 class="fw-bold text-slate-600 mb-1">Sin Afiliados</h6>
+                                            <p class="text-slate-400 small mb-0">Esta empresa aún no tiene personal vinculado.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
                 {% if operador.afiliados.count > 5 %}
-                <div class="card-footer bg-white border-0 text-center pb-4">
-                    <a href="#" class="text-decoration-none small fw-bold" style="color: var(--bs-gold);">VER TODOS LOS AFILIADOS</a>
+                <div class="card-footer bg-transparent border-top-0 text-center pb-4 pt-3">
+                    <a href="#" class="btn btn-link text-indigo text-decoration-none fw-bold fs-7 hover-indigo px-4 py-2 bg-indigo-50 rounded-pill transition-all">
+                        Ver todos los afiliados <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* VARIABLES LOCALES */
+    .operador-detalle-container {
+        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #a5b4fc; --indigo-soft: rgba(99, 102, 241, 0.1);
+        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-600: #475569; --slate-500: #64748b; --slate-400: #94a3b8; --slate-300: #cbd5e1; --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+        --emerald-600: #059669; --emerald-50: #ecfdf5;
+    }
+
+    .text-indigo { color: var(--indigo); }
+    .text-indigo-light { color: var(--indigo-light); }
+    .bg-indigo-50 { background-color: #e0e7ff; }
+    .bg-emerald-50 { background-color: var(--emerald-50); }
+    .text-emerald-600 { color: var(--emerald-600); }
+    
+    .text-slate-900 { color: var(--slate-900); }
+    .text-slate-800 { color: var(--slate-800); }
+    .text-slate-700 { color: var(--slate-700); }
+    .text-slate-600 { color: var(--slate-600); }
+    .text-slate-500 { color: var(--slate-500); }
+    .text-slate-400 { color: var(--slate-400); }
+    
+    .bg-slate-800 { background-color: var(--slate-800); }
+    .bg-slate-100 { background-color: var(--slate-100); }
+    .bg-slate-50 { background-color: var(--slate-50); }
+    
+    .border-slate-200 { border-color: var(--slate-200) !important; }
+    .border-slate-100 { border-color: var(--slate-100) !important; }
+
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+    .transition-all { transition: all 0.2s ease; }
+
+    /* TARJETAS */
+    .modern-card, .kpi-card { border-radius: 20px; background-color: #fff; }
+    .kpi-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important; }
+
+    /* ICONOS */
+    .icon-circle-large { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+    .avatar-sm { width: 35px; height: 35px; border-radius: 10px; background-color: var(--slate-100); color: var(--slate-700); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+
+    /* BOTONES */
+    .btn-light-action { background-color: #fff; border: 1px solid var(--slate-200); color: var(--slate-700); font-weight: 600; transition: all 0.2s; }
+    .btn-light-action:hover { background-color: var(--slate-50); color: var(--indigo); border-color: var(--slate-300); }
+    
+    .btn-outline-indigo { border: 1px solid var(--indigo); color: var(--indigo); background: transparent; transition: 0.2s; }
+    .btn-outline-indigo:hover { background: var(--indigo); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+
+    .btn-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; background-color: var(--slate-50); border: 1px solid var(--slate-100); transition: 0.2s;}
+    .table-row-hover:hover .btn-icon { background-color: var(--indigo); color: white; border-color: var(--indigo); }
+    .table-row-hover:hover .btn-icon i { color: white !important; }
+
+    .hover-indigo:hover { background-color: #c7d2fe !important; color: var(--indigo-dark) !important; }
+
+    /* TABLA */
+    .custom-table { border-collapse: separate; border-spacing: 0; }
+    .custom-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); font-weight: 600; border-bottom: 1px solid var(--slate-200); padding: 1rem 0.5rem; }
+    .custom-table td { border-bottom: 1px solid var(--slate-50); vertical-align: middle; padding: 1rem 0.5rem; }
+    
+    .table-row-hover { transition: all 0.2s ease; }
+    .table-row-hover:hover td { background-color: #fbfbff; }
+
+    /* ANIMACIONES */
+    .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+</style>
 {% endblock %}

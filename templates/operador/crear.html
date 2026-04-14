@@ -1,51 +1,62 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center py-4">
+<div class="row justify-content-center form-container py-4 animate-up">
     <div class="col-lg-6 col-md-8">
+        
         <div class="d-flex align-items-center mb-4">
-            <a href="{% url 'operador:lista_operadores' %}" class="btn btn-light rounded-circle me-3 shadow-sm border">
+            <a href="{% url 'operador:lista_operadores' %}" class="btn btn-back rounded-circle me-3 shadow-sm d-flex align-items-center justify-content-center" title="Volver al Listado">
                 <i class="bi bi-arrow-left"></i>
             </a>
             <div>
-                <h2 class="fw-bold mb-0" style="color: var(--bs-dark-red);">Nueva Empresa Operadora</h2>
-                <p class="text-muted small mb-0">Registre una nueva entidad en el padrón de transporte</p>
+                <h2 class="fw-bold mb-1 text-slate-900">Nueva Empresa Operadora</h2>
+                <p class="text-slate-500 fs-7 mb-0">Registre una nueva entidad en el padrón de transporte</p>
             </div>
         </div>
 
-        <div class="card border-0 shadow-lg" style="border-radius: 25px; overflow: hidden;">
-            <div class="card-header border-0 py-3 text-center" style="background-color: var(--bs-gold);">
-                <i class="bi bi-building-fill-add text-white fs-3"></i>
-            </div>
+        <div class="card form-card border-0 shadow-sm mb-4">
+            <div class="card-decorator"></div>
             
             <div class="card-body p-4 p-md-5">
-                <form method="POST" class="needs-validation">
+                
+                <div class="text-center mb-4">
+                    <div class="icon-circle-large bg-indigo-50 text-indigo mx-auto mb-3">
+                        <i class="bi bi-building-fill-add"></i>
+                    </div>
+                </div>
+
+                <form method="POST" class="needs-validation custom-form">
                     {% csrf_token %}
 
                     <div class="mb-4">
-                        <label for="{{ form.nombre.id_for_label }}" class="form-label fw-bold text-uppercase small" style="color: var(--bs-dark-red);">
+                        <label for="{{ form.nombre.id_for_label }}" class="form-label fs-8 fw-bold text-slate-500 text-uppercase tracking-wider mb-2">
                             Nombre de la Empresa / Razón Social
                         </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;">
+                        
+                        <div class="input-group-custom d-flex">
+                            <span class="input-group-text">
                                 <i class="bi bi-card-text"></i>
                             </span>
                             {{ form.nombre }}
                         </div>
-                        <div class="form-text small">Ingrese el nombre oficial tal como figura en sus documentos legales.</div>
+                        
+                        <div class="form-text fs-7 text-slate-400 mt-2">
+                            <i class="bi bi-info-circle me-1"></i> Ingrese el nombre oficial tal como figura en sus documentos legales.
+                        </div>
                         
                         {% for error in form.nombre.errors %}
-                            <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                            <div class="text-danger fs-7 mt-2 fw-medium bg-red-50 p-2 rounded-3">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ error }}
+                            </div>
                         {% endfor %}
                     </div>
 
-                    <div class="d-grid gap-2 mt-5">
-                        <button type="submit" class="btn btn-primary btn-lg shadow" 
-                                style="background-color: var(--bs-primary); border: none; border-radius: 15px; font-weight: 600;">
-                            GUARDAR EMPRESA
+                    <div class="d-grid gap-3 mt-5">
+                        <button type="submit" class="btn btn-indigo btn-lg shadow-sm">
+                            Guardar Empresa
                         </button>
                         
-                        <a href="{% url 'operador:lista_operadores' %}" class="btn btn-link text-muted text-decoration-none small mt-2">
+                        <a href="{% url 'operador:lista_operadores' %}" class="text-center text-slate-500 text-decoration-none fs-7 hover-indigo transition-all">
                             Cancelar y volver al listado
                         </a>
                     </div>
@@ -53,34 +64,118 @@
             </div>
         </div>
 
-        <div class="mt-4 p-3 bg-light rounded-4 border-start border-4 border-warning shadow-sm">
-            <div class="d-flex">
-                <i class="bi bi-lightbulb text-warning fs-4 me-3"></i>
-                <p class="small mb-0 text-muted">
-                    <strong>Importante:</strong> Al crear un operador, este aparecerá disponible para vincular nuevos afiliados y vehículos en sus respectivos formularios de registro.
-                </p>
+        <div class="alert bg-slate-50 border border-slate-100 rounded-4 d-flex align-items-start p-4 shadow-sm animate-up delay-1">
+            <div class="icon-circle bg-warning-50 text-warning me-3 flex-shrink-0">
+                <i class="bi bi-lightbulb-fill"></i>
+            </div>
+            <div class="fs-7 text-slate-600 pt-1">
+                <strong class="text-slate-800 d-block mb-1">Dato Importante</strong> 
+                Al crear un operador, este aparecerá disponible inmediatamente para vincular nuevos afiliados y vehículos en sus respectivos formularios de registro.
             </div>
         </div>
+
     </div>
 </div>
 
 <style>
-    /* Estilo para que el input de Django herede el look premium */
-    input.form-control {
-        border-radius: 0 12px 12px 0 !important;
-        padding: 0.8rem 1rem;
-        border: 1px solid #ced4da;
-        border-left: none;
-    }
-    
-    input.form-control:focus {
-        border-color: #ced4da;
-        box-shadow: none;
+    /* VARIABLES LOCALES */
+    .form-container {
+        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #e0e7ff;
+        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-500: #64748b; --slate-400: #94a3b8; --slate-100: #f1f5f9; --slate-50: #f8fafc;
     }
 
-    .input-group:focus-within {
-        box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.15);
+    .text-indigo { color: var(--indigo); }
+    .text-slate-900 { color: var(--slate-900); }
+    .text-slate-800 { color: var(--slate-800); }
+    .text-slate-600 { color: #475569; }
+    .text-slate-500 { color: var(--slate-500); }
+    .text-slate-400 { color: var(--slate-400); }
+    
+    .bg-indigo-50 { background-color: #e0e7ff; }
+    .bg-red-50 { background-color: #fef2f2; }
+    .bg-warning-50 { background-color: #fffbeb; }
+    .text-warning { color: #d97706 !important; }
+    .bg-slate-50 { background-color: var(--slate-50); }
+    
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+
+    /* TARJETA Y DECORACIÓN */
+    .form-card { border-radius: 20px; overflow: hidden; background-color: #fff; }
+    .card-decorator { height: 6px; background: #8b0000; }
+
+    /* ICONOS */
+    .icon-circle-large { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+    .icon-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+
+    /* BOTONES */
+    .btn-back { width: 45px; height: 45px; background-color: #fff; border: 1px solid var(--slate-100); color: var(--slate-700); transition: all 0.2s; }
+    .btn-back:hover { background-color: var(--slate-50); color: var(--indigo); transform: translateX(-3px); }
+
+    .btn-indigo { background-color: var(--indigo); color: white; border: none; border-radius: 12px; font-weight: 600; padding: 0.8rem 1.5rem; transition: all 0.2s; }
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25); }
+
+    .hover-indigo:hover { color: var(--indigo) !important; font-weight: 500; }
+    .transition-all { transition: all 0.2s ease; }
+
+    /* INPUT GROUP CUSTOM (Seamless Style) */
+    .input-group-custom {
+        display: flex;
         border-radius: 12px;
+        transition: all 0.2s ease;
     }
+    .input-group-custom .input-group-text {
+        background-color: var(--slate-50);
+        border: 1px solid #e2e8f0;
+        border-right: none;
+        border-radius: 12px 0 0 12px;
+        color: var(--slate-400);
+        padding: 0.8rem 1rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+    /* Estilo para el input que genera Django */
+    .input-group-custom input {
+        background-color: var(--slate-50);
+        border: 1px solid #e2e8f0;
+        border-left: none;
+        border-radius: 0 12px 12px 0;
+        padding: 0.8rem 1rem 0.8rem 0;
+        color: var(--slate-700);
+        flex: 1;
+        outline: none;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+    }
+    
+    /* Efecto Focus en todo el grupo */
+    .input-group-custom:focus-within .input-group-text,
+    .input-group-custom:focus-within input {
+        border-color: var(--indigo);
+        background-color: #fff;
+    }
+    .input-group-custom:focus-within .input-group-text {
+        color: var(--indigo);
+    }
+    .input-group-custom:focus-within {
+        box-shadow: 0 0 0 4px var(--indigo-light);
+    }
+
+    /* ANIMACIÓN */
+    .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 </style>
+
+<script>
+    // Asegurar que el input de Django no tenga clases raras de Bootstrap que rompan nuestro diseño custom
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputNombre = document.querySelector('.input-group-custom input');
+        if (inputNombre) {
+            inputNombre.classList.remove('form-control'); // Quitamos la clase nativa para que use nuestro CSS
+        }
+    });
+</script>
 {% endblock %}

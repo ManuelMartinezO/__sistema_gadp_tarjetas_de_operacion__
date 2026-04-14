@@ -1,337 +1,234 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="pantalla-completa">
-    <div class="dashboard-card">
+<div class="row justify-content-center form-container py-4 animate-up">
+    <div class="col-lg-10">
         
-        <div class="dashboard-header">
-            <div>
-                <h2 class="titulo"><i class="bi bi-car-front-fill me-2"></i>Alta de Vehículo</h2>
-                <p class="subtitulo">Gestión de padrón vehicular. Llene los campos correspondientes.</p>
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+            <div class="d-flex align-items-center">
+                <a href="{% url 'vehiculo:lista_vehiculos' %}" class="btn btn-back rounded-circle me-3 shadow-sm d-flex align-items-center justify-content-center" title="Volver al Listado">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="fw-bold mb-1 text-slate-900">Alta de Vehículo</h2>
+                    <p class="text-slate-500 fs-7 mb-0">Gestión de padrón vehicular. Llene los campos correspondientes.</p>
+                </div>
             </div>
             
-            <div class="botones-rapidos">
-                <span class="label-rapido">Añadir faltantes:</span>
-                <button type="button" class="btn-mini color" onclick="document.getElementById('modal-color').showModal()">
-                    <i class="bi bi-palette"></i> Color
+            <div class="d-flex align-items-center gap-2 bg-white p-2 rounded-pill shadow-sm border border-slate-100">
+                <span class="text-slate-400 fs-8 fw-bold text-uppercase ms-2 me-1 d-none d-lg-block">Añadir Faltantes:</span>
+                
+                <button type="button" class="btn btn-sm action-pill color-pill" onclick="document.getElementById('modal-color').showModal()">
+                    <i class="bi bi-palette-fill me-1"></i> Color
                 </button>
-                <button type="button" class="btn-mini marca" onclick="document.getElementById('modal-marca').showModal()">
-                    <i class="bi bi-tag"></i> Marca
+                <button type="button" class="btn btn-sm action-pill marca-pill" onclick="document.getElementById('modal-marca').showModal()">
+                    <i class="bi bi-tag-fill me-1"></i> Marca
                 </button>
-                <button type="button" class="btn-mini tipo" onclick="document.getElementById('modal-tipo_vehiculo').showModal()">
-                    <i class="bi bi-truck"></i> Tipo
+                <button type="button" class="btn btn-sm action-pill tipo-pill" onclick="document.getElementById('modal-tipo_vehiculo').showModal()">
+                    <i class="bi bi-truck-front-fill me-1"></i> Tipo
                 </button>
             </div>
         </div>
 
-        <form method="POST" id="form-vehiculo" class="formulario-grid-master">
-            {% csrf_token %}
+        <div class="card form-card border-0 shadow-sm mb-4">
+            <div class="card-decorator"></div>
             
-            <div class="grid-django">
-                {{ form.as_p }}
-            </div>
+            <div class="card-body p-4 p-md-5">
+                <form method="POST" id="form-vehiculo" class="custom-form">
+                    {% csrf_token %}
+                    
+                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-4 border-bottom pb-3">
+                        <i class="bi bi-car-front text-indigo me-2"></i>Especificaciones Técnicas
+                    </h6>
 
-            <div class="footer-acciones">
-                <a href="{% url 'vehiculo:lista_vehiculos' %}" class="btn-cancelar">Cancelar</a>
-                <button type="submit" class="btn-guardar"><i class="bi bi-check2-circle me-2"></i>CREAR VEHÍCULO</button>
+                    <div class="form-inputs-wrapper grid-django mb-4">
+                        {{ form.as_p }}
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row justify-content-end gap-3 mt-5 pt-3 border-top border-slate-100">
+                        <a href="{% url 'vehiculo:lista_vehiculos' %}" class="btn btn-light-action btn-lg px-4 text-center">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-indigo btn-lg px-5 shadow-sm">
+                            <i class="bi bi-check2-circle me-2"></i> Registrar Vehículo
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
 
     </div>
 </div>
 
 <dialog id="modal-color" class="modal-moderno">
-    <div class="modal-header">
-        <h3><i class="bi bi-palette"></i> Nuevo Color</h3>
+    <div class="modal-header-custom color-bg">
+        <h5 class="fw-bold mb-0 text-white"><i class="bi bi-palette-fill me-2"></i>Registrar Nuevo Color</h5>
     </div>
-    <form class="form-ajax-flotante">
+    <form class="form-ajax-flotante custom-form p-4">
         {% csrf_token %}
         <input type="hidden" name="tipo_atributo" value="color">
-        <div class="grid-modal">{{ form_color.as_p }}</div>
-        <div class="modal-footer">
-            <button type="button" class="btn-cerrar" onclick="document.getElementById('modal-color').close()">Cancelar</button>
-            <button type="submit" class="btn-confirmar">Guardar</button>
+        <div class="form-inputs-wrapper mb-4">{{ form_color.as_p }}</div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light-action rounded-pill px-4" onclick="document.getElementById('modal-color').close()">Cancelar</button>
+            <button type="submit" class="btn btn-color rounded-pill px-4">Guardar Color</button>
         </div>
     </form>
 </dialog>
 
 <dialog id="modal-marca" class="modal-moderno">
-    <div class="modal-header">
-        <h3><i class="bi bi-tag"></i> Nueva Marca</h3>
+    <div class="modal-header-custom marca-bg">
+        <h5 class="fw-bold mb-0 text-white"><i class="bi bi-tag-fill me-2"></i>Registrar Nueva Marca</h5>
     </div>
-    <form class="form-ajax-flotante">
+    <form class="form-ajax-flotante custom-form p-4">
         {% csrf_token %}
         <input type="hidden" name="tipo_atributo" value="marca"> 
-        <div class="grid-modal">{{ form_marca.as_p }}</div>
-        <div class="modal-footer">
-            <button type="button" class="btn-cerrar" onclick="document.getElementById('modal-marca').close()">Cancelar</button>
-            <button type="submit" class="btn-confirmar">Guardar</button>
+        <div class="form-inputs-wrapper mb-4">{{ form_marca.as_p }}</div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light-action rounded-pill px-4" onclick="document.getElementById('modal-marca').close()">Cancelar</button>
+            <button type="submit" class="btn btn-marca rounded-pill px-4">Guardar Marca</button>
         </div>
     </form>
 </dialog>
 
 <dialog id="modal-tipo_vehiculo" class="modal-moderno">
-    <div class="modal-header">
-        <h3><i class="bi bi-truck"></i> Nuevo Tipo</h3>
+    <div class="modal-header-custom tipo-bg">
+        <h5 class="fw-bold mb-0 text-white"><i class="bi bi-truck-front-fill me-2"></i>Registrar Nuevo Tipo</h5>
     </div>
-    <form class="form-ajax-flotante">
+    <form class="form-ajax-flotante custom-form p-4">
         {% csrf_token %}
         <input type="hidden" name="tipo_atributo" value="tipo_vehiculo">
-        <div class="grid-modal">{{ form_tipo.as_p }}</div>
-        <div class="modal-footer">
-            <button type="button" class="btn-cerrar" onclick="document.getElementById('modal-tipo_vehiculo').close()">Cancelar</button>
-            <button type="submit" class="btn-confirmar">Guardar</button>
+        <div class="form-inputs-wrapper mb-4">{{ form_tipo.as_p }}</div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light-action rounded-pill px-4" onclick="document.getElementById('modal-tipo_vehiculo').close()">Cancelar</button>
+            <button type="submit" class="btn btn-tipo rounded-pill px-4">Guardar Tipo</button>
         </div>
     </form>
 </dialog>
+
+<style>
+    /* VARIABLES LOCALES */
+    .form-container {
+        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #e0e7ff;
+        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-500: #64748b; --slate-400: #94a3b8; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+        /* Colores para las píldoras de acción */
+        --color-teal: #0d9488; --color-amber: #d97706; --color-rose: #e11d48;
+    }
+
+    .text-indigo { color: var(--indigo); }
+    .text-slate-900 { color: var(--slate-900); }
+    .text-slate-800 { color: var(--slate-800); }
+    .text-slate-500 { color: var(--slate-500); }
+    
+    .bg-slate-50 { background-color: var(--slate-50); }
+    .border-slate-100 { border-color: var(--slate-100) !important; }
+    
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+
+    /* TARJETA Y DECORACIÓN */
+    .form-card { border-radius: 20px; overflow: hidden; background-color: #fff; }
+    .card-decorator { height: 6px; background: #8b0000; }
+
+    /* BOTONES GLOBALES */
+    .btn-back { width: 45px; height: 45px; background-color: #fff; border: 1px solid var(--slate-100); color: var(--slate-700); transition: all 0.2s; }
+    .btn-back:hover { background-color: var(--slate-50); color: var(--indigo); transform: translateX(-3px); }
+
+    .btn-indigo { background-color: var(--indigo); color: white; border: none; border-radius: 12px; font-weight: 600; transition: all 0.2s; }
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25); }
+
+    .btn-light-action { background-color: #fff; border: 1px solid #e2e8f0; color: var(--slate-700); font-weight: 600; border-radius: 12px; transition: all 0.2s; }
+    .btn-light-action:hover { background-color: var(--slate-50); color: var(--slate-900); border-color: #cbd5e1; }
+
+    /* PÍLDORAS DE ACCIÓN RÁPIDA (Color, Marca, Tipo) */
+    .action-pill { border-radius: 50rem; font-weight: 700; font-size: 0.75rem; padding: 0.4rem 1rem; border: none; transition: 0.2s; }
+    .action-pill:hover { transform: translateY(-2px); }
+    
+    .color-pill { background-color: #ccfbf1; color: var(--color-teal); }
+    .color-pill:hover { background-color: var(--color-teal); color: white; box-shadow: 0 4px 10px rgba(13, 148, 136, 0.2); }
+    
+    .marca-pill { background-color: #fef3c7; color: var(--color-amber); }
+    .marca-pill:hover { background-color: var(--color-amber); color: white; box-shadow: 0 4px 10px rgba(217, 119, 6, 0.2); }
+    
+    .tipo-pill { background-color: #ffe4e6; color: var(--color-rose); }
+    .tipo-pill:hover { background-color: var(--color-rose); color: white; box-shadow: 0 4px 10px rgba(225, 29, 72, 0.2); }
+
+    /* GRID DJANGO MAGICO */
+    .grid-django {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.2rem 1.5rem;
+    }
+    
+    /* INTERCEPCIÓN DEL FORM.AS_P */
+    .form-inputs-wrapper p { margin-bottom: 0; display: flex; flex-direction: column; }
+    
+    .form-inputs-wrapper p label {
+        font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.4rem; display: block; letter-spacing: 0.5px;
+    }
+    
+    .custom-form input[type="text"], 
+    .custom-form input[type="number"], 
+    .custom-form select {
+        width: 100%; background-color: var(--slate-50); border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.6rem 1rem; color: var(--slate-700); transition: 0.2s; font-size: 0.95rem; min-height: 42px;
+    }
+    
+    .custom-form input:focus, 
+    .custom-form select:focus {
+        background-color: #fff; border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-light); outline: none;
+    }
+
+    /* ESTILOS PARA SELECT2 */
+    .select2-container--bootstrap-5 .select2-selection {
+        background-color: var(--slate-50) !important; border: 1px solid #e2e8f0 !important; border-radius: 10px !important; min-height: 42px !important; padding-top: 2px;
+    }
+    .select2-container--bootstrap-5.select2-container--focus .select2-selection {
+        background-color: #fff !important; border-color: var(--indigo) !important; box-shadow: 0 0 0 3px var(--indigo-light) !important;
+    }
+
+    /* MODALES NATIVOS (<dialog>) ESTILO PREMIUM */
+    dialog.modal-moderno {
+        border: none; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); padding: 0; width: 100%; max-width: 420px; overflow: hidden;
+    }
+    dialog.modal-moderno::backdrop {
+        background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+    }
+    .modal-header-custom { padding: 1.2rem 1.5rem; }
+    .color-bg { background-color: var(--color-teal); }
+    .marca-bg { background-color: var(--color-amber); }
+    .tipo-bg { background-color: var(--color-rose); }
+    
+    .btn-color { background-color: var(--color-teal); color: white; border: none; font-weight: 600; transition: 0.2s; }
+    .btn-color:hover { background-color: #0f766e; color: white; }
+    
+    .btn-marca { background-color: var(--color-amber); color: white; border: none; font-weight: 600; transition: 0.2s; }
+    .btn-marca:hover { background-color: #b45309; color: white; }
+    
+    .btn-tipo { background-color: var(--color-rose); color: white; border: none; font-weight: 600; transition: 0.2s; }
+    .btn-tipo:hover { background-color: #be123c; color: white; }
+
+    /* ANIMACIÓN */
+    .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+</style>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 
-<style>
-    /* Variables basadas en tu paleta */
-    :root {
-        --bordo: #8b0000;
-        --ambar: #d97706;
-        --dorado: #c5a059;
-        --fondo: #f4f6f9;
-        --texto: #333;
-        --borde: #e2e8f0;
-    }
-
-    /* Contenedor para evitar scroll */
-    .pantalla-completa {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: calc(100vh - 100px); /* Ajusta según tu navbar */
-        padding: 10px;
-    }
-
-    .dashboard-card {
-        background: white;
-        width: 100%;
-        max-width: 1200px; /* Ancho para aprovechar monitores */
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        border-top: 5px solid var(--bordo);
-        overflow: hidden;
-    }
-
-    /* Cabecera */
-    .dashboard-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px 30px;
-        background: #fdfdfd;
-        border-bottom: 1px solid var(--borde);
-    }
-
-    .titulo { color: var(--bordo); font-size: 1.5rem; font-weight: 700; margin: 0; }
-    .subtitulo { color: #666; font-size: 0.85rem; margin: 5px 0 0 0; }
-
-    /* Botones Superiores */
-    .botones-rapidos {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: var(--fondo);
-        padding: 8px 15px;
-        border-radius: 50px;
-    }
-
-    .label-rapido { font-size: 0.75rem; color: #666; font-weight: 600; text-transform: uppercase; }
-
-    .btn-mini {
-        border: none;
-        background: white;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        transition: 0.2s;
-    }
-    .btn-mini.color { color: var(--dorado); }
-    .btn-mini.marca { color: var(--ambar); }
-    .btn-mini.tipo { color: var(--bordo); }
-    .btn-mini:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-
-    /* EL TRUCO DEL GRID PARA form.as_p */
-    .formulario-grid-master {
-        padding: 30px;
-    }
-
-    .grid-django {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 3 o 4 columnas automáticas */
-        gap: 15px 25px;
-    }
-
-    /* Formatear los <p> que genera Django */
-    .grid-django p, .grid-modal p {
-        display: flex;
-        flex-direction: column;
-        margin: 0; /* Quitar margen para ahorrar espacio vertical */
-    }
-
-    .grid-django label, .grid-modal label {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: #555;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-    }
-
-    /* Estilo premium para inputs */
-    .grid-django input, .grid-django select, 
-    .grid-modal input, .grid-modal select {
-        padding: 10px 15px;
-        border: 1px solid var(--borde);
-        border-radius: 8px;
-        font-size: 0.95rem;
-        background: #fcfcfc;
-        transition: 0.3s;
-        height: 42px; /* Altura fija compacta */
-    }
-
-    .grid-django input:focus, .grid-django select:focus,
-    .grid-modal input:focus, .grid-modal select:focus {
-        border-color: var(--ambar);
-        background: white;
-        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
-        outline: none;
-    }
-
-    /* Footer del Formulario */
-    .footer-acciones {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 15px;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid var(--borde);
-    }
-
-    .btn-cancelar {
-        color: #666;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 600;
-    }
-
-    .btn-guardar {
-        background: var(--ambar);
-        color: white;
-        border: none;
-        padding: 12px 30px;
-        border-radius: 8px;
-        font-weight: bold;
-        letter-spacing: 1px;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-    .btn-guardar:hover { background: #b46104; transform: translateY(-1px); }
-
-    /* Modales Nativos Estilizados */
-    dialog.modal-moderno {
-        border: none;
-        border-radius: 16px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        padding: 0;
-        width: 100%;
-        max-width: 400px;
-    }
-    dialog.modal-moderno::backdrop { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); }
-    
-    .modal-header { background: var(--bordo); padding: 15px 20px; }
-    .modal-header h3 { color: white; margin: 0; font-size: 1.1rem; }
-    
-    .grid-modal { padding: 20px; display: grid; gap: 15px; }
-    
-    .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        padding: 15px 20px;
-        background: #f9f9f9;
-        border-top: 1px solid var(--borde);
-    }
-    
-    .btn-cerrar { background: white; border: 1px solid #ccc; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
-    .btn-confirmar { background: var(--dorado); color: white; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-
-    .select2-container--bootstrap-5 .select2-selection {
-        border-radius: 8px !important;
-        border: 1px solid var(--borde) !important;
-        min-height: 42px !important;
-        padding-top: 2px;
-        background: #fcfcfc;
-    }
-    .select2-container--bootstrap-5.select2-container--focus .select2-selection {
-        border-color: var(--ambar) !important;
-        background: white;
-        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15) !important;
-    }
-</style>
-
-<script>
-// El JS se mantiene exactamente igual, es perfecto para lo que necesitas.
-document.querySelectorAll('.form-ajax-flotante').forEach(formulario => {
-    formulario.addEventListener('submit', function(e) {
-        e.preventDefault(); 
-        let formData = new FormData(this);
-
-        fetch("{% url 'vehiculo:crear_atributo' %}", {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.id) {
-                let selectAtributo = document.getElementById('id_' + data.tipo); 
-                console.log("Elemento capturado para " + data.tipo + ":", selectAtributo);
-                
-                let nuevaOpcion = new Option(data.nombre, data.id, true, true);
-                
-                if (selectAtributo) {
-                    selectAtributo.appendChild(nuevaOpcion);
-                } else {
-                    console.error("No se encontró ningún elemento con el ID: id_" + data.tipo);
-                }
-                
-                document.getElementById('modal-' + data.tipo).close();
-                document.querySelector('#modal-' + data.tipo + ' form').reset(); 
-                
-            } else if (data.errores) {
-                console.log("Errores del formulario Django:", data.errores);
-                alert("Verifica los datos ingresados.");
-            }
-        })
-        .catch(error => console.error('Error AJAX:', error));
-    });
-});
-</script>
-
 <script>
 $(document).ready(function() {
     
-    // 1. Inicializar Select2 para TODOS los selects del formulario principal
-    // Esto aplicará el buscador a Marca, Color, Tipo de Vehículo y Propietario automáticamente
+    // 1. Inicializar Select2
     $('.grid-django select').select2({
         theme: 'bootstrap-5',
         width: '100%',
-        placeholder: "Escriba para buscar...",
+        placeholder: "Seleccione una opción...",
         allowClear: true
     });
 
-    // 2. Tu script AJAX modificado para ser compatible con Select2
+    // 2. Lógica AJAX Consolidada para los 3 Modales
     document.querySelectorAll('.form-ajax-flotante').forEach(formulario => {
         formulario.addEventListener('submit', function(e) {
             e.preventDefault(); 
@@ -346,25 +243,42 @@ $(document).ready(function() {
             .then(data => {
                 if(data.id) {
                     let selectAtributo = document.getElementById('id_' + data.tipo); 
-                    let nuevaOpcion = new Option(data.nombre, data.id, true, true);
                     
                     if (selectAtributo) {
+                        // Creamos la nueva opción y la seleccionamos automáticamente
+                        let nuevaOpcion = new Option(data.nombre, data.id, true, true);
                         selectAtributo.appendChild(nuevaOpcion);
                         
-                        // ¡NUEVO!: Le avisamos a Select2 que los datos cambiaron
-                        // para que muestre el nuevo elemento que acabas de crear
+                        // Le avisamos a Select2 del cambio
                         $(selectAtributo).trigger('change');
                     }
                     
+                    // Cerramos el modal específico y lo limpiamos
                     document.getElementById('modal-' + data.tipo).close();
-                    document.querySelector('#modal-' + data.tipo + ' form').reset(); 
+                    this.reset(); 
                     
                 } else if (data.errores) {
-                    console.log("Errores del formulario Django:", data.errores);
+                    console.log("Errores:", data.errores);
                     alert("Verifica los datos ingresados.");
                 }
             })
             .catch(error => console.error('Error AJAX:', error));
+        });
+    });
+
+    // Pequeño script para cerrar los dialogs al hacer clic fuera de ellos
+    const dialogs = document.querySelectorAll('dialog');
+    dialogs.forEach(dialog => {
+        dialog.addEventListener('click', (e) => {
+            const dialogDimensions = dialog.getBoundingClientRect();
+            if (
+                e.clientX < dialogDimensions.left ||
+                e.clientX > dialogDimensions.right ||
+                e.clientY < dialogDimensions.top ||
+                e.clientY > dialogDimensions.bottom
+            ) {
+                dialog.close();
+            }
         });
     });
 

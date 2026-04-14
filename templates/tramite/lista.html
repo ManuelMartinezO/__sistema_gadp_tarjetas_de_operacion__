@@ -1,168 +1,267 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-0" style="color: var(--bs-dark-red);">Gestión de Trámites</h2>
-        <p class="text-muted small">Listado general de solicitudes registradas en el sistema</p>
+<div class="tramites-container pb-5 animate-up">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div class="mb-3 mb-md-0">
+            <h2 class="fw-bold mb-1 text-slate-900"><i class="bi bi-folder2-open me-2 text-indigo"></i>Gestión de Trámites</h2>
+            <p class="text-slate-500 mb-0 fs-7">Listado general de solicitudes y expedientes registrados en el sistema</p>
+        </div>
+        
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            <a href="{% url 'tramite:crear_tramite' %}" class="btn btn-indigo shadow-sm d-flex align-items-center justify-content-center px-4 rounded-pill">
+                <i class="bi bi-plus-lg me-2"></i> Nuevo Trámite
+            </a>
+        {% endif %}
     </div>
-    
-    {% if user.rol == 'a' or user.rol == 'sa' %}
-        <a href="{% url 'tramite:crear_tramite' %}" class="btn btn-primary shadow-sm" 
-           style="background-color: var(--bs-primary); border: none; border-radius: 10px; padding: 0.6rem 1.2rem;">
-            <i class="bi bi-plus-lg me-2"></i>NUEVO TRÁMITE
-        </a>
-    {% endif %}
-</div>
-<div class="card mb-4 border-0 shadow-sm" style="border-radius: 15px; background-color: #f8f9fa;">
-    <div class="card-body">
-        <form method="GET" id="filterForm" class="row g-2 align-items-end">
+
+    <div class="search-card mb-4 animate-up delay-1">
+        <form method="GET" id="filterForm" class="row g-3 align-items-end p-2">
             
             <div class="col-md-3">
-                <label class="form-label small fw-bold text-muted mb-1">Buscar</label>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control border-start-0 ps-0" id="q" name="q" 
-                           value="{{ q }}" placeholder="N° o Usuario...">
+                <label class="form-label fs-8 fw-bold text-slate-500 text-uppercase tracking-wider mb-1 ps-1">Buscar</label>
+                <div class="input-group input-group-custom">
+                    <span class="input-group-text bg-transparent border-end-0 text-slate-400 ps-3"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-2" id="q" name="q" value="{{ q }}" placeholder="N° o Usuario..." autocomplete="off">
                 </div>
             </div>
             
             <div class="col-md-2">
-                <label class="form-label small fw-bold text-muted mb-1">Tipo</label>
-                <select class="form-select form-select-sm" id="tipo" name="tipo">
-                    <option value="todos" {% if tipo_actual == 'todos' %}selected{% endif %}>Todos</option>
-                    <option value="otorgacion" {% if tipo_actual == 'otorgacion' %}selected{% endif %}>Otorgación</option>
-                    <option value="renovacion" {% if tipo_actual == 'renovacion' %}selected{% endif %}>Renovación</option>
-                </select>
+                <label class="form-label fs-8 fw-bold text-slate-500 text-uppercase tracking-wider mb-1 ps-1">Tipo</label>
+                <div class="input-group input-group-custom">
+                    <select class="form-select border-0 ps-3 cursor-pointer text-slate-700" id="tipo" name="tipo">
+                        <option value="todos" {% if tipo_actual == 'todos' %}selected{% endif %}>Todos</option>
+                        <option value="otorgacion" {% if tipo_actual == 'otorgacion' %}selected{% endif %}>Otorgación</option>
+                        <option value="renovacion" {% if tipo_actual == 'renovacion' %}selected{% endif %}>Renovación</option>
+                    </select>
+                </div>
             </div>
 
             <div class="col-md-2">
-                <label class="form-label small fw-bold text-muted mb-1">Estado</label>
-                <select class="form-select form-select-sm" id="estado" name="estado">
-                    <option value="todos" {% if estado_actual == 'todos' %}selected{% endif %}>Todos</option>
-                    <option value="pendiente" {% if estado_actual == 'pendiente' %}selected{% endif %}>Pendiente</option>
-                    <option value="validado" {% if estado_actual == 'validado' %}selected{% endif %}>Validado</option>
-                    <option value="observado" {% if estado_actual == 'observado' %}selected{% endif %}>Observado</option>
-                </select>
+                <label class="form-label fs-8 fw-bold text-slate-500 text-uppercase tracking-wider mb-1 ps-1">Estado</label>
+                <div class="input-group input-group-custom">
+                    <select class="form-select border-0 ps-3 cursor-pointer text-slate-700" id="estado" name="estado">
+                        <option value="todos" {% if estado_actual == 'todos' %}selected{% endif %}>Todos</option>
+                        <option value="pendiente" {% if estado_actual == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="validado" {% if estado_actual == 'validado' %}selected{% endif %}>Validado</option>
+                        <option value="observado" {% if estado_actual == 'observado' %}selected{% endif %}>Observado</option>
+                    </select>
+                </div>
             </div>
 
             <div class="col-md-2">
-                <label class="form-label small fw-bold text-muted mb-1">Desde</label>
-                <input type="date" class="form-control form-control-sm" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+                <label class="form-label fs-8 fw-bold text-slate-500 text-uppercase tracking-wider mb-1 ps-1">Desde</label>
+                <div class="input-group input-group-custom">
+                    <input type="date" class="form-control border-0 ps-3 text-slate-700" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+                </div>
             </div>
+            
             <div class="col-md-2">
-                <label class="form-label small fw-bold text-muted mb-1">Hasta</label>
-                <input type="date" class="form-control form-control-sm" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+                <label class="form-label fs-8 fw-bold text-slate-500 text-uppercase tracking-wider mb-1 ps-1">Hasta</label>
+                <div class="input-group input-group-custom">
+                    <input type="date" class="form-control border-0 ps-3 text-slate-700" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+                </div>
             </div>
 
-            <div class="col-md-1 text-end">
-                <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-sm btn-outline-secondary w-100">
-                    <i class="bi bi-arrow-clockwise"></i>
+            <div class="col-md-1">
+                <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-light-action w-100 d-flex align-items-center justify-content-center" title="Limpiar Filtros" style="height: 42px;">
+                    <i class="bi bi-arrow-clockwise fs-5"></i>
                 </a>
             </div>
         </form>
     </div>
-</div>
 
-<div class="table-responsive">
-    <table class="table table-hover align-middle" style="border-radius: 15px; overflow: hidden;">
-        <thead class="table-light">
-            <tr style="border-bottom: 2px solid var(--bs-gold);">
-                <th class="ps-4">N° TRÁMITE</th>
-                <th>USUARIO</th>
-                <th>TIPO</th>
-                <th>ESTADO</th>
-                <th>DEPÓSITO</th>
-                <th class="text-end pe-4">FECHA REGISTRO</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for tramite in tramites %}
-            <tr style="cursor: pointer; transition: all 0.2s;" 
-                onclick="window.location='{% url 'tramite:detalle_tramite' tramite.numero_tramite %}'">
-                
-                <td class="ps-4">
-                    <span class="fw-bold text-dark">#{{ tramite.numero_tramite }}</span>
-                </td>
-                
-                <td>
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
-                            <i class="bi bi-person text-muted" style="font-size: 0.8rem;"></i>
-                        </div>
-                        {{ tramite.usuario.username }}
-                    </div>
-                </td>
-                
-                <td class="small">
-                    {{ tramite.get_tipo_tramite_display }}
-                </td>
-                
-                <td>
-                    {% if tramite.estado_tramite == 'pendiente' %}
-                        <span class="badge rounded-pill bg-warning text-dark px-3">Pendiente</span>
-                    {% elif tramite.estado_tramite == 'validado' %}
-                        <span class="badge rounded-pill bg-success px-3">Validado</span>
-                    {% else %}
-                        <span class="badge rounded-pill bg-danger px-3">Observado</span>
-                    {% endif %}
-                </td>
+    <div class="table-card animate-up delay-2">
+        <div class="table-responsive">
+            <table class="table custom-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">N° Trámite</th>
+                        <th>Usuario Emisor</th>
+                        <th>Tipo de Solicitud</th>
+                        <th>Estado Revisión</th>
+                        <th>Depósito</th>
+                        <th class="text-end pe-4">Fecha de Ingreso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tramite in tramites %}
+                    <tr class="table-row-hover" onclick="window.location='{% url 'tramite:detalle_tramite' tramite.numero_tramite %}'">
+                        
+                        <td class="ps-4">
+                            <span class="badge bg-slate-100 text-slate-700 border border-slate-200 px-3 py-2 fs-7 font-monospace tracking-wider shadow-sm">
+                                #{{ tramite.numero_tramite|stringformat:"06d" }}
+                            </span>
+                        </td>
+                        
+                        <td>
+                            <div class="d-flex align-items-center py-1">
+                                <div class="avatar-sm me-3">
+                                    <span class="fw-bold">{{ tramite.usuario.username|make_list|first|upper }}</span>
+                                </div>
+                                <span class="fw-bold text-slate-800">{{ tramite.usuario.username }}</span>
+                            </div>
+                        </td>
+                        
+                        <td>
+                            <span class="fw-medium text-indigo fs-7 bg-indigo-50 px-3 py-1 rounded-pill border border-indigo-100">
+                                {{ tramite.get_tipo_tramite_display }}
+                            </span>
+                        </td>
+                        
+                        <td>
+                            {% if tramite.estado_tramite == 'pendiente' %}
+                                <span class="badge badge-warning rounded-pill px-3 py-1 fw-bold fs-8 tracking-wider text-uppercase shadow-sm"><i class="bi bi-hourglass-split me-1"></i> Pendiente</span>
+                            {% elif tramite.estado_tramite == 'validado' %}
+                                <span class="badge badge-success rounded-pill px-3 py-1 fw-bold fs-8 tracking-wider text-uppercase shadow-sm"><i class="bi bi-check-circle-fill me-1"></i> Validado</span>
+                            {% else %}
+                                <span class="badge badge-danger rounded-pill px-3 py-1 fw-bold fs-8 tracking-wider text-uppercase shadow-sm"><i class="bi bi-exclamation-octagon-fill me-1"></i> Observado</span>
+                            {% endif %}
+                        </td>
 
-                <td>
-                    {% if tramite.estado_deposito %}
-                        <i class="bi bi-check-circle-fill text-success me-1"></i> <span class="small">Pagado</span>
-                    {% else %}
-                        <i class="bi bi-clock-history text-muted me-1"></i> <span class="small">Pendiente</span>
-                    {% endif %}
-                </td>
-                
-                <td class="text-end pe-4 text-muted small">
-                    {{ tramite.fecha_registro|date:"d/m/Y H:i" }}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" class="text-center py-5 text-muted">
-                    <i class="bi bi-folder-x display-4 d-block mb-3"></i>
-                    No se encontraron trámites registrados.
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                        <td>
+                            {% if tramite.estado_deposito %}
+                                <div class="text-emerald-600 fw-bold fs-8 text-uppercase tracking-wider d-flex align-items-center">
+                                    <i class="bi bi-check2-circle fs-6 me-1"></i> Confirmado
+                                </div>
+                            {% else %}
+                                <div class="text-slate-400 fw-bold fs-8 text-uppercase tracking-wider d-flex align-items-center">
+                                    <i class="bi bi-clock-history fs-6 me-1"></i> Pendiente
+                                </div>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="text-end pe-4 text-slate-500 fs-7 fw-medium">
+                            {{ tramite.fecha_registro|date:"d M Y, H:i" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="empty-state">
+                                <div class="empty-icon-wrapper mb-3">
+                                    <i class="bi bi-folder-x text-indigo fs-1"></i>
+                                </div>
+                                <h5 class="fw-bold text-slate-700">Bandeja Vacía</h5>
+                                <p class="text-slate-500 mb-0">No se encontraron trámites con los filtros actuales o no hay registros.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <style>
-    /* Efecto de elevación al pasar el mouse por la fila */
-    .table-hover tbody tr:hover {
-        background-color: rgba(217, 119, 6, 0.05) !important;
-        transform: scale(1.002);
+    /* VARIABLES LOCALES (Consistencia Absoluta) */
+    .tramites-container {
+        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #8b000010;
+        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-600: #475569; --slate-500: #64748b; --slate-400: #94a3b8; --slate-300: #cbd5e1; --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+        --emerald-600: #059669; --emerald-200: #a7f3d0; --emerald-50: #ecfdf5;
+        --warning-main: #d97706; --warning-200: #fde68a; --warning-50: #fffbeb;
+        --red-main: #dc2626; --red-200: #fecaca; --red-50: #fef2f2;
     }
+
+    .text-indigo { color: var(--indigo); }
+    .text-slate-900 { color: var(--slate-900); }
+    .text-slate-800 { color: var(--slate-800); }
+    .text-slate-700 { color: var(--slate-700); }
+    .text-slate-500 { color: var(--slate-500); }
+    .text-slate-400 { color: var(--slate-400); }
+    .text-emerald-600 { color: var(--emerald-600); }
+    
+    .bg-indigo-50 { background-color: var(--indigo-light); }
+    .bg-slate-100 { background-color: var(--slate-100); }
+    .border-slate-200 { border-color: var(--slate-200) !important; }
+    .border-indigo-100 { border-color: #c7d2fe !important; }
+    
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+    .font-monospace { font-family: 'Courier New', Courier, monospace; }
+
+    /* BOTONES */
+    .btn-indigo { background-color: var(--indigo); color: white; border: none; font-weight: 600; transition: all 0.2s; }
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+
+    .btn-light-action { background-color: #fff; border: 1px solid var(--slate-200); color: var(--slate-700); font-weight: 600; border-radius: 12px; transition: all 0.2s; }
+    .btn-light-action:hover { background-color: var(--slate-50); color: var(--indigo); border-color: var(--slate-300); }
+
+    /* BARRA DE BÚSQUEDA Y FILTROS */
+    .search-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
+    
+    .input-group-custom { border: 1px solid var(--slate-200); border-radius: 12px; transition: all 0.2s ease; background-color: var(--slate-50); overflow: hidden;}
+    .input-group-custom .form-control, .input-group-custom .form-select { background: transparent; color: var(--slate-700); font-size: 0.9rem; min-height: 40px;}
+    .input-group-custom .form-control:focus, .input-group-custom .form-select:focus { box-shadow: none; outline: none; }
+    .input-group-custom .input-group-text { border: none; background: transparent; }
+    
+    /* Efecto Focus en Contenedores de Filtros */
+    .input-group-custom:focus-within { background-color: #fff; border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-light); }
+    .input-group-custom:focus-within .input-group-text i { color: var(--indigo); }
+    .cursor-pointer { cursor: pointer; }
+
+    /* Ajuste para inputs de fecha nativos */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        cursor: pointer; opacity: 0.6; transition: 0.2s;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
+    /* TABLA Y FILAS */
+    .table-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
+    .custom-table { border-collapse: separate; border-spacing: 0; }
+    .custom-table thead { background-color: #f8fafc; }
+    .custom-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); font-weight: 600; border-bottom: 1px solid #e2e8f0; padding: 1.2rem 0.5rem; }
+    .custom-table td { border-bottom: 1px solid var(--slate-50); vertical-align: middle; padding: 1rem 0.5rem;}
+    
+    .table-row-hover { cursor: pointer; transition: all 0.2s ease; }
+    .table-row-hover:hover td { background-color: #fbfbff; }
+    .table-row-hover:hover td:first-child { box-shadow: inset 4px 0 0 var(--indigo); }
+
+    /* AVATARES */
+    .avatar-sm { width: 38px; height: 38px; border-radius: 10px; background-color: rgba(99, 102, 241, 0.1); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+
+    /* BADGES DE ESTADO (Consistentes) */
+    .badge-warning { background-color: var(--warning-50); color: var(--warning-main); border: 1px solid var(--warning-200); }
+    .badge-success { background-color: var(--emerald-50); color: var(--emerald-600); border: 1px solid var(--emerald-200); }
+    .badge-danger { background-color: var(--red-50); color: var(--red-main); border: 1px solid var(--red-200); }
+
+    /* EMPTY STATE */
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+    .empty-icon-wrapper { width: 80px; height: 80px; background-color: rgba(99, 102, 241, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+    /* ANIMACIONES */
+    .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 </style>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const form = document.getElementById('filterForm');
         const searchInput = document.getElementById('q');
         const selectAndDates = form.querySelectorAll('select, input[type="date"]');
 
-        // 1. Auto-submit cuando cambian los combos (Select) o las Fechas
+        // 1. Auto-submit cuando cambian los combos o las Fechas
         selectAndDates.forEach(element => {
             element.addEventListener('change', () => {
                 form.submit();
             });
         });
 
-        // 2. "Debounce" para el input de texto.
-        // Esto evita que se sature el servidor por cada letra. Espera 500ms a que el usuario termine de escribir.
+        // 2. Debounce para el input de texto (No recarga al escribir cada letra)
         let timeout = null;
         searchInput.addEventListener('input', () => {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
                 form.submit();
-            }, 500); // Se enviará medio segundo después de que dejes de teclear
+            }, 500); 
         });
         
-        // 3. Truco de UX: Mantener el cursor al final de la palabra al recargar
+        // 3. Mantener el cursor tras recargar
         if (searchInput.value) {
             const tempValue = searchInput.value;
             searchInput.value = '';

@@ -1,96 +1,169 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-5">
-    <div>
-        <h2 class="fw-bold mb-0" style="color: var(--bs-dark-red);">Empresas Operadoras</h2>
-        <p class="text-muted small">Directorio de empresas registradas en el sistema de transporte</p>
-    </div>
-    
-    {% if user.rol == 'a' or user.rol == 'sa' %}
-        <a href="{% url 'operador:crear_operador' %}" class="btn btn-primary shadow-sm" 
-           style="background-color: var(--bs-primary); border: none; border-radius: 10px; padding: 0.6rem 1.2rem;">
-            <i class="bi bi-building-add me-2"></i>NUEVA EMPRESA
-        </a>
-    {% endif %}
-</div>
+<div class="operadores-container pb-5 animate-up">
 
-<div class="card mb-4 border-0 shadow-sm" style="border-radius: 15px; background-color: #f8f9fa;">
-    <div class="card-body p-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div class="mb-3 mb-md-0">
+            <h2 class="fw-bold mb-1 text-slate-900"><i class="bi bi-buildings me-2 text-indigo"></i>Empresas Operadoras</h2>
+            <p class="text-slate-500 mb-0 fs-7">Directorio de sindicatos y empresas registradas en el sistema</p>
+        </div>
+        
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            <a href="{% url 'operador:crear_operador' %}" class="btn btn-indigo shadow-sm d-flex align-items-center justify-content-center">
+                <i class="bi bi-building-add me-2"></i> Nueva Empresa
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="search-card mb-4 animate-up delay-1">
         <form method="GET" id="searchForm" class="m-0">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0 text-muted">
+            <div class="input-group input-group-custom">
+                <span class="input-group-text bg-transparent border-end-0 text-slate-400 ps-4">
                     <i class="bi bi-search"></i>
                 </span>
-                <input type="text" class="form-control border-start-0 ps-0 form-control-lg fs-6" id="q" name="q" 
-                       value="{{ q }}" placeholder="Buscar empresa por nombre..." autocomplete="off">
+                <input type="text" class="form-control border-start-0 ps-2 py-3" id="q" name="q" 
+                       value="{{ q }}" placeholder="Buscar operador por nombre o ID..." autocomplete="off">
+                {% if q %}
+                    <a href="{% url 'operador:lista_operadores' %}" class="input-group-text bg-transparent border-start-0 text-slate-400 pe-4 hover-indigo text-decoration-none" title="Limpiar búsqueda">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </a>
+                {% endif %}
             </div>
         </form>
     </div>
-</div>
 
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-    {% for operador in operadores %}
-    <div class="col">
-        <div class="card h-100 border-0 shadow-sm custom-card" style="border-radius: 20px; transition: all 0.3s ease;">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div class="rounded-3 bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                        <i class="bi bi-building text-secondary fs-4"></i>
-                    </div>
-                    <span class="badge bg-light text-muted border rounded-pill small">ID #{{ operador.id }}</span>
-                </div>
-                
-                <h5 class="card-title fw-bold mb-1" style="color: var(--bs-dark-red);">
-                    {{ operador.nombre|upper }}
-                </h5>
-                <p class="text-muted small mb-4">
-                    <i class="bi bi-calendar3 me-1"></i> Registrado el {{ operador.fecha_registro|date:"d/m/Y" }}
-                </p>
+    <div class="table-card animate-up delay-2">
+        <div class="table-responsive">
+            <table class="table custom-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Operador / Sindicato</th>
+                        <th>Fecha de Registro</th>
+                        <th class="text-center">Afiliados</th>
+                        <th class="text-center">Tarjetas Activas</th>
+                        <th class="text-end pe-4">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for operador in operadores %}
+                    <tr class="table-row-hover" onclick="window.location='{% url 'operador:detalle_operador' operador.id %}'">
+                        
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center py-2">
+                                <div class="avatar-soft me-3">
+                                    <span class="fw-bold">{{ operador.nombre|make_list|first|upper }}</span>
+                                </div>
+                                <div>
+                                    <span class="fw-bold text-slate-800 d-block mb-1">{{ operador.nombre|upper }}</span>
+                                    <span class="badge bg-slate-50 text-slate-500 border border-slate-100 fw-medium fs-8">ID #{{ operador.id }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td>
+                            <div class="d-flex align-items-center text-slate-500 fs-7">
+                                <i class="bi bi-calendar3 me-2 text-slate-400"></i>
+                                {{ operador.fecha_registro|date:"d M Y" }}
+                            </div>
+                        </td>
+                        
+                        <td class="text-center">
+                            <div class="d-inline-flex align-items-center bg-slate-50 border border-slate-100 rounded-pill px-3 py-1">
+                                <i class="bi bi-people-fill text-indigo-light me-2"></i>
+                                <span class="fw-bold text-slate-700">{{ operador.afiliados.count }}</span>
+                            </div>
+                        </td>
 
-                <div class="bg-light p-3 rounded-3 mb-4">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="small text-muted">Afiliados:</span>
-                        <span class="small fw-bold">{{ operador.afiliados.count }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="small text-muted">Tarjetas Activas:</span>
-                        <span class="small fw-bold">{{ operador.tarjetas_de_operacion.count }}</span>
-                    </div>
-                </div>
-
-                <a href="{% url 'operador:detalle_operador' operador.id %}" 
-                   class="btn btn-outline-dark w-100 rounded-pill fw-bold small">
-                    VER EXPEDIENTE <i class="bi bi-arrow-right ms-1"></i>
-                </a>
-            </div>
+                        <td class="text-center">
+                            <div class="d-inline-flex align-items-center bg-slate-50 border border-slate-100 rounded-pill px-3 py-1">
+                                <i class="bi bi-credit-card-2-front-fill text-success me-2 opacity-75"></i>
+                                <span class="fw-bold text-slate-700">{{ operador.tarjetas_de_operacion.count }}</span>
+                            </div>
+                        </td>
+                        
+                        <td class="text-end pe-4">
+                            <a href="{% url 'operador:detalle_operador' operador.id %}" class="btn btn-sm btn-light-action rounded-pill px-3">
+                                Ver Detalle <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="empty-state">
+                                <div class="empty-icon-wrapper mb-3">
+                                    <i class="bi bi-buildings text-indigo fs-1"></i>
+                                </div>
+                                <h5 class="fw-bold text-slate-700">No hay operadores registrados</h5>
+                                <p class="text-slate-500 mb-0">No se encontraron empresas con los criterios de búsqueda.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-    {% empty %}
-    <div class="col-12 text-center py-5">
-        <div class="p-5 bg-white rounded-4 shadow-sm">
-            <i class="bi bi-building-exclamation display-1 text-muted opacity-25"></i>
-            <h4 class="mt-3 text-muted">No hay empresas operadoras registradas</h4>
-        </div>
-    </div>
-    {% endfor %}
 </div>
 
 <style>
-    .custom-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
-        border: 1px solid var(--bs-gold) !important;
+    /* VARIABLES LOCALES (Consistencia Slate & Indigo) */
+    .operadores-container {
+        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #a5b4fc;
+        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-500: #64748b; --slate-400: #94a3b8; --slate-100: #f1f5f9; --slate-50: #f8fafc;
     }
+
+    .text-indigo { color: var(--indigo); }
+    .text-indigo-light { color: var(--indigo-light); }
+    .text-slate-900 { color: var(--slate-900); }
+    .text-slate-800 { color: var(--slate-800); }
+    .text-slate-700 { color: var(--slate-700); }
+    .text-slate-500 { color: var(--slate-500); }
+    .text-slate-400 { color: var(--slate-400); }
     
-    .card-title {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        height: 3rem; /* Mantiene la altura consistente aunque el nombre sea corto */
-    }
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+
+    /* BOTONES */
+    .btn-indigo { background-color: var(--indigo); color: white; border: none; border-radius: 10px; padding: 0.6rem 1.2rem; font-weight: 600; transition: all 0.2s; }
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+
+    .btn-light-action { background-color: #fff; border: 1px solid #e2e8f0; color: var(--slate-700); font-weight: 600; font-size: 0.8rem; transition: all 0.2s; }
+    .table-row-hover:hover .btn-light-action { background-color: var(--indigo); color: white; border-color: var(--indigo); }
+
+    /* BARRA DE BÚSQUEDA */
+    .search-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
+    .input-group-custom .form-control { border: none; background: transparent; color: var(--slate-700); }
+    .input-group-custom .form-control:focus { box-shadow: none; }
+    .input-group-custom .input-group-text { border: none; background: transparent; }
+    .hover-indigo:hover { color: var(--indigo) !important; }
+
+    /* TABLA Y FILAS */
+    .table-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
+    .custom-table { border-collapse: separate; border-spacing: 0; }
+    .custom-table thead { background-color: #f8fafc; }
+    .custom-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); font-weight: 600; border-bottom: 1px solid #e2e8f0; padding: 1.2rem 0.5rem; }
+    .custom-table td { border-bottom: 1px solid var(--slate-50); vertical-align: middle; }
+    
+    .table-row-hover { cursor: pointer; transition: all 0.2s ease; }
+    .table-row-hover:hover td { background-color: #fbfbff; }
+    .table-row-hover:hover td:first-child { box-shadow: inset 4px 0 0 var(--indigo); }
+
+    /* AVATARES */
+    .avatar-soft { width: 45px; height: 45px; border-radius: 12px; background-color: rgba(99, 102, 241, 0.1); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+
+    /* EMPTY STATE */
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+    .empty-icon-wrapper { width: 80px; height: 80px; background-color: rgba(99, 102, 241, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+    /* ANIMACIONES */
+    .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 </style>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const form = document.getElementById('searchForm');
@@ -98,16 +171,15 @@
         
         let timeout = null;
         
-        // Escuchar cada vez que se teclea en el buscador
+        // Debounce search
         searchInput.addEventListener('input', () => {
             clearTimeout(timeout);
-            // Esperar 500ms después de que el usuario deja de escribir para enviar el formulario
             timeout = setTimeout(() => {
                 form.submit();
             }, 500); 
         });
         
-        // Mantener el foco y el cursor al final del texto después de recargar
+        // Mantener cursor al recargar
         if (searchInput.value) {
             const tempValue = searchInput.value;
             searchInput.value = '';
