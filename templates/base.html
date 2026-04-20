@@ -183,20 +183,23 @@
                 </a>
             </li>
             
-            <li>
-                <a href="{% url 'gestion:historial_list' %}" class="nav-link">
-                    <i class="bi bi-clock-history me-3"></i> Gestión
-                </a>
-            </li>
-
+            
             {% if user.is_authenticated %}
-                <div class="section-divider">Gestión Principal</div>
+                {% if user.rol == 'sa' %}
+                <li>
+                    <a href="{% url 'gestion:historial_list' %}" class="nav-link">
+                        <i class="bi bi-clock-history me-3"></i> Gestión
+                    </a>
+                </li>
+
+                {% endif %}
                 <li><a href="{% url 'tramite:lista_tramites' %}" class="nav-link"><i class="bi bi-file-earmark-text me-3"></i> Trámites</a></li>
-                <li><a href="{% url 'operador:lista_operadores' %}" class="nav-link"><i class="bi bi-person-badge me-3"></i> Operadores</a></li>
-                <li><a href="{% url 'afiliado:lista_afiliados' %}" class="nav-link"><i class="bi bi-people me-3"></i> Afiliados</a></li>
-                <li><a href="{% url 'vehiculo:lista_vehiculos' %}" class="nav-link"><i class="bi bi-car-front me-3"></i> Vehículos</a></li>
-                <li><a href="{% url 'tarjeta:lista_tarjetas' %}" class="nav-link"><i class="bi bi-credit-card me-3"></i> Tarjetas</a></li>
-                
+                {% if user.rol == 'a' or user.rol == 'sa' %}
+                    <li><a href="{% url 'operador:lista_operadores' %}" class="nav-link"><i class="bi bi-person-badge me-3"></i> Operadores</a></li>
+                    <li><a href="{% url 'afiliado:lista_afiliados' %}" class="nav-link"><i class="bi bi-people me-3"></i> Afiliados</a></li>
+                    <li><a href="{% url 'vehiculo:lista_vehiculos' %}" class="nav-link"><i class="bi bi-car-front me-3"></i> Vehículos</a></li>
+                    <li><a href="{% url 'tarjeta:lista_tarjetas' %}" class="nav-link"><i class="bi bi-credit-card me-3"></i> Tarjetas</a></li>
+                {% endif %}
                 <li class="mt-4">
                     <a href="{% url 'logout' %}" class="nav-link text-danger" style="opacity: 0.9;">
                         <i class="bi bi-box-arrow-left me-3 text-danger"></i> Cerrar Sesión
@@ -205,7 +208,6 @@
             {% else %}
                 <div class="section-divider">Acceso</div>
                 <li><a href="{% url 'login' %}" class="nav-link"><i class="bi bi-box-arrow-in-right me-3"></i> Iniciar Sesión</a></li>
-                <li><a href="{% url 'logup' %}" class="nav-link"><i class="bi bi-person-plus me-3"></i> Registrarse</a></li>
             {% endif %}
         </ul>
     </div>

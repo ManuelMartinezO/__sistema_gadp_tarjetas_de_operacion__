@@ -72,23 +72,20 @@
         }
 
         .col-qr {
-            width: 20%;
-            padding: 5px;
+            width: 25%;
             text-align: center;
             vertical-align: middle;
             border-right: 1px solid #ccc;
         }
         
         .col-datos {
-            width: 80%;
+            width: 82%;
             padding: 5px 8px;
             vertical-align: top;
         }
 
         .qr-image {
-            width: 65px;
-            height: 65px;
-            margin-bottom: 2px;
+            width: 100%;
         }
 
         .placa-box {
@@ -105,7 +102,7 @@
         .sub-table { width: 100%; border-collapse: collapse; }
         .sub-table td { vertical-align: top; padding: 1px 2px; }
 
-        .lbl { font-size: 6pt; color: #555; text-transform: uppercase; }
+        .lbl { font-size: 6pt; color: #555; text-transform: uppercase; margin-top: 2px; }
         .val { font-size: 8pt; font-weight: bold; margin-bottom: 3px; }
 
         /* =======================================================
@@ -156,14 +153,14 @@
     <table class="header-oficial">
         <tr>
             <td style="width: 15%; text-align: left;">
-                </td>
+            </td>
             <td style="width: 70%; text-align: center;">
                 <div class="titulo-gobierno">GOBIERNO AUTÓNOMO DEPARTAMENTAL DE POTOSÍ</div>
                 <div class="subtitulo-unidad">UNIDAD DE REGISTRO Y REGULACIÓN DE TRANSPORTE</div>
                 <div class="titulo-formulario">FORMULARIO DE VERIFICACIÓN DE DATOS - TARJETA INTERPROVINCIAL</div>
             </td>
             <td style="width: 15%; text-align: right;">
-                </td>
+            </td>
         </tr>
     </table>
 
@@ -174,8 +171,8 @@
                 <table style="width: 100%;">
                     <tr>
                         <td style="width: 33%; text-align: left;">TARJETA Nº {{ tarjeta.id|stringformat:"06d" }}</td>
-                        <td style="width: 33%; text-align: center;">TRÁMITE Nº {{ tramite.numero_tramite }}</td>
-                        <td style="width: 34%; text-align: right;">{{ tarjeta.get_tipo_tarjeta_display|upper }}</td>
+                        <td style="width: 33%; text-align: center;">TRÁMITE Nº {{ tarjeta.tramite.numero_tramite }}</td>
+                        <td style="width: 34%; text-align: right;">{{ tarjeta.get_tipo_tarjeta_display|upper|default:"TARJETA DE OPERACIÓN" }}</td>
                     </tr>
                 </table>
             </td>
@@ -183,25 +180,36 @@
         <tr>
             <td class="col-qr">
                 <img src="{{ tarjeta.qr_data_uri }}" alt="QR" class="qr-image"><br>
-                <span style="font-size: 5pt; color: #333;">ID:{{ tarjeta.id }}x{{ tarjeta.vehiculo.id }}</span>
             </td>
             <td class="col-datos">
                 <table class="sub-table">
                     <tr>
-                        <td style="width: 35%; border-right: 1px solid #eee; padding-right: 5px;">
+                        <td style="width: 32%; border-right: 1px solid #eee; padding-right: 5px;">
                             <div class="placa-box">{{ tarjeta.vehiculo.placa }}</div>
                             <div class="lbl">Marca / Modelo</div>
-                            <div class="val">{{ tarjeta.vehiculo.marca.nombre }} - {{ tarjeta.vehiculo.modelo }}</div>
+                            <div class="val">{{ tarjeta.vehiculo.marca }} - {{ tarjeta.vehiculo.modelo }}</div>
                             <div class="lbl">Chasis</div>
                             <div class="val" style="font-family: monospace;">{{ tarjeta.vehiculo.chasis|default:"N/D" }}</div>
+                            <div class="lbl">Tipo Trans. / Capacidad</div>
+                            <div class="val">{{ tarjeta.vehiculo.tipo_transporte }} / {{ tarjeta.vehiculo.capacidad }}</div>
                         </td>
-                        <td style="width: 45%; border-right: 1px solid #eee; padding-left: 5px; padding-right: 5px;">
-                            <div class="lbl">Titular / Afiliado</div>
+                        
+                        <td style="width: 40%; border-right: 1px solid #eee; padding-left: 5px; padding-right: 5px;">
+                            <div class="lbl">Propietario / Afiliado</div>
                             <div class="val">{{ tarjeta.afiliado.nombre }} {{ tarjeta.afiliado.apellido }}</div>
-                            <div class="lbl">Sindicato / Operador</div>
-                            <div class="val">{{ tarjeta.operador.nombre }}</div>
+                            <div class="lbl">Empresa / Operador</div>
+                            <div class="val">{{ tramite.operador }}</div>
+                            <div class="lbl">Tipo de Servicio</div>
+                            <div class="val">{{ tarjeta.vehiculo.tipo_vehiculo }}</div>
+                            <div class="lbl">Rutas Autorizadas</div>
+                            <div class="val" style="font-size: 7.5pt; line-height: 1.1;">{{ tarjeta.ruta }}</div>
                         </td>
-                        <td style="width: 20%; padding-left: 5px;">
+                        
+                        <td style="width: 28%; padding-left: 5px;">
+                            <div class="lbl">Técnico Asignado</div>
+                            <div class="val">{{ tarjeta.tramite.usuario }}</div>
+                            <div class="lbl">Fecha y Hora Registro</div>
+                            <div class="val">{{ tarjeta.fecha_registro|date:"d/m/Y" }} {{ tarjeta.fecha_registro|time:"H:i" }}</div>
                             <div class="lbl">Validez</div>
                             <div class="val">{{ tarjeta.validez_tiempo }} {{ tarjeta.get_validez_periodo_display }}</div>
                             <div class="lbl">Monto</div>

@@ -25,7 +25,7 @@
                     </div>
                 </div>
 
-                <form method="POST" class="needs-validation custom-form">
+                <form method="POST" id="formNuevoAfiliado" class="needs-validation custom-form">
                     {% csrf_token %}
 
                     <div class="row g-4">
@@ -67,9 +67,10 @@
                     </div>
 
                     <div class="d-grid gap-3 mt-5">
-                        <button type="submit" class="btn btn-indigo btn-lg shadow-sm">
+                        <button type="button" id="btnAbrirModal" class="btn btn-indigo btn-lg shadow-sm">
                             <i class="bi bi-check2-circle me-2"></i> Registrar Afiliado
                         </button>
+                        <button type="submit" class="d-none real-submit-btn"></button>
                         
                         <a href="{% url 'afiliado:lista_afiliados' %}" class="text-center text-slate-500 text-decoration-none fs-7 hover-indigo transition-all">
                             Cancelar y volver al listado
@@ -88,6 +89,45 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<div class="modal fade" id="modalConfirmacionAfiliado" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-slate-100 bg-slate-50 px-4 py-3">
+                <h5 class="modal-title fw-bold text-slate-800 d-flex align-items-center">
+                    <i class="bi bi-person-check-fill text-indigo me-2"></i> Confirmar Afiliado
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-slate-600 mb-4 fs-7">Verifique que los datos personales y la asignación a la empresa sean correctos.</p>
+                
+                <div class="bg-slate-50 p-3 rounded-4 border border-slate-200">
+                    <ul class="list-unstyled mb-0 fs-7 text-slate-700">
+                        <li class="mb-3 border-bottom border-slate-200 pb-2">
+                            <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">Empresa Operadora</span>
+                            <span id="preview-operador" class="fw-bold text-slate-900 fs-6 text-break"></span>
+                        </li>
+                        <li class="mb-3 border-bottom border-slate-200 pb-2">
+                            <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">Nombre(s)</span>
+                            <span id="preview-nombre" class="fw-bold text-slate-900"></span>
+                        </li>
+                        <li>
+                            <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">Apellido(s)</span>
+                            <span id="preview-apellido" class="fw-bold text-slate-900"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-slate-100 bg-white px-4 py-3">
+                <button type="button" class="btn btn-light-action rounded-pill px-4 m-0" data-bs-dismiss="modal">Revisar de nuevo</button>
+                <button type="button" class="btn btn-indigo rounded-pill px-4 m-0 ms-2" id="btnConfirmarGuardar">
+                    Sí, Registrar Afiliado
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -110,6 +150,7 @@
     .bg-slate-50 { background-color: var(--slate-50); }
     
     .border-slate-100 { border-color: var(--slate-100) !important; }
+    .border-slate-200 { border-color: #e2e8f0 !important; }
     
     .fs-7 { font-size: 0.85rem; }
     .fs-8 { font-size: 0.75rem; }
@@ -128,7 +169,10 @@
     .btn-back:hover { background-color: var(--slate-50); color: var(--indigo); transform: translateX(-3px); }
 
     .btn-indigo { background-color: var(--indigo); color: white; border: none; border-radius: 12px; font-weight: 600; padding: 0.8rem 1.5rem; transition: all 0.2s; }
-    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25); }
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 0, 0, 0.25); }
+
+    .btn-light-action { background-color: #fff; border: 1px solid #e2e8f0; color: var(--slate-700); border-radius: 12px; font-weight: 600; padding: 0.8rem 2rem; transition: all 0.2s; }
+    .btn-light-action:hover { background-color: var(--slate-50); color: var(--slate-900); border-color: #cbd5e1; }
 
     .hover-indigo:hover { color: var(--indigo) !important; font-weight: 500; }
     .transition-all { transition: all 0.2s ease; }
@@ -203,8 +247,6 @@
                     }
                 }
             });
-        } else {
-            console.error("No se encontró el campo con ID 'id_operador'.");
         }
         
         // Agregar placeholders automáticamente si Django no los trae
@@ -212,6 +254,50 @@
         const inputApellido = document.getElementById('id_apellido');
         if(inputNombre && !inputNombre.placeholder) inputNombre.placeholder = "Ej: Juan Carlos";
         if(inputApellido && !inputApellido.placeholder) inputApellido.placeholder = "Ej: Pérez López";
+
+        // ==========================================
+        // LÓGICA DEL MODAL DE CONFIRMACIÓN
+        // ==========================================
+        const formAfiliado = document.getElementById('formNuevoAfiliado');
+        const btnAbrirModal = document.getElementById('btnAbrirModal');
+        const btnConfirmar = document.getElementById('btnConfirmarGuardar');
+        const modalConfirmacion = new bootstrap.Modal(document.getElementById('modalConfirmacionAfiliado'));
+
+        btnAbrirModal.addEventListener('click', function() {
+            // Validar HTML5 antes de abrir
+            if (!formAfiliado.checkValidity()) {
+                formAfiliado.reportValidity();
+                return;
+            }
+
+            // 1. Extraer nombre del Operador (Select2)
+            const operadorData = $('#id_operador').select2('data');
+            const operadorText = (operadorData.length > 0 && operadorData[0].id) ? operadorData[0].text : 'No seleccionado';
+
+            // 2. Extraer Nombre y Apellido usando selectores seguros
+            const fieldNombre = formAfiliado.querySelector('[name$="nombre"]');
+            const fieldApellido = formAfiliado.querySelector('[name$="apellido"]');
+            
+            const nombreVal = fieldNombre ? fieldNombre.value : 'Vacío';
+            const apellidoVal = fieldApellido ? fieldApellido.value : 'Vacío';
+
+            // Inyectar en el Modal
+            document.getElementById('preview-operador').textContent = operadorText;
+            document.getElementById('preview-nombre').textContent = nombreVal;
+            document.getElementById('preview-apellido').textContent = apellidoVal;
+
+            // Mostrar
+            modalConfirmacion.show();
+        });
+
+        // Al confirmar, enviar
+        btnConfirmar.addEventListener('click', function() {
+            btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Procesando...';
+            btnConfirmar.disabled = true;
+            
+            // Hacer click en el botón real de submit oculto
+            formAfiliado.querySelector('.real-submit-btn').click();
+        });
     });
 </script>
 {% endblock %}

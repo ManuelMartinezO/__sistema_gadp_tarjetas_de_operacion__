@@ -12,4 +12,4 @@ class Afiliado(models.Model):
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.nombre
+        return self.nombre + " " + self.apellido

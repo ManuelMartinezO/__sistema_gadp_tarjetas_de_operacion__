@@ -1,5 +1,6 @@
 from django import forms
 from .models import Tramite, Deposito
+from apps.usuario.models import Usuario
 
 class BootstrapFormMixin:
     def __init__(self, *args, **kwargs):
@@ -12,9 +13,18 @@ class TramiteEviadoForm(BootstrapFormMixin, forms.ModelForm):
         model = Tramite
         fields = [
             'usuario',
+            'operador',
+            'fojas',
             'tipo_tramite',
             'tramite_file',
         ]
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Sobrescribimos el queryset del campo 'usuario' para filtrar solo por rol 'u'
+        if 'usuario' in self.fields:
+            self.fields['usuario'].queryset = Usuario.objects.filter(rol='u', is_active=True)
 
 class EditarTramiteForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:

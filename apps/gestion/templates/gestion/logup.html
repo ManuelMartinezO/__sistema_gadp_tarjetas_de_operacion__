@@ -1,0 +1,224 @@
+{% extends 'gestion/base_admin.html' %}
+
+{% block title %}Registrar Nuevo Usuario{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 animate-fade-in force-light-text">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
+        <div>
+            <h2 class="h3 mb-1 fw-bolder text-white d-flex align-items-center tracking-wider">
+                <i class="fas fa-user-plus text-dorado me-3 fs-2"></i> 
+                Alta de Usuario
+            </h2>
+            <p class="text-muted mb-0 fs-7">Provisión de nuevas credenciales y asignación de perfil en el sistema.</p>
+        </div>
+        <div>
+            <a href="javascript:history.back()" class="btn btn-outline-dorado d-flex align-items-center gap-2">
+                <i class="fas fa-arrow-left"></i> Volver al Directorio
+            </a>
+        </div>
+    </div>
+
+    <form method="POST" class="needs-validation custom-form-dark">
+        {% csrf_token %}
+        
+        <div class="row g-4 mb-4">
+            
+            <div class="col-lg-4 col-md-5">
+                <div class="enterprise-card h-100">
+                    <div class="p-3 border-bottom border-subtle bg-surface-header">
+                        <h6 class="mb-0 text-dorado fw-bold tracking-wider text-uppercase fs-8">
+                            <i class="fas fa-shield-alt me-2"></i>Datos de Cuenta
+                        </h6>
+                    </div>
+                    <div class="p-4">
+                        {% for field in usuario_form %}
+                            <div class="mb-4">
+                                <label class="form-label text-muted fs-8 fw-bold text-uppercase tracking-wider mb-2">
+                                    {{ field.label }}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text text-muted mt-2 fs-8 opacity-75"><i class="fas fa-info-circle me-1"></i>{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-neon-danger fs-8 mt-1 fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 col-md-7">
+                <div class="enterprise-card h-100">
+                    <div class="p-3 border-bottom border-subtle bg-surface-header">
+                        <h6 class="mb-0 text-granate fw-bold tracking-wider text-uppercase fs-8">
+                            <i class="fas fa-id-card-clip me-2"></i>Información del Perfil
+                        </h6>
+                    </div>
+                    <div class="p-4">
+                        <div class="row g-4">
+                            {% for field in perfil_form %}
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fs-8 fw-bold text-uppercase tracking-wider mb-2">
+                                        {{ field.label }}
+                                    </label>
+                                    {{ field }}
+                                    {% for error in field.errors %}
+                                        <div class="text-neon-danger fs-8 mt-1 fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="enterprise-card p-4 text-center">
+            <button type="submit" class="btn btn-dorado-solid px-5 py-2 fs-6 fw-bold tracking-wider shadow-lg d-inline-flex align-items-center justify-content-center">
+                <i class="fas fa-user-check me-2"></i> PROVISIONAR USUARIO
+            </button>
+            <p class="text-muted fs-8 mt-3 mb-0">
+                Al crear el usuario, el sistema registrará la acción en los Logs de Auditoría.
+            </p>
+        </div>
+    </form>
+
+</div>
+
+<style>
+    /* VARIABLES COMPLEMENTARIAS */
+    :root {
+        --granate: #8b0000;
+        --granate-light: #ff4d4d;
+        --dorado: #c5a059;
+        --dorado-light: #d4b475;
+        --bg-surface: #1e293b;      
+        --bg-dark: #0f172a;         
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --neon-danger: #ff0844;
+    }
+
+    /* FIX TEXTO CLARO GLOBAL */
+    .force-light-text { color: var(--text-main); }
+    .force-light-text .text-muted { color: var(--text-muted) !important; }
+
+    /* UTILIDADES GLOBALES */
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+    
+    .text-granate { color: var(--granate-light) !important; }
+    .text-dorado { color: var(--dorado-light) !important; }
+    .text-neon-danger { color: var(--neon-danger) !important; }
+
+    .animate-fade-in {
+        animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CONTENEDORES */
+    .enterprise-card {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+    .bg-surface-header {
+        background-color: rgba(0, 0, 0, 0.15);
+    }
+
+    /* BOTONES */
+    .btn-outline-dorado {
+        color: var(--dorado-light);
+        border: 1px solid var(--dorado-light);
+        background: transparent;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .btn-outline-dorado:hover {
+        background: var(--dorado);
+        color: var(--bg-dark);
+    }
+
+    .btn-dorado-solid {
+        background-color: var(--dorado);
+        color: var(--bg-dark);
+        border: none;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .btn-dorado-solid:hover {
+        background-color: var(--dorado-light);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(197, 160, 89, 0.3) !important;
+    }
+
+    /* ==========================================
+       INTERCEPCIÓN DE FORMULARIOS DJANGO (DARK MODE)
+       ========================================== */
+    .custom-form-dark input[type="text"], 
+    .custom-form-dark input[type="password"], 
+    .custom-form-dark input[type="email"], 
+    .custom-form-dark input[type="number"], 
+    .custom-form-dark select,
+    .custom-form-dark textarea {
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-main);
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+    }
+
+    .custom-form-dark input:focus, 
+    .custom-form-dark select:focus,
+    .custom-form-dark textarea:focus {
+        outline: none;
+        background-color: rgba(0, 0, 0, 0.4);
+        border-color: var(--dorado-light);
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+    }
+
+    /* Checkboxes/Radios si Django genera alguno */
+    .custom-form-dark input[type="checkbox"], 
+    .custom-form-dark input[type="radio"] {
+        accent-color: var(--dorado);
+        width: 1.2rem;
+        height: 1.2rem;
+        cursor: pointer;
+    }
+
+    /* Autocomplete de navegadores (Quitar el fondo blanco/amarillo) */
+    .custom-form-dark input:-webkit-autofill,
+    .custom-form-dark input:-webkit-autofill:hover, 
+    .custom-form-dark input:-webkit-autofill:focus, 
+    .custom-form-dark input:-webkit-autofill:active{
+        -webkit-box-shadow: 0 0 0 30px var(--bg-surface) inset !important;
+        -webkit-text-fill-color: var(--text-main) !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    /* Opciones de los selects nativos */
+    .custom-form-dark select option {
+        background-color: var(--bg-surface);
+        color: var(--text-main);
+    }
+</style>
+{% endblock %}

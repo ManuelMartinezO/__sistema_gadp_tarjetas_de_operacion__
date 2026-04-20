@@ -10,10 +10,13 @@ from apps.tarjeta_de_operacion.models import TarjetaDeOperacion
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.utils.dateparse import parse_date
-
+from django.core.paginator import Paginator
 import qrcode
 import io
 import base64
+from apps.afiliado.models import Afiliado
+from apps.vehiculo.models import Vehiculo
+
 
 # ========== TRAMITE VIEWS ==========
 @login_required()
@@ -53,6 +56,10 @@ def lista_tramites(request):
     if fecha_fin:
         tramites = tramites.filter(fecha_registro__date__lte=parse_date(fecha_fin))
 
+    paginator = Paginator(tramites, 5)
+    page_number = request.GET.get('page')
+    tramites = paginator.get_page(page_number)
+
     # 5. Pasamos los filtros de vuelta al contexto para que los inputs no se borren al recargar
     contexto = {
         'tramites': tramites,
@@ -64,25 +71,44 @@ def lista_tramites(request):
     }
     return render(request, 'tramite/lista.html', contexto)
 
+def vista(request, numero_tramite):
+    tramite = get_object_or_404(Tramite, numero_tramite=numero_tramite)
+    tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
+    contexto = {
+        'tramite':tramite,
+        'tarjetas':tarjetas,
+    }
+    return render(request, 'tramite/vista_tarjetas.html', contexto)
+
 @login_required()
 @user_passes_test(es_usuario_normal)
 def detalle_tramite (request, numero_tramite):
     tramite = get_object_or_404(Tramite, numero_tramite=numero_tramite)
     tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
+    
     if request.method == 'POST':
         if 'btn_reporte' in request.POST:
             form_reporte = TramiteReportadoForm(request.POST, request.FILES, instance=tramite, prefix='reporte')
             if form_reporte.is_valid():
                 guardado = form_reporte.save()
                 return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
-        if 'btn_tarjeta' in request.POST and request.user.rol == 'a' or request.user.rol == 'sa':
+                
+        if 'btn_tarjeta' in request.POST and (request.user.rol == 'a' or request.user.rol == 'sa'):
             form_tarjeta = TarjetaDeOperacionForm(request.POST, prefix='tarjeta')
+            
+            # FILTRO POST: Es vital filtrar también aquí ANTES del is_valid() 
+            # para que Django sepa que estos son los únicos valores permitidos.
+            form_tarjeta.fields['afiliado'].queryset = Afiliado.objects.filter(operador=tramite.operador)
+            form_tarjeta.fields['vehiculo'].queryset = Vehiculo.objects.filter(propietario__operador=tramite.operador)
+            
             if form_tarjeta.is_valid():
                 tarjeta_guardado = form_tarjeta.save(commit=False)
                 tarjeta_guardado.tramite = tramite
+                tarjeta_guardado.operador = tramite.operador
                 tarjeta_guardado.save()
                 return redirect('tramite:detalle_tramite', numero_tramite=tramite.numero_tramite)
-        if 'btn_deposito' in request.POST and request.user.rol == 'a' or request.user.rol == 'sa':
+                
+        if 'btn_deposito' in request.POST and (request.user.rol == 'a' or request.user.rol == 'sa'):
             form_deposito = DepositoForm(request.POST, prefix='deposito')
             if form_deposito.is_valid():
                 deposito_guardado = form_deposito.save(commit=False)
@@ -94,7 +120,20 @@ def detalle_tramite (request, numero_tramite):
     else:
         form_reporte = TramiteReportadoForm(prefix='reporte')
         form_tarjeta = TarjetaDeOperacionForm(prefix='tarjeta')
+        
+        # -------------------------------------------------------------------
+        # FILTRO GET: Aquí limitamos las opciones que se envían al template HTML
+        # -------------------------------------------------------------------
+        # 1. Solo afiliados que pertenecen al operador del trámite
+        form_tarjeta.fields['afiliado'].queryset = Afiliado.objects.filter(operador=tramite.operador)
+        
+        # 2. Solo vehículos cuyo propietario (afiliado) pertenece al operador del trámite
+        # Usamos los "dobles guiones bajos" (__) para navegar a través de la relación de modelos
+        form_tarjeta.fields['vehiculo'].queryset = Vehiculo.objects.filter(propietario__operador=tramite.operador)
+        # -------------------------------------------------------------------
+        
         form_deposito = DepositoForm(prefix='deposito')
+        
     contexto = {
         'tramite': tramite,
         'tarjetas': tarjetas,

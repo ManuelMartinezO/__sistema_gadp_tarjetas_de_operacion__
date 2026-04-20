@@ -1,8 +1,6 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import UsuarioForm, PerfilForm
-from django.db import transaction
 from apps.operador.models import Operador
 from apps.afiliado.models import Afiliado
 from apps.vehiculo.models import Vehiculo
@@ -15,6 +13,11 @@ from django.db.models.functions import TruncMonth
 import json
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .permisos import es_admin, es_usuario_normal, es_superadmin
+from django.contrib.auth import login, logout
+from django.db import transaction
+from apps.usuario.models import Usuario, Perfil
+from django.contrib import messages
+from apps.usuario.forms import UsuarioCreationForm, UsuarioUpdateForm, PerfilForm
 
 # === HOME ===
 @login_required()
@@ -73,30 +76,7 @@ def home (request):
     return render(request, 'home.html', contexto)
 
 # === LOGUP ===
-def logup_view (request):
-    if request.method == 'POST':
-        usuario_form = UsuarioForm(request.POST, prefix='usaurio')
-        perfil_form = PerfilForm(request.POST, prefix='perfil')
-        if usuario_form.is_valid() and perfil_form.is_valid():
-            try:
-                with transaction.atomic():
-                    usuario = usuario_form.save()
-                    perfil = perfil_form.save(commit=False)
-                    perfil.usuario = usuario
-                    perfil.save()
-                    login(request, usuario)
-                return redirect('home')
 
-            except Exception as e:
-                print(e)
-    else:
-        usuario_form = UsuarioForm(prefix='usaurio')
-        perfil_form = PerfilForm(prefix='perfil')
-    contexto = {
-        'usuario_form': usuario_form,
-        'perfil_form': perfil_form,
-    }
-    return render(request, 'usuario/logup.html', contexto)
 
 # === LOGOUT ===
 def logout_view (request):
@@ -119,3 +99,113 @@ def login_view (request):
         'form': form,
     }
     return render(request, 'usuario/login.html', contexto)
+
+
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
+def usuario_list(request):
+    """Lista todos los usuarios registrados."""
+    # select_related optimiza la consulta cruzada con Perfil
+    usuarios = Usuario.objects.select_related('perfil').all().order_by('-date_joined')
+    
+    context = {
+        'usuarios': usuarios
+    }
+    return render(request, 'gestion/usuario_list.html', context)
+
+
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
+def usuario_detail(request, pk):
+    """Muestra los detalles de un usuario específico."""
+    usuario_obj = get_object_or_404(Usuario.objects.select_related('perfil'), pk=pk)
+    
+    context = {
+        'usuario_obj': usuario_obj
+    }
+    return render(request, 'gestion/usuario_detail.html', context)
+
+
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
+@transaction.atomic  # CRÍTICO: Asegura que ambos formularios se guarden o ninguno
+def crear_usuario(request):
+    """Crea un Usuario y su Perfil al mismo tiempo."""
+    if request.method == 'POST':
+        usuario_form = UsuarioCreationForm(request.POST)
+        perfil_form = PerfilForm(request.POST)
+        
+        if usuario_form.is_valid() and perfil_form.is_valid():
+            # 1. Guardamos el Usuario (Hashea la contraseña)
+            nuevo_usuario = usuario_form.save()
+            
+            # 2. Guardamos el Perfil vinculándolo al usuario creado
+            perfil = perfil_form.save(commit=False)
+            perfil.usuario = nuevo_usuario
+            perfil.save()
+            
+            messages.success(request, f"Usuario {nuevo_usuario.username} provisionado correctamente.")
+            return redirect('gestion:usuario_list')
+        else:
+            messages.error(request, "Por favor, corrija los errores en el formulario.")
+    else:
+        usuario_form = UsuarioCreationForm()
+        perfil_form = PerfilForm()
+        
+    context = {
+        'usuario_form': usuario_form,
+        'perfil_form': perfil_form,
+        'accion': 'Crear'
+    }
+    return render(request, 'gestion/usuario_form.html', context)
+
+
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
+@transaction.atomic
+def editar_usuario(request, pk):
+    """Edita las credenciales de un Usuario y sus datos de Perfil."""
+    usuario = get_object_or_404(Usuario, pk=pk)
+    perfil = get_object_or_404(Perfil, usuario=usuario)
+    
+    if request.method == 'POST':
+        usuario_form = UsuarioUpdateForm(request.POST, instance=usuario)
+        perfil_form = PerfilForm(request.POST, instance=perfil)
+        
+        if usuario_form.is_valid() and perfil_form.is_valid():
+            usuario_form.save()
+            perfil_form.save()
+            
+            messages.success(request, f"Credenciales y Perfil de {usuario.username} actualizados.")
+            return redirect('gestion:usuario_list')
+        else:
+            messages.error(request, "Por favor, corrija los errores en el formulario.")
+    else:
+        usuario_form = UsuarioUpdateForm(instance=usuario)
+        perfil_form = PerfilForm(instance=perfil)
+        
+    context = {
+        'usuario_form': usuario_form,
+        'perfil_form': perfil_form,
+        'accion': 'Editar'
+    }
+    return render(request, 'gestion/usuario_form.html', context)
+
+
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
+def eliminar_usuario(request, pk):
+    """Da de baja a un usuario del sistema."""
+    usuario = get_object_or_404(Usuario, pk=pk)
+    
+    if request.method == 'POST':
+        nombre_usuario = usuario.username
+        usuario.delete() # El Perfil se elimina automáticamente por el on_delete=CASCADE
+        
+        messages.success(request, f"El usuario {nombre_usuario} ha sido dado de baja permanentemente.")
+        return redirect('gestion:usuario_list')
+        
+    context = {
+        'usuario_obj': usuario
+    }
+    return render(request, 'gestion/usuario_confirm_delete.html', context)

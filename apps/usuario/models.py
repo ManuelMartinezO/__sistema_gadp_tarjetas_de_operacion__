@@ -5,7 +5,7 @@ class Usuario (AbstractUser):
     ROLES = (
         ('sa', 'Super Administrador'),
         ('a', 'Administrador'),
-        ('u', 'Usuario')
+        ('u', 'Tecnico')
     )
     rol = models.CharField(max_length=2, choices=ROLES, default='u')
     

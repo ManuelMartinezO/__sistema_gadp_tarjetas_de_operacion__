@@ -3,111 +3,164 @@
 {% block title %}Logs de Auditoría{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-0">
+<div class="container-fluid px-0 animate-fade-in force-light-text">
     
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
         <div>
-            <h2 class="h3 mb-0 text-gray-800"><i class="fas fa-history text-primary"></i> Historial de Auditoría</h2>
-            <p class="text-muted">Registro detallado de todas las acciones y eventos del sistema.</p>
+            <h2 class="h3 mb-1 fw-bolder text-white d-flex align-items-center tracking-wider">
+                <i class="fas fa-shield-check text-dorado me-3 fs-2"></i> 
+                Centro de Auditoría
+            </h2>
+            <p class="text-muted mb-0 fs-7">Registro inmutable de trazabilidad, eventos de seguridad y acciones de usuarios.</p>
         </div>
+        <div>
+            <button class="btn btn-outline-dorado d-flex align-items-center gap-2">
+                <i class="fas fa-download"></i> Exportar Registro
+            </button>
+        </div>
+    </div>
+
+    <div class="enterprise-card">
+        
+        <div class="p-3 border-bottom border-subtle d-flex justify-content-between align-items-center bg-surface-header">
+            <div class="text-muted fs-8 fw-bold text-uppercase tracking-wider">
+                <i class="fas fa-list-ul me-2"></i> Eventos Registrados
+            </div>
+            <div class="d-flex gap-2">
+                <div class="search-box">
+                    <i class="fas fa-search text-muted"></i>
+                    <input type="text" class="form-control-dark" placeholder="Buscar ID, Usuario o IP...">
+                </div>
+            </div>
         </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover table-striped align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th scope="col" class="px-4 py-3">Fecha y Hora</th>
-                            <th scope="col" class="py-3">Usuario</th>
-                            <th scope="col" class="py-3">Acción</th>
-                            <th scope="col" class="py-3">Descripción</th>
-                            <th scope="col" class="py-3">IP</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for log in logs %}
-                        <tr>
-                            <td class="px-4 text-nowrap text-muted">
-                                <small><i class="far fa-calendar-alt"></i> {{ log.fecha_hora|date:"d/m/Y" }}</small><br>
-                                <strong><i class="far fa-clock"></i> {{ log.fecha_hora|time:"H:i:s" }}</strong>
-                            </td>
-                            <td>
+        <div class="table-responsive">
+            <table class="table table-dark table-enterprise align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col" class="ps-4">ID Evento</th>
+                        <th scope="col">Timestamp</th>
+                        <th scope="col">Actor / Usuario</th>
+                        <th scope="col">Tipo de Acción</th>
+                        <th scope="col">Detalle del Registro</th>
+                        <th scope="col" class="pe-4 text-end">Origen (IP)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="ps-4">
+                            <span class="log-id">EVT-{{ log.id|stringformat:"06d" }}</span>
+                        </td>
+                        
+                        <td class="text-nowrap">
+                            <div class="d-flex flex-column">
+                                <span class="text-white fs-7 font-monospace">{{ log.fecha_hora|date:"Y-m-d" }}</span>
+                                <span class="text-muted fs-8 font-monospace"><i class="far fa-clock me-1"></i>{{ log.fecha_hora|time:"H:i:s.u" }}</span>
+                            </div>
+                        </td>
+                        
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
                                 {% if log.usuario %}
-                                    <div class="fw-bold">{{ log.usuario.username }}</div>
-                                    {% if log.usuario.is_superuser %}
-                                        <span class="badge bg-danger" style="font-size: 0.65em;">SA</span>
-                                    {% endif %}
+                                    <div class="avatar-cyber">
+                                        {{ log.usuario.username|make_list|first|upper }}
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold text-white fs-7">{{ log.usuario.username }}</span>
+                                        {% if log.usuario.is_superuser %}
+                                            <span class="text-granate fs-8 fw-bold tracking-wider" style="font-size: 0.65em;">ROOT / SA</span>
+                                        {% else %}
+                                            <span class="text-dorado fs-8 fw-bold tracking-wider" style="font-size: 0.65em;">USER</span>
+                                        {% endif %}
+                                    </div>
                                 {% else %}
-                                    <span class="text-muted fst-italic">Sistema</span>
+                                    <div class="avatar-cyber system-avatar">
+                                        <i class="fas fa-robot"></i>
+                                    </div>
+                                    <span class="text-muted fst-italic fs-7">SYSTEM</span>
                                 {% endif %}
-                            </td>
-                            <td>
-                                {% if log.accion == 'LOGIN' %}
-                                    <span class="badge bg-success">Ingreso</span>
-                                {% elif log.accion == 'LOGOUT' %}
-                                    <span class="badge bg-secondary">Salida</span>
-                                {% elif log.accion == 'CREAR' %}
-                                    <span class="badge bg-primary">Creación</span>
-                                {% elif log.accion == 'EDITAR' %}
-                                    <span class="badge bg-warning text-dark">Edición</span>
-                                {% elif log.accion == 'ELIMINAR' %}
-                                    <span class="badge bg-danger">Eliminación</span>
-                                {% elif log.accion == 'IMPRIMIR' %}
-                                    <span class="badge bg-info text-dark">Impresión</span>
-                                {% else %}
-                                    <span class="badge bg-dark">{{ log.accion }}</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ log.descripcion }}</td>
-                            <td class="text-muted"><small>{{ log.ip_usuario|default:"-" }}</small></td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
-                                <i class="fas fa-inbox fa-3x mb-3 text-light"></i>
-                                <h5>No hay registros en el historial</h5>
-                                <p>Las acciones de los usuarios aparecerán aquí automáticamente.</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+                        </td>
+                        
+                        <td>
+                            {% if log.accion == 'LOGIN' %}
+                                <span class="badge-cyber badge-success"><i class="fas fa-sign-in-alt me-1"></i> AUTH_IN</span>
+                            {% elif log.accion == 'LOGOUT' %}
+                                <span class="badge-cyber badge-secondary"><i class="fas fa-sign-out-alt me-1"></i> AUTH_OUT</span>
+                            {% elif log.accion == 'CREAR' %}
+                                <span class="badge-cyber badge-dorado"><i class="fas fa-plus me-1"></i> CREATE</span>
+                            {% elif log.accion == 'EDITAR' %}
+                                <span class="badge-cyber badge-warning"><i class="fas fa-pen me-1"></i> UPDATE</span>
+                            {% elif log.accion == 'ELIMINAR' %}
+                                <span class="badge-cyber badge-granate"><i class="fas fa-trash me-1"></i> DELETE</span>
+                            {% elif log.accion == 'IMPRIMIR' %}
+                                <span class="badge-cyber badge-purple"><i class="fas fa-print me-1"></i> PRINT</span>
+                            {% else %}
+                                <span class="badge-cyber badge-secondary">{{ log.accion }}</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            <span class="text-main fs-7 text-truncate d-inline-block" style="max-width: 350px;" title="{{ log.descripcion }}">
+                                {{ log.descripcion }}
+                            </span>
+                        </td>
+                        
+                        <td class="pe-4 text-end">
+                            <span class="ip-address">
+                                {{ log.ip_usuario|default:"0.0.0.0" }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="d-flex flex-column align-items-center justify-content-center text-muted opacity-50">
+                                <i class="fas fa-server fa-4x mb-3"></i>
+                                <h5 class="fw-bold tracking-wider text-uppercase text-white">Log Vacío</h5>
+                                <p class="fs-7">El registro de eventos comenzará automáticamente.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
         
         {% if logs.has_other_pages %}
-        <div class="card-footer bg-white border-top py-3">
+        <div class="p-3 border-top border-subtle bg-surface-header d-flex justify-content-between align-items-center">
+            <div class="text-muted fs-8 font-monospace">
+                Mostrando página {{ logs.number }} de {{ logs.paginator.num_pages }}
+            </div>
             <nav aria-label="Navegación de auditoría">
-                <ul class="pagination justify-content-end mb-0">
+                <ul class="pagination pagination-cyber mb-0">
                     
                     {% if logs.has_previous %}
                         <li class="page-item">
                             <a class="page-link" href="?page={{ logs.previous_page_number }}" aria-label="Anterior">
-                                <span aria-hidden="true">&laquo; Anterior</span>
+                                <i class="fas fa-chevron-left"></i>
                             </a>
                         </li>
                     {% else %}
                         <li class="page-item disabled">
-                            <span class="page-link">&laquo; Anterior</span>
+                            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
                         </li>
                     {% endif %}
                     
-                    <li class="page-item disabled d-none d-md-block">
-                        <span class="page-link text-dark bg-light">
-                            Página <strong>{{ logs.number }}</strong> de {{ logs.paginator.num_pages }}
-                        </span>
+                    <li class="page-item active d-none d-md-block">
+                        <span class="page-link">{{ logs.number }}</span>
                     </li>
                     
                     {% if logs.has_next %}
                         <li class="page-item">
                             <a class="page-link" href="?page={{ logs.next_page_number }}" aria-label="Siguiente">
-                                <span aria-hidden="true">Siguiente &raquo;</span>
+                                <i class="fas fa-chevron-right"></i>
                             </a>
                         </li>
                     {% else %}
                         <li class="page-item disabled">
-                            <span class="page-link">Siguiente &raquo;</span>
+                            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
                         </li>
                     {% endif %}
                     
@@ -118,4 +171,236 @@
     </div>
 
 </div>
+
+<style>
+    /* VARIABLES COMPLEMENTARIAS (Institucional Oscuro) */
+    :root {
+        --granate: #8b0000;
+        --granate-light: #ff4d4d;    /* Más claro para destacar en fondo oscuro */
+        --dorado: #c5a059;
+        --dorado-light: #f5d085;     /* Más claro para destacar en fondo oscuro */
+        --bg-surface: #1e293b;      
+        --bg-dark: #0f172a;         
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --text-main: #f8fafc;       /* Blanco roto puro */
+        --text-muted: #94a3b8;      /* Gris azulado claro */
+        --neon-warning: #f59e0b;
+        --neon-success: #10b981;
+        --neon-purple: #a855f7;
+    }
+
+    /* ==========================================
+       FIX DE COLOR GLOBAL
+       ========================================== */
+    .force-light-text, 
+    .force-light-text p, 
+    .force-light-text span, 
+    .force-light-text div {
+        color: var(--text-main);
+    }
+    
+    .force-light-text .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    /* UTILIDADES GLOBALES */
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+    .font-monospace { font-family: 'Courier New', Consolas, monospace; }
+    
+    .text-granate { color: var(--granate-light) !important; }
+    .text-dorado { color: var(--dorado-light) !important; }
+    .text-main { color: var(--text-main) !important; }
+    .text-white { color: #ffffff !important; }
+
+    .animate-fade-in {
+        animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .enterprise-card {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+    .bg-surface-header {
+        background-color: rgba(0, 0, 0, 0.15);
+    }
+
+    /* BOTONES */
+    .btn-outline-dorado {
+        color: var(--dorado-light);
+        border: 1px solid var(--dorado-light);
+        background: transparent;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .btn-outline-dorado:hover {
+        background: var(--dorado);
+        color: var(--bg-dark) !important;
+    }
+
+    /* SEARCH BOX */
+    .search-box {
+        position: relative;
+        width: 250px;
+    }
+    .search-box i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.8rem;
+    }
+    .form-control-dark {
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-main);
+        border-radius: 6px;
+        padding: 0.4rem 1rem 0.4rem 2rem;
+        font-size: 0.8rem;
+        transition: all 0.3s;
+    }
+    .form-control-dark:focus {
+        outline: none;
+        border-color: var(--dorado-light);
+        box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.2);
+    }
+    .form-control-dark::placeholder { color: var(--text-muted); opacity: 0.5; }
+
+    /* ==========================================
+       SOLUCIÓN DEFINITIVA: TABLA ENTERPRISE
+       ========================================== */
+    .table-enterprise {
+        --bs-table-bg: transparent !important;
+        --bs-table-color: var(--text-main) !important;
+        --bs-table-striped-color: var(--text-main) !important;
+        --bs-table-hover-color: var(--text-main) !important;
+        --bs-table-hover-bg: rgba(255, 255, 255, 0.03) !important;
+        color: var(--text-main) !important;
+        border-collapse: collapse;
+        margin-bottom: 0;
+    }
+    .table-enterprise thead th {
+        background-color: rgba(0, 0, 0, 0.2) !important; 
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        color: var(--text-muted) !important; /* Cabeceras grises claras */
+        border-bottom: 1px solid var(--border-subtle) !important;
+        padding: 1rem 0.5rem;
+    }
+    .table-enterprise td {
+        background-color: transparent !important; 
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+        transition: background-color 0.2s;
+        color: var(--text-main) !important; /* Fuerza blanco roto en las celdas */
+    }
+    .table-enterprise tbody tr:hover td {
+        background-color: rgba(255, 255, 255, 0.03) !important; 
+    }
+    .table-enterprise tbody tr:hover td:first-child {
+        box-shadow: inset 3px 0 0 var(--dorado);
+    }
+    /* ========================================== */
+
+    /* ELEMENTOS DE DATOS */
+    .log-id {
+        font-family: 'Courier New', Consolas, monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        background: rgba(255,255,255,0.05);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        border: 1px solid var(--border-subtle);
+    }
+
+    .ip-address {
+        font-family: 'Courier New', Consolas, monospace;
+        font-size: 0.75rem;
+        color: var(--dorado-light);
+        opacity: 0.8;
+    }
+
+    /* AVATARES */
+    .avatar-cyber {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(197, 160, 89, 0.1); 
+        border: 1px solid rgba(197, 160, 89, 0.3);
+        color: var(--dorado-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.9rem;
+    }
+    .system-avatar {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+    }
+
+    /* BADGES PARA ACCIONES */
+    .badge-cyber {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 0.35em 0.6em;
+        border-radius: 6px;
+        display: inline-block;
+    }
+    .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--neon-success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.1); }
+    
+    .badge-dorado { background: rgba(197, 160, 89, 0.1); color: var(--dorado-light); border: 1px solid rgba(197, 160, 89, 0.3); }
+    .badge-granate { background: rgba(139, 0, 0, 0.2); color: var(--granate-light); border: 1px solid rgba(139, 0, 0, 0.5); }
+    
+    .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--neon-warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-purple { background: rgba(168, 85, 247, 0.1); color: var(--neon-purple); border: 1px solid rgba(168, 85, 247, 0.3); }
+
+    /* PAGINACIÓN OSCURA */
+    .pagination-cyber .page-link {
+        background-color: transparent;
+        border: 1px solid var(--border-subtle);
+        color: var(--text-muted) !important;
+        margin: 0 2px;
+        border-radius: 6px;
+        transition: all 0.3s;
+        font-size: 0.8rem;
+    }
+    .pagination-cyber .page-link:hover {
+        background-color: rgba(197, 160, 89, 0.1);
+        border-color: var(--dorado-light);
+        color: var(--dorado-light) !important;
+    }
+    .pagination-cyber .page-item.active .page-link {
+        background-color: var(--dorado);
+        border-color: var(--dorado);
+        color: var(--bg-dark) !important;
+        font-weight: bold;
+    }
+    .pagination-cyber .page-item.disabled .page-link {
+        background-color: rgba(255,255,255,0.02);
+        color: rgba(255,255,255,0.2) !important;
+        border-color: transparent;
+    }
+</style>
 {% endblock %}

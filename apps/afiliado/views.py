@@ -2,26 +2,29 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Afiliado
 from .forms import AfiliadoForm
 from django.db.models import Q
+from django.core.paginator import Paginator
 
 def lista_afiliados(request):
-    # Usamos select_related('operador') para optimizar las consultas a la base de datos
-    # ya que en el HTML mostramos el nombre de la empresa de cada afiliado.
-    afiliados = Afiliado.objects.select_related('operador').all().order_by('-fecha_registro')
+    # Consulta optimizada con select_related
+    afiliados_list = Afiliado.objects.select_related('operador').all().order_by('-fecha_registro')
     
-    # 1. Capturamos el texto del buscador
+    # 1. Búsqueda
     q = request.GET.get('q', '').strip()
-    
-    # 2. Filtramos por nombre, apellido o nombre de la empresa operadora
     if q:
-        afiliados = afiliados.filter(
+        afiliados_list = afiliados_list.filter(
             Q(nombre__icontains=q) |
             Q(apellido__icontains=q) |
             Q(operador__nombre__icontains=q)
         )
         
+    # 2. Paginación (Mostramos 10 por página)
+    paginator = Paginator(afiliados_list, 5)
+    page_number = request.GET.get('page')
+    afiliados = paginator.get_page(page_number)
+        
     contexto = {
         'afiliados': afiliados,
-        'q': q, # Para que el texto se mantenga en el input
+        'q': q,
     }
     return render(request, 'afiliado/lista.html', contexto)
     

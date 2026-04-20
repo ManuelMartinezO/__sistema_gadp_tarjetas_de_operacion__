@@ -12,7 +12,9 @@
                 </ol>
             </nav>
             <div class="d-flex align-items-center gap-3 flex-wrap">
-                <h2 class="fw-bold text-slate-900 mb-0">Expediente Nº {{ tramite.numero_tramite }}</h2>
+                <div>
+                    <h2 class="fw-bold text-slate-900 mb-0">Expediente Nº {{ tramite.numero_tramite }}</h2>
+                </div>
                 {% if tramite.estado_tramite == 'pendiente' %}
                     <span class="badge bg-warning-50 text-warning border border-warning-200 px-3 py-2 rounded-pill fs-8 tracking-wider"><i class="bi bi-hourglass-split me-1"></i> PENDIENTE DE REVISIÓN</span>
                 {% elif tramite.estado_tramite == 'validado' %}
@@ -40,12 +42,14 @@
     <div class="row g-4 g-xl-5">
         
         <div class="col-lg-8">
-            
             <div class="card modern-card border-0 shadow-sm mb-4">
                 <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-0">
                     <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-0">
                         <i class="bi bi-info-square text-indigo me-2"></i>Información del Trámite
                     </h6>
+                    <h3 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-4 mb-0">
+                        {{ tramite.operador }}
+                    </h3>
                 </div>
                 
                 <div class="card-body p-4">
@@ -108,13 +112,16 @@
                     </div>
                 </div>
 
-                {% if not tramite.estado_deposito and tramite.reporte_file %}
-                    <div class="card-footer bg-slate-50 border-top border-slate-100 p-3 text-end rounded-bottom-4">
+                <div class="card-footer bg-slate-50 border-top border-slate-100 p-3 text-end rounded-bottom-4">
+                    {% if not tramite.estado_deposito and tramite.reporte_file %}
                         <a href="{% url 'tramite:editar_tramite' tramite.numero_tramite %}" class="btn btn-sm btn-outline-indigo rounded-pill px-4 fw-medium">
                             <i class="bi bi-pencil-square me-2"></i> {% if user.rol == 'u' %} Editar Reporte {% else %} Editar Trámite {% endif %}
                         </a>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                    <a href="{% url 'tramite:vista' tramite.numero_tramite %}" class="btn btn-sm btn-outline-indigo rounded-pill px-4 fw-medium">
+                        <i class="bi bi-pencil-square me-2"></i> Vista previa
+                    </a>
+                </div>
             </div>
 
             {% if tarjetas and tramite.estado_tramite == 'validado' %}
@@ -139,7 +146,7 @@
                                 <div>
                                     <span class="fw-bold text-slate-800 d-block fs-6 mb-1">{{ tarjeta.vehiculo.marca }} <span class="text-slate-400 fw-normal">|</span> {{ tarjeta.vehiculo.tipo_vehiculo }}</span>
                                     <div class="text-slate-500 fs-8 d-flex align-items-center text-truncate" style="max-width: 250px;" title="{{ tarjeta.ruta.nombre }}">
-                                        <i class="bi bi-signpost-split text-indigo me-1"></i> {{ tarjeta.ruta.nombre|default:"Ruta no especificada" }}
+                                        <i class="bi bi-signpost-split text-indigo me-1"></i> {{ tarjeta.ruta.ruta|default:"Ruta no especificada" }}
                                     </div>
                                 </div>
                             </div>
@@ -185,15 +192,16 @@
                                         <i class="bi bi-exclamation-triangle-fill fs-5 me-2 mt-1"></i> 
                                         <span>Pendiente de registro de comprobante bancario.</span>
                                     </div>
-                                    <form method="POST" class="custom-form">
+                                    <form method="POST" id="formDeposito" class="custom-form needs-confirmation" data-form-type="deposito">
                                         {% csrf_token %}
                                         <label class="info-label text-slate-500 mb-2">Registrar Depósito</label>
                                         <div class="mb-3 form-inputs-wrapper bg-white p-2 rounded-3 border border-slate-100 shadow-sm">
                                             {{ form_deposito.as_p }}
                                         </div>
-                                        <button type="submit" name="btn_deposito" class="btn btn-warning-custom w-100 rounded-pill shadow-sm fw-bold">
+                                        <button type="button" class="btn btn-warning-custom w-100 rounded-pill shadow-sm fw-bold btn-confirm-trigger">
                                             Notificar Depósito <i class="bi bi-arrow-right ms-1"></i>
                                         </button>
+                                        <button type="submit" name="btn_deposito" class="d-none real-submit-btn"></button>
                                     </form>
                                 {% endif %}
                             {% else %}
@@ -213,14 +221,15 @@
                     <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-3">
                         <i class="bi bi-cloud-arrow-up text-indigo me-2"></i>Cargar Reporte Final
                     </h6>
-                    <form method="POST" enctype="multipart/form-data" class="custom-form file-input-modern">
+                    <form method="POST" enctype="multipart/form-data" id="formReporte" class="custom-form file-input-modern needs-confirmation" data-form-type="reporte">
                         {% csrf_token %}
                         <div class="form-inputs-wrapper mb-3 bg-slate-50 p-3 rounded-4 border border-slate-100">
                             {{ form_reporte.as_p }}
                         </div>
-                        <button type="submit" name="btn_reporte" class="btn btn-indigo w-100 rounded-pill shadow-sm">
+                        <button type="button" class="btn btn-indigo w-100 rounded-pill shadow-sm btn-confirm-trigger">
                             Subir Documento <i class="bi bi-send ms-1"></i>
                         </button>
+                        <button type="submit" name="btn_reporte" class="d-none real-submit-btn"></button>
                     </form>
                 </div>
             </div>
@@ -234,20 +243,48 @@
                             <div class="icon-circle-sm bg-white text-indigo shadow-sm me-2"><i class="bi bi-plus-lg"></i></div>
                             Añadir Tarjeta de Operación
                         </h6>
-                        <form method="POST" class="custom-form small-forms">
+                        <form method="POST" id="formTarjeta" class="custom-form small-forms needs-confirmation" data-form-type="tarjeta">
                             {% csrf_token %}
                             <div class="form-inputs-wrapper bg-white p-3 rounded-4 shadow-sm mb-3">
                                 {{ form_tarjeta.as_p }}
                             </div>
-                            <button type="submit" name="btn_tarjeta" class="btn btn-indigo w-100 rounded-pill shadow-sm">
+                            <button type="button" class="btn btn-indigo w-100 rounded-pill shadow-sm btn-confirm-trigger">
                                 Registrar Nueva Tarjeta
                             </button>
+                            <button type="submit" name="btn_tarjeta" class="d-none real-submit-btn"></button>
                         </form>
                     </div>
                 </div>
                 {% endif %}
             {% endif %}
 
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalConfirmacionForms" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-slate-100 bg-slate-50 px-4 py-3">
+                <h5 class="modal-title fw-bold text-slate-800 d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-indigo me-2"></i> Confirmar Acción
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-slate-600 mb-4 fs-7">Por favor, verifique los datos ingresados antes de continuar.</p>
+                
+                <div class="bg-slate-50 p-3 rounded-4 border border-slate-200">
+                    <ul class="list-unstyled mb-0 fs-7 text-slate-700" id="listaPreviewModal">
+                        </ul>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-slate-100 bg-white px-4 py-3">
+                <button type="button" class="btn btn-light-action rounded-pill px-4 m-0" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-indigo rounded-pill px-4 m-0 ms-2" id="btnConfirmarAccionModal">
+                    Sí, Confirmar
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -280,140 +317,9 @@
 </div>
 
 <style>
-    /* VARIABLES LOCALES (Minimalista Slate & Indigo) */
-    .tramite-detalle-container {
-        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #e0e7ff;
-        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-600: #475569; --slate-500: #64748b; --slate-400: #94a3b8; --slate-300: #cbd5e1; --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc;
-        --emerald-600: #059669; --emerald-200: #a7f3d0; --emerald-100: #d1fae5; --emerald-50: #ecfdf5;
-        --warning-main: #d97706; --warning-200: #fde68a; --warning-50: #fffbeb;
-        --red-main: #dc2626; --red-200: #fecaca; --red-50: #fef2f2;
-    }
-
-    .text-indigo { color: var(--indigo); }
-    .text-indigo-light { color: #818cf8; }
-    .text-indigo-dark { color: var(--indigo-dark); }
-    .text-slate-900 { color: var(--slate-900); }
-    .text-slate-800 { color: var(--slate-800); }
-    .text-slate-700 { color: var(--slate-700); }
-    .text-slate-600 { color: var(--slate-600); }
-    .text-slate-500 { color: var(--slate-500); }
-    .text-slate-400 { color: var(--slate-400); }
-    
-    .text-emerald-600 { color: var(--emerald-600); }
-    .text-warning { color: var(--warning-main) !important; }
-    .text-danger { color: var(--red-main) !important; }
-    
-    .bg-slate-50 { background-color: var(--slate-50); }
-    .bg-slate-100 { background-color: var(--slate-100); }
-    .bg-slate-800 { background-color: var(--slate-800); }
-    .bg-indigo-50 { background-color: var(--indigo-light); }
-    .bg-emerald-50 { background-color: var(--emerald-50); }
-    .bg-warning-50 { background-color: var(--warning-50); }
-    .bg-red-50 { background-color: var(--red-50); }
-    .bg-white { background-color: #fff; }
-    
-    .border-slate-100 { border-color: var(--slate-100) !important; }
-    .border-slate-200 { border-color: var(--slate-200) !important; }
-    .border-emerald-200 { border-color: var(--emerald-200) !important; }
-    .border-emerald-100 { border-color: var(--emerald-100) !important; }
-    .border-warning-200 { border-color: var(--warning-200) !important; }
-    .border-red-200 { border-color: var(--red-200) !important; }
-    .border-indigo-100 { border-color: #c7d2fe !important; }
-    .border-dashed { border-style: dashed !important; border-width: 2px !important; }
-
-    .fs-7 { font-size: 0.85rem; }
-    .fs-8 { font-size: 0.75rem; }
-    .tracking-wider { letter-spacing: 1px; }
-    .font-monospace { font-family: 'Courier New', Courier, monospace; }
-    .hover-underline:hover { text-decoration: underline !important; }
-
-    /* TARJETAS LIMPIAS */
-    .modern-card { border-radius: 16px; background-color: #fff; overflow: hidden;}
-    
-    /* INDICADORES DE ESTADO (Borde superior) */
-    .status-indicator { position: relative; overflow: hidden; }
-    .status-indicator::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
-    .status-indicator.is-success::before { background-color: var(--emerald-600); }
-    .status-indicator.is-warning::before { background-color: var(--warning-main); }
-    .status-indicator.is-indigo::before { background-color: var(--indigo); }
-
-    /* ESPACIADO Y CAJAS DE INFORMACIÓN */
-    .info-box {
-        background-color: var(--slate-50);
-        border: 1px solid var(--slate-100);
-        border-radius: 12px;
-        padding: 1.25rem;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        transition: all 0.2s ease;
-    }
-    .info-label {
-        color: var(--slate-400);
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 0.5rem;
-        display: block;
-    }
-
-    /* CAJAS DE DOCUMENTOS (PDF) */
-    .file-box:hover { background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border-color: var(--slate-300) !important; }
-
-    /* DISEÑO PLACA MATRÍCULA (Para la lista de tarjetas) */
-    .placa-badge { display: inline-flex; flex-direction: column; background-color: #f8fafc; border: 2px solid #cbd5e1; border-radius: 6px; overflow: hidden; min-width: 90px; }
-    .placa-text { font-family: 'Courier New', Courier, monospace; font-weight: 800; font-size: 1rem; color: #1e293b; padding: 2px 8px; letter-spacing: 1px; background-color: #fff; text-align: center;}
-    .placa-footer { background-color: #1e293b; color: #fff; font-size: 0.45rem; font-weight: 700; text-transform: uppercase; width: 100%; text-align: center; padding: 1px 0; letter-spacing: 1px; }
-
-    /* HOVER EFFECT EN LISTAS DE TARJETAS */
-    .hover-lift { transition: all 0.2s ease; }
-    .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; border-color: var(--indigo-light) !important; }
-
-    /* AVATARES E ICONOS */
-    .icon-circle-large { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
-    .icon-circle-sm { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-
-    /* BOTONES */
-    .btn-light-action { background-color: #fff; border: 1px solid var(--slate-200); color: var(--slate-700); font-weight: 600; transition: all 0.2s; }
-    .btn-light-action:hover { background-color: var(--slate-50); color: var(--indigo); border-color: var(--slate-300); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
-    
-    .btn-outline-indigo { border: 1px solid var(--indigo); color: var(--indigo); transition: 0.2s; font-weight: 600; background: transparent;}
-    .btn-outline-indigo:hover { background: var(--indigo); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
-
-    .btn-indigo { background-color: var(--indigo); color: white; transition: 0.2s; font-weight: 600; border: none;}
-    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
-    
-    .btn-warning-custom { background-color: var(--warning-main); color: white; border: none; transition: 0.2s; }
-    .btn-warning-custom:hover { background-color: #b45309; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25); }
-
-    /* FORMULARIOS (Intercepta Django) */
-    .form-inputs-wrapper p { margin-bottom: 1rem; }
-    .form-inputs-wrapper p label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.3rem; display: block; }
-    .custom-form input[type="text"], .custom-form input[type="number"], .custom-form input[type="file"], .custom-form select {
-        width: 100%; background-color: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.6rem 1rem; color: var(--slate-700); transition: 0.2s; font-size: 0.9rem;
-    }
-    .custom-form input:focus, .custom-form select:focus { background-color: #fff; border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-light); outline: none; }
-
-    /* ESTILO PARA INPUT FILE NATIVO */
-    .file-input-modern input[type="file"] { width: 100%; font-size: 0.85rem; color: var(--slate-500); background: transparent; border: none; padding: 0;}
-    .file-input-modern input[type="file"]::file-selector-button {
-        background-color: #fff; color: var(--slate-700); border: 1px solid #cbd5e1; padding: 0.4rem 0.8rem; border-radius: 8px; margin-right: 1rem; cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 0.85rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-    .file-input-modern input[type="file"]::file-selector-button:hover { background-color: var(--slate-50); border-color: var(--indigo-light); color: var(--indigo);}
-
-    /* SELECT2 CUSTOMIZACIÓN */
-    .select2-container--bootstrap-5 .select2-selection {
-        background-color: #fff !important; border: 1px solid #e2e8f0 !important; border-radius: 10px !important; min-height: 40px !important; padding: 0.2rem 0.5rem; display: flex; align-items: center;
-    }
-    .select2-container--bootstrap-5.select2-container--focus .select2-selection {
-        background-color: #fff !important; border-color: var(--indigo) !important; box-shadow: 0 0 0 3px var(--indigo-light) !important;
-    }
-
-    /* ANIMACIÓN */
-    .animate-up { opacity: 0; transform: translateY(15px); animation: fadeInUp 0.5s ease forwards; }
-    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+    /* Estilos Originales ... */
+    .tramite-detalle-container { --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #e0e7ff; --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-600: #475569; --slate-500: #64748b; --slate-400: #94a3b8; --slate-300: #cbd5e1; --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc; --emerald-600: #059669; --emerald-200: #a7f3d0; --emerald-100: #d1fae5; --emerald-50: #ecfdf5; --warning-main: #d97706; --warning-200: #fde68a; --warning-50: #fffbeb; --red-main: #dc2626; --red-200: #fecaca; --red-50: #fef2f2; }
+    .text-indigo { color: var(--indigo); } .text-indigo-light { color: #818cf8; } .text-indigo-dark { color: var(--indigo-dark); } .text-slate-900 { color: var(--slate-900); } .text-slate-800 { color: var(--slate-800); } .text-slate-700 { color: var(--slate-700); } .text-slate-600 { color: var(--slate-600); } .text-slate-500 { color: var(--slate-500); } .text-slate-400 { color: var(--slate-400); } .text-emerald-600 { color: var(--emerald-600); } .text-warning { color: var(--warning-main) !important; } .text-danger { color: var(--red-main) !important; } .bg-slate-50 { background-color: var(--slate-50); } .bg-slate-100 { background-color: var(--slate-100); } .bg-slate-800 { background-color: var(--slate-800); } .bg-indigo-50 { background-color: var(--indigo-light); } .bg-emerald-50 { background-color: var(--emerald-50); } .bg-warning-50 { background-color: var(--warning-50); } .bg-red-50 { background-color: var(--red-50); } .bg-white { background-color: #fff; } .border-slate-100 { border-color: var(--slate-100) !important; } .border-slate-200 { border-color: var(--slate-200) !important; } .border-emerald-200 { border-color: var(--emerald-200) !important; } .border-emerald-100 { border-color: var(--emerald-100) !important; } .border-warning-200 { border-color: var(--warning-200) !important; } .border-red-200 { border-color: var(--red-200) !important; } .border-indigo-100 { border-color: #c7d2fe !important; } .border-dashed { border-style: dashed !important; border-width: 2px !important; } .fs-7 { font-size: 0.85rem; } .fs-8 { font-size: 0.75rem; } .tracking-wider { letter-spacing: 1px; } .font-monospace { font-family: 'Courier New', Courier, monospace; } .hover-underline:hover { text-decoration: underline !important; } .modern-card { border-radius: 16px; background-color: #fff; overflow: hidden;} .status-indicator { position: relative; overflow: hidden; } .status-indicator::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; } .status-indicator.is-success::before { background-color: var(--emerald-600); } .status-indicator.is-warning::before { background-color: var(--warning-main); } .status-indicator.is-indigo::before { background-color: var(--indigo); } .info-box { background-color: var(--slate-50); border: 1px solid var(--slate-100); border-radius: 12px; padding: 1.25rem; height: 100%; display: flex; flex-direction: column; justify-content: center; transition: all 0.2s ease; } .info-label { color: var(--slate-400); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; display: block; } .file-box:hover { background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border-color: var(--slate-300) !important; } .placa-badge { display: inline-flex; flex-direction: column; background-color: #f8fafc; border: 2px solid #cbd5e1; border-radius: 6px; overflow: hidden; min-width: 90px; } .placa-text { font-family: 'Courier New', Courier, monospace; font-weight: 800; font-size: 1rem; color: #1e293b; padding: 2px 8px; letter-spacing: 1px; background-color: #fff; text-align: center;} .placa-footer { background-color: #1e293b; color: #fff; font-size: 0.45rem; font-weight: 700; text-transform: uppercase; width: 100%; text-align: center; padding: 1px 0; letter-spacing: 1px; } .hover-lift { transition: all 0.2s ease; } .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; border-color: var(--indigo-light) !important; } .icon-circle-large { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; } .icon-circle-sm { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; } .btn-light-action { background-color: #fff; border: 1px solid var(--slate-200); color: var(--slate-700); font-weight: 600; transition: all 0.2s; } .btn-light-action:hover { background-color: var(--slate-50); color: var(--indigo); border-color: var(--slate-300); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05);} .btn-outline-indigo { border: 1px solid var(--indigo); color: var(--indigo); transition: 0.2s; font-weight: 600; background: transparent;} .btn-outline-indigo:hover { background: var(--indigo); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); } .btn-indigo { background-color: var(--indigo); color: white; transition: 0.2s; font-weight: 600; border: none;} .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); } .btn-warning-custom { background-color: var(--warning-main); color: white; border: none; transition: 0.2s; } .btn-warning-custom:hover { background-color: #b45309; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25); } .form-inputs-wrapper p { margin-bottom: 1rem; } .form-inputs-wrapper p label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.3rem; display: block; } .custom-form input[type="text"], .custom-form input[type="number"], .custom-form input[type="file"], .custom-form select { width: 100%; background-color: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.6rem 1rem; color: var(--slate-700); transition: 0.2s; font-size: 0.9rem; } .custom-form input:focus, .custom-form select:focus { background-color: #fff; border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-light); outline: none; } .file-input-modern input[type="file"] { width: 100%; font-size: 0.85rem; color: var(--slate-500); background: transparent; border: none; padding: 0;} .file-input-modern input[type="file"]::file-selector-button { background-color: #fff; color: var(--slate-700); border: 1px solid #cbd5e1; padding: 0.4rem 0.8rem; border-radius: 8px; margin-right: 1rem; cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 0.85rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); } .file-input-modern input[type="file"]::file-selector-button:hover { background-color: var(--slate-50); border-color: var(--indigo-light); color: var(--indigo);} .select2-container--bootstrap-5 .select2-selection { background-color: #fff !important; border: 1px solid #e2e8f0 !important; border-radius: 10px !important; min-height: 40px !important; padding: 0.2rem 0.5rem; display: flex; align-items: center; } .select2-container--bootstrap-5.select2-container--focus .select2-selection { background-color: #fff !important; border-color: var(--indigo) !important; box-shadow: 0 0 0 3px var(--indigo-light) !important; } .animate-up { opacity: 0; transform: translateY(15px); animation: fadeInUp 0.5s ease forwards; } @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 </style>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -424,8 +330,8 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     
+    // --- Lógica del Botón Nueva Ruta ---
     const rutaSelect = document.getElementById('id_tarjeta-ruta');
-    
     if (rutaSelect) {
         const btnAñadirRuta = document.createElement('button');
         btnAñadirRuta.type = 'button';
@@ -440,10 +346,10 @@ document.addEventListener("DOMContentLoaded", function() {
         rutaSelect.parentNode.insertBefore(wrapper, rutaSelect);
         wrapper.appendChild(rutaSelect);
         wrapper.appendChild(btnAñadirRuta);
-        
         rutaSelect.style.marginBottom = '0'; 
     }
 
+    // --- Inicializar Select2 ---
     $('.small-forms select').select2({
         theme: 'bootstrap-5',
         width: '100%',
@@ -451,13 +357,12 @@ document.addEventListener("DOMContentLoaded", function() {
         allowClear: true
     });
 
+    // --- Lógica de AJAX Nueva Ruta ---
     const formNuevaRuta = document.getElementById('formNuevaRuta');
-    
     if (formNuevaRuta) {
         formNuevaRuta.addEventListener('submit', function(e) {
             e.preventDefault(); 
             const formData = new FormData(formNuevaRuta);
-            
             fetch("{% url 'tarjeta:crear_ruta_ajax' %}", {
                 method: "POST",
                 body: formData,
@@ -469,24 +374,107 @@ document.addEventListener("DOMContentLoaded", function() {
                     const nuevaOpcion = new Option(data.nombre, data.id, true, true);
                     rutaSelect.add(nuevaOpcion); 
                     $(rutaSelect).trigger('change');
-                    
-                    const modalElement = document.getElementById('modalNuevaRuta');
-                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    const modalInstance = bootstrap.Modal.getInstance(document.getElementById('modalNuevaRuta'));
                     if (modalInstance) { modalInstance.hide(); }
-
-                    document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+                    document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
                     document.body.classList.remove('modal-open');
                     document.body.style.overflow = '';
                     document.body.style.paddingRight = '';
-                    
                     formNuevaRuta.reset();
                 } else {
-                    alert("Hubo un error al guardar: " + JSON.stringify(data.errors));
+                    alert("Hubo un error al guardar.");
                 }
             })
             .catch(error => console.error('Error:', error));
         });
     }
+
+    // ==========================================
+    // LÓGICA DE CONFIRMACIÓN MULTI-FORMULARIOS
+    // ==========================================
+    let activeFormToSubmit = null;
+    const confirmModal = new bootstrap.Modal(document.getElementById('modalConfirmacionForms'));
+    const listaPreview = document.getElementById('listaPreviewModal');
+    const btnConfirmar = document.getElementById('btnConfirmarAccionModal');
+
+    // Función auxiliar para obtener el texto de un input
+    function getInputValue(inputId, isSelect2 = false) {
+        if (isSelect2) {
+            const data = $('#' + inputId).select2('data');
+            return (data.length > 0 && data[0].id) ? data[0].text : 'No seleccionado';
+        }
+        const el = document.getElementById(inputId);
+        if (!el) return 'N/A';
+        if (el.tagName === 'SELECT') {
+            return el.selectedIndex !== -1 ? el.options[el.selectedIndex].text : 'No seleccionado';
+        }
+        if (el.type === 'file') {
+            return el.files.length > 0 ? el.files[0].name : 'Sin archivo';
+        }
+        return el.value || 'Vacío';
+    }
+
+    // Función auxiliar para crear un item de la lista (HTML)
+    function createPreviewItem(label, value, isLast = false) {
+        const borderClass = isLast ? '' : 'border-bottom border-slate-200 pb-2 mb-3';
+        return `
+            <li class="${borderClass}">
+                <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">${label}</span>
+                <span class="fw-bold text-slate-900 ${value.includes('.') ? 'font-monospace' : ''}">${value}</span>
+            </li>
+        `;
+    }
+
+    // Interceptamos todos los botones que abren la confirmación
+    document.querySelectorAll('.btn-confirm-trigger').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const form = this.closest('form.needs-confirmation');
+            const formType = form.getAttribute('data-form-type');
+            
+            // Validar HTML5
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            activeFormToSubmit = form;
+            listaPreview.innerHTML = ''; // Limpiar lista
+            let htmlContent = '';
+
+            // Armar el preview dependiendo del formulario que se tocó
+            if (formType === 'deposito') {
+                htmlContent += createPreviewItem('Número de Depósito', getInputValue('id_deposito-numero_deposito'));
+                htmlContent += createPreviewItem('Monto Depositado', 'Bs. ' + getInputValue('id_deposito-monto_deposito'));
+                htmlContent += createPreviewItem('Fecha del Depósito', getInputValue('id_deposito-fecha_deposito'), true);
+            
+            } else if (formType === 'reporte') {
+                htmlContent += createPreviewItem('Documento PDF', getInputValue('id_reporte-reporte_file'), true);
+            
+            } else if (formType === 'tarjeta') {
+                htmlContent += createPreviewItem('Afiliado', getInputValue('id_tarjeta-afiliado', true));
+                htmlContent += createPreviewItem('Vehículo (Placa)', getInputValue('id_tarjeta-vehiculo', true));
+                htmlContent += createPreviewItem('Ruta', getInputValue('id_tarjeta-ruta', true));
+                htmlContent += createPreviewItem('Tipo de Tarjeta', getInputValue('id_tarjeta-tipo_tarjeta'));
+                htmlContent += createPreviewItem('Monto a Pagar', 'Bs. ' + getInputValue('id_tarjeta-monto'), true);
+            }
+
+            listaPreview.innerHTML = htmlContent;
+            confirmModal.show();
+        });
+    });
+
+    // Acción final al confirmar el Modal
+    btnConfirmar.addEventListener('click', function() {
+        if (activeFormToSubmit) {
+            btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Guardando...';
+            btnConfirmar.disabled = true;
+            
+            // Buscamos el botón "real" (oculto) dentro de ese formulario específico y lo clickeamos
+            const realBtn = activeFormToSubmit.querySelector('.real-submit-btn');
+            if(realBtn) realBtn.click();
+        }
+    });
+
 });
 </script>
 {% endblock %}

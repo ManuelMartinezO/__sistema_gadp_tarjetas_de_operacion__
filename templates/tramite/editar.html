@@ -17,7 +17,7 @@
         <div class="alert bg-indigo-50 border-0 text-indigo rounded-4 mb-4 d-flex align-items-center shadow-sm">
             <i class="bi bi-info-circle-fill fs-4 me-3"></i>
             <div class="small fw-medium">
-                Cada sección se guarda de forma independiente. Asegúrese de hacer clic en el botón "Guardar Cambios" correspondiente a la tarjeta que modificó.
+                Cada sección se guarda de forma independiente. Asegúrese de hacer clic en el botón correspondiente a la sección que modificó.
             </div>
         </div>
 
@@ -30,15 +30,16 @@
                 </h6>
             </div>
             <div class="card-body px-4 pb-4 pt-3">
-                <form method="POST" class="custom-form">
+                <form method="POST" id="formDatosGenerales" class="custom-form needs-confirmation" data-form-type="generales">
                     {% csrf_token %}
                     <div class="form-inputs-wrapper bg-slate-50 p-4 rounded-4 border border-slate-100 mb-3">
                         {{ form_tramite.as_p }}
                     </div>
                     <div class="text-end">
-                        <button type="submit" name="btn_tramite" class="btn btn-indigo rounded-pill shadow-sm px-4">
+                        <button type="button" class="btn btn-indigo rounded-pill shadow-sm px-4 btn-confirm-trigger">
                             <i class="bi bi-save me-2"></i>Guardar Cambios Generales
                         </button>
+                        <button type="submit" name="btn_tramite" class="d-none real-submit-btn"></button>
                     </div>
                 </form>
             </div>
@@ -54,15 +55,16 @@
                 </h6>
             </div>
             <div class="card-body px-4 pb-4 pt-3">
-                <form method="POST" enctype="multipart/form-data" class="custom-form file-input-modern">
+                <form method="POST" enctype="multipart/form-data" id="formInformeTecnico" class="custom-form file-input-modern needs-confirmation" data-form-type="informe">
                     {% csrf_token %}
                     <div class="form-inputs-wrapper bg-slate-50 p-4 rounded-4 border border-slate-100 mb-3">
                         {{ form_informe.as_p }}
                     </div>
                     <div class="text-end">
-                        <button type="submit" name="btn_informe" class="btn btn-danger-custom rounded-pill shadow-sm px-4">
+                        <button type="button" class="btn btn-danger-custom rounded-pill shadow-sm px-4 btn-confirm-trigger">
                             <i class="bi bi-cloud-arrow-up me-2"></i>Actualizar Informe
                         </button>
+                        <button type="submit" name="btn_informe" class="d-none real-submit-btn"></button>
                     </div>
                 </form>
             </div>
@@ -78,15 +80,16 @@
                 </h6>
             </div>
             <div class="card-body px-4 pb-4 pt-3">
-                <form method="POST" enctype="multipart/form-data" class="custom-form file-input-modern">
+                <form method="POST" enctype="multipart/form-data" id="formReporteFinal" class="custom-form file-input-modern needs-confirmation" data-form-type="reporte">
                     {% csrf_token %}
                     <div class="form-inputs-wrapper bg-slate-50 p-4 rounded-4 border border-slate-100 mb-3">
                         {{ form_reporte.as_p }}
                     </div>
                     <div class="text-end">
-                        <button type="submit" name="btn_reporte" class="btn btn-indigo rounded-pill shadow-sm px-4">
+                        <button type="button" class="btn btn-indigo rounded-pill shadow-sm px-4 btn-confirm-trigger">
                             <i class="bi bi-cloud-arrow-up me-2"></i>Actualizar Reporte
                         </button>
+                        <button type="submit" name="btn_reporte" class="d-none real-submit-btn"></button>
                     </div>
                 </form>
             </div>
@@ -102,21 +105,49 @@
                 </h6>
             </div>
             <div class="card-body px-4 pb-4 pt-3">
-                <form method="POST" class="custom-form">
+                <form method="POST" id="formEstadoTramite" class="custom-form needs-confirmation" data-form-type="estado">
                     {% csrf_token %}
                     <div class="form-inputs-wrapper bg-white p-4 rounded-4 border border-warning-subtle mb-3 shadow-sm">
                         {{ form_estado.as_p }}
                     </div>
                     <div class="text-end">
-                        <button type="submit" name="btn_estado" class="btn btn-warning-solid rounded-pill shadow-sm px-4">
+                        <button type="button" class="btn btn-warning-solid rounded-pill shadow-sm px-4 btn-confirm-trigger">
                             <i class="bi bi-arrow-repeat me-2"></i>Modificar Estado
                         </button>
+                        <button type="submit" name="btn_estado" class="d-none real-submit-btn"></button>
                     </div>
                 </form>
             </div>
         </div>
         {% endif %}
 
+    </div>
+</div>
+
+<div class="modal fade" id="modalConfirmacionEdicion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-slate-100 bg-slate-50 px-4 py-3">
+                <h5 class="modal-title fw-bold text-slate-800 d-flex align-items-center">
+                    <i class="bi bi-pencil-square text-indigo me-2"></i> Confirmar Modificación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-slate-600 mb-4 fs-7" id="mensajeModalConfirma">Está a punto de modificar este expediente. Verifique la información antes de continuar.</p>
+                
+                <div class="bg-slate-50 p-3 rounded-4 border border-slate-200">
+                    <ul class="list-unstyled mb-0 fs-7 text-slate-700" id="listaPreviewEdicion">
+                        </ul>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-slate-100 bg-white px-4 py-3">
+                <button type="button" class="btn btn-light-action rounded-pill px-4 m-0" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-indigo rounded-pill px-4 m-0 ms-2" id="btnConfirmarEdicionModal">
+                    Sí, Guardar Cambios
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -132,6 +163,8 @@
     .text-slate-800 { color: var(--slate-800); }
     .text-slate-500 { color: var(--slate-500); }
     .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
 
     .bg-indigo-50 { background-color: #8b000010; }
     .bg-red-50 { background-color: #fef2f2; }
@@ -165,13 +198,28 @@
     .btn-back:hover { background-color: var(--slate-50); color: var(--indigo); transform: translateX(-3px); }
 
     .btn-indigo { background-color: var(--indigo); color: white; border: none; font-weight: 600; padding: 0.7rem 1.5rem; transition: 0.2s; }
-    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(99,102,241,0.25); }
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(139, 0, 0, 0.25); }
 
     .btn-danger-custom { background-color: #ef4444; color: white; border: none; font-weight: 600; padding: 0.7rem 1.5rem; transition: 0.2s; }
     .btn-danger-custom:hover { background-color: #dc2626; color: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(239, 68, 68, 0.25); }
 
     .btn-warning-solid { background-color: #f59e0b; color: white; border: none; font-weight: 600; padding: 0.7rem 1.5rem; transition: 0.2s; }
     .btn-warning-solid:hover { background-color: #d97706; color: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(245, 158, 11, 0.25); }
+
+    .btn-light-action {
+        background-color: #fff;
+        border: 1px solid #e2e8f0;
+        color: var(--slate-700);
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.8rem 2rem;
+        transition: all 0.2s;
+    }
+    .btn-light-action:hover {
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+        border-color: #cbd5e1;
+    }
 
     /* FORMULARIOS INTERCEPTADOS */
     .form-inputs-wrapper p { margin-bottom: 1rem; }
@@ -210,13 +258,115 @@
 </style>
 
 <script>
-    // Pequeño script para asegurar que los textareas generados por Django se vean bien
-    document.addEventListener("DOMContentLoaded", function() {
-        const textareas = document.querySelectorAll('textarea');
-        textareas.forEach(ta => {
-            ta.classList.add('form-control');
-            ta.style.minHeight = '100px';
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // Asegurar que los textareas generados por Django se vean bien
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(ta => {
+        ta.classList.add('form-control');
+        ta.style.minHeight = '100px';
+    });
+
+    // ==========================================
+    // LÓGICA DE CONFIRMACIÓN PARA EDICIÓN
+    // ==========================================
+    let activeEditForm = null;
+    const confirmModalEdit = new bootstrap.Modal(document.getElementById('modalConfirmacionEdicion'));
+    const listaPreview = document.getElementById('listaPreviewEdicion');
+    const mensajeModal = document.getElementById('mensajeModalConfirma');
+    const btnConfirmar = document.getElementById('btnConfirmarEdicionModal');
+
+    // SOLUCIÓN: Función más inteligente que busca dentro del formulario activo
+    // Usamos selectores CSS para buscar campos que terminen en ese nombre (ignora problemas de prefijos)
+    function getInputValue(fieldName) {
+        if (!activeEditForm) return 'N/A';
+        
+        const el = activeEditForm.querySelector(`[name$="${fieldName}"]`);
+        if (!el) return 'N/A'; // Si no encuentra el campo
+
+        if (el.tagName === 'SELECT') {
+            return el.selectedIndex !== -1 ? el.options[el.selectedIndex].text : 'No seleccionado';
+        }
+        if (el.type === 'file') {
+            return el.files.length > 0 ? el.files[0].name : '(Mantendrá el archivo actual)';
+        }
+        return el.value || 'Vacío';
+    }
+
+    // Función auxiliar para crear la lista HTML
+    function createPreviewItem(label, value, isLast = false) {
+        const borderClass = isLast ? '' : 'border-bottom border-slate-200 pb-2 mb-3';
+        return `
+            <li class="${borderClass}">
+                <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">${label}</span>
+                <span class="fw-bold text-slate-900 text-break ${value.includes('.') ? 'font-monospace' : ''}">${value}</span>
+            </li>
+        `;
+    }
+
+    // Evento de clic en los botones de validación
+    document.querySelectorAll('.btn-confirm-trigger').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const form = this.closest('form.needs-confirmation');
+            const formType = form.getAttribute('data-form-type');
+            
+            // Validar HTML5
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            activeEditForm = form;
+            listaPreview.innerHTML = '';
+            let htmlContent = '';
+
+            // Armar el preview según la sección que se está editando
+            // Ahora solo le pasamos el nombre final del campo en la base de datos
+            if (formType === 'generales') {
+                mensajeModal.textContent = "Está a punto de modificar los datos base de este trámite.";
+                
+                htmlContent += createPreviewItem('Técnico Asignado', getInputValue('usuario'));
+                htmlContent += createPreviewItem('Empresa / Operador', getInputValue('operador'));
+                htmlContent += createPreviewItem('Tipo de Trámite', getInputValue('tipo_tramite'));
+                htmlContent += createPreviewItem('Número de Fojas', getInputValue('fojas'), true);
+            
+            } else if (formType === 'informe') {
+                mensajeModal.textContent = "Está a punto de actualizar el Documento del Informe Técnico.";
+                htmlContent += createPreviewItem('Nuevo Documento', getInputValue('tramite_file'), true);
+            
+            } else if (formType === 'reporte') {
+                mensajeModal.textContent = "Está a punto de actualizar el Documento del Reporte Final.";
+                htmlContent += createPreviewItem('Nuevo Documento', getInputValue('reporte_file'), true);
+            
+            } else if (formType === 'estado') {
+                mensajeModal.textContent = "Advertencia: Va a modificar el estado del trámite en el sistema.";
+                htmlContent += createPreviewItem('Nuevo Estado', getInputValue('estado_tramite'), true);
+                
+                btnConfirmar.classList.replace('btn-indigo', 'btn-warning-solid');
+            }
+
+            listaPreview.innerHTML = htmlContent;
+            confirmModalEdit.show();
         });
     });
+
+    // Acción al confirmar en el modal
+    btnConfirmar.addEventListener('click', function() {
+        if (activeEditForm) {
+            btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Guardando...';
+            btnConfirmar.disabled = true;
+            
+            // Buscamos el submit original y disparamos
+            const realBtn = activeEditForm.querySelector('.real-submit-btn');
+            if(realBtn) realBtn.click();
+        }
+    });
+
+    // Restaurar color del botón al cerrar modal (por si se cambió en "estado")
+    document.getElementById('modalConfirmacionEdicion').addEventListener('hidden.bs.modal', function () {
+        btnConfirmar.classList.replace('btn-warning-solid', 'btn-indigo');
+    });
+
+});
 </script>
 {% endblock %}

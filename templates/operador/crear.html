@@ -25,7 +25,7 @@
                     </div>
                 </div>
 
-                <form method="POST" class="needs-validation custom-form">
+                <form method="POST" id="formNuevaEmpresa" class="needs-validation custom-form">
                     {% csrf_token %}
 
                     <div class="mb-4">
@@ -52,7 +52,7 @@
                     </div>
 
                     <div class="d-grid gap-3 mt-5">
-                        <button type="submit" class="btn btn-indigo btn-lg shadow-sm">
+                        <button type="button" id="btnAbrirModal" class="btn btn-indigo btn-lg shadow-sm">
                             Guardar Empresa
                         </button>
                         
@@ -74,6 +74,37 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<div class="modal fade" id="modalConfirmacionEmpresa" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-slate-100 bg-slate-50 px-4 py-3">
+                <h5 class="modal-title fw-bold text-slate-800 d-flex align-items-center">
+                    <i class="bi bi-building-check text-indigo me-2"></i> Confirmar Registro
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-slate-600 mb-4 fs-7">Verifique que el nombre de la empresa sea correcto antes de guardarlo en el sistema.</p>
+                
+                <div class="bg-slate-50 p-3 rounded-4 border border-slate-200">
+                    <ul class="list-unstyled mb-0 fs-7 text-slate-700">
+                        <li>
+                            <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">Razón Social</span>
+                            <span id="preview-nombre-empresa" class="fw-bold text-slate-900 text-break fs-6"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-slate-100 bg-white px-4 py-3">
+                <button type="button" class="btn btn-light-action rounded-pill px-4 m-0" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-indigo rounded-pill px-4 m-0 ms-2" id="btnConfirmarGuardar">
+                    Sí, Guardar Empresa
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -114,7 +145,10 @@
     .btn-back:hover { background-color: var(--slate-50); color: var(--indigo); transform: translateX(-3px); }
 
     .btn-indigo { background-color: var(--indigo); color: white; border: none; border-radius: 12px; font-weight: 600; padding: 0.8rem 1.5rem; transition: all 0.2s; }
-    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25); }
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 0, 0, 0.25); }
+
+    .btn-light-action { background-color: #fff; border: 1px solid #e2e8f0; color: var(--slate-700); border-radius: 12px; font-weight: 600; padding: 0.8rem 2rem; transition: all 0.2s; }
+    .btn-light-action:hover { background-color: var(--slate-50); color: var(--slate-900); border-color: #cbd5e1; }
 
     .hover-indigo:hover { color: var(--indigo) !important; font-weight: 500; }
     .transition-all { transition: all 0.2s ease; }
@@ -136,7 +170,6 @@
         align-items: center;
         transition: all 0.2s ease;
     }
-    /* Estilo para el input que genera Django */
     .input-group-custom input {
         background-color: var(--slate-50);
         border: 1px solid #e2e8f0;
@@ -150,18 +183,13 @@
         font-size: 0.95rem;
     }
     
-    /* Efecto Focus en todo el grupo */
     .input-group-custom:focus-within .input-group-text,
     .input-group-custom:focus-within input {
         border-color: var(--indigo);
         background-color: #fff;
     }
-    .input-group-custom:focus-within .input-group-text {
-        color: var(--indigo);
-    }
-    .input-group-custom:focus-within {
-        box-shadow: 0 0 0 4px var(--indigo-light);
-    }
+    .input-group-custom:focus-within .input-group-text { color: var(--indigo); }
+    .input-group-custom:focus-within { box-shadow: 0 0 0 4px var(--indigo-light); }
 
     /* ANIMACIÓN */
     .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
@@ -170,12 +198,50 @@
 </style>
 
 <script>
-    // Asegurar que el input de Django no tenga clases raras de Bootstrap que rompan nuestro diseño custom
     document.addEventListener("DOMContentLoaded", function() {
+        
+        // Quitar clase de Bootstrap si existe en el input generado por Django
         const inputNombre = document.querySelector('.input-group-custom input');
         if (inputNombre) {
-            inputNombre.classList.remove('form-control'); // Quitamos la clase nativa para que use nuestro CSS
+            inputNombre.classList.remove('form-control'); 
         }
+
+        // ==========================================
+        // LÓGICA DEL MODAL DE CONFIRMACIÓN
+        // ==========================================
+        const formEmpresa = document.getElementById('formNuevaEmpresa');
+        const btnAbrirModal = document.getElementById('btnAbrirModal');
+        const btnConfirmar = document.getElementById('btnConfirmarGuardar');
+        const modalConfirmacion = new bootstrap.Modal(document.getElementById('modalConfirmacionEmpresa'));
+
+        // Evento click para abrir el modal
+        btnAbrirModal.addEventListener('click', function() {
+            // Validar HTML5 antes de abrir el modal
+            if (!formEmpresa.checkValidity()) {
+                formEmpresa.reportValidity();
+                return;
+            }
+
+            // Extraer el valor del input, usando el nombre que genera Django (habitualmente "nombre")
+            const inputField = formEmpresa.querySelector('[name$="nombre"]');
+            const valorIngresado = inputField ? inputField.value : 'Vacío';
+
+            // Inyectar en el Modal
+            document.getElementById('preview-nombre-empresa').textContent = valorIngresado;
+
+            // Mostrar el modal
+            modalConfirmacion.show();
+        });
+
+        // Evento al confirmar dentro del modal
+        btnConfirmar.addEventListener('click', function() {
+            // Efecto de carga en el botón
+            btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Procesando...';
+            btnConfirmar.disabled = true;
+            
+            // Enviar el formulario original
+            formEmpresa.submit();
+        });
     });
 </script>
 {% endblock %}

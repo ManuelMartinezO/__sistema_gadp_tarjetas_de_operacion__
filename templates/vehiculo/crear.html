@@ -34,7 +34,7 @@
             <div class="card-decorator"></div>
             
             <div class="card-body p-4 p-md-5">
-                <form method="POST" id="form-vehiculo" class="custom-form">
+                <form method="POST" id="form-vehiculo" class="custom-form needs-validation">
                     {% csrf_token %}
                     
                     <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-4 border-bottom pb-3">
@@ -49,14 +49,42 @@
                         <a href="{% url 'vehiculo:lista_vehiculos' %}" class="btn btn-light-action btn-lg px-4 text-center">
                             Cancelar
                         </a>
-                        <button type="submit" class="btn btn-indigo btn-lg px-5 shadow-sm">
+                        <button type="button" id="btnAbrirModalVehiculo" class="btn btn-indigo btn-lg px-5 shadow-sm">
                             <i class="bi bi-check2-circle me-2"></i> Registrar Vehículo
                         </button>
+                        <button type="submit" class="d-none real-submit-btn"></button>
                     </div>
                 </form>
             </div>
         </div>
 
+    </div>
+</div>
+
+<div class="modal fade" id="modalConfirmacionVehiculo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-slate-100 bg-slate-50 px-4 py-3">
+                <h5 class="modal-title fw-bold text-slate-800 d-flex align-items-center">
+                    <i class="bi bi-car-front-fill text-indigo me-2"></i> Confirmar Vehículo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-slate-600 mb-4 fs-7">Verifique las especificaciones técnicas del vehículo antes de integrarlo al padrón.</p>
+                
+                <div class="bg-slate-50 p-3 rounded-4 border border-slate-200">
+                    <ul class="list-unstyled mb-0 fs-7 text-slate-700" id="listaPreviewVehiculo">
+                        </ul>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-slate-100 bg-white px-4 py-3">
+                <button type="button" class="btn btn-light-action rounded-pill px-4 m-0" data-bs-dismiss="modal">Revisar de nuevo</button>
+                <button type="button" class="btn btn-indigo rounded-pill px-4 m-0 ms-2" id="btnConfirmarGuardarVehiculo">
+                    Sí, Registrar Vehículo
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -135,7 +163,7 @@
     .btn-back:hover { background-color: var(--slate-50); color: var(--indigo); transform: translateX(-3px); }
 
     .btn-indigo { background-color: var(--indigo); color: white; border: none; border-radius: 12px; font-weight: 600; transition: all 0.2s; }
-    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25); }
+    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 0, 0, 0.25); }
 
     .btn-light-action { background-color: #fff; border: 1px solid #e2e8f0; color: var(--slate-700); font-weight: 600; border-radius: 12px; transition: all 0.2s; }
     .btn-light-action:hover { background-color: var(--slate-50); color: var(--slate-900); border-color: #cbd5e1; }
@@ -245,15 +273,11 @@ $(document).ready(function() {
                     let selectAtributo = document.getElementById('id_' + data.tipo); 
                     
                     if (selectAtributo) {
-                        // Creamos la nueva opción y la seleccionamos automáticamente
                         let nuevaOpcion = new Option(data.nombre, data.id, true, true);
                         selectAtributo.appendChild(nuevaOpcion);
-                        
-                        // Le avisamos a Select2 del cambio
                         $(selectAtributo).trigger('change');
                     }
                     
-                    // Cerramos el modal específico y lo limpiamos
                     document.getElementById('modal-' + data.tipo).close();
                     this.reset(); 
                     
@@ -266,7 +290,7 @@ $(document).ready(function() {
         });
     });
 
-    // Pequeño script para cerrar los dialogs al hacer clic fuera de ellos
+    // Cierre al hacer click fuera
     const dialogs = document.querySelectorAll('dialog');
     dialogs.forEach(dialog => {
         dialog.addEventListener('click', (e) => {
@@ -280,6 +304,72 @@ $(document).ready(function() {
                 dialog.close();
             }
         });
+    });
+
+    // ==========================================
+    // 3. LÓGICA DEL MODAL DE CONFIRMACIÓN DE VEHÍCULO
+    // ==========================================
+    const formVehiculo = document.getElementById('form-vehiculo');
+    const btnAbrirModal = document.getElementById('btnAbrirModalVehiculo');
+    const btnConfirmar = document.getElementById('btnConfirmarGuardarVehiculo');
+    const modalConfirmacion = new bootstrap.Modal(document.getElementById('modalConfirmacionVehiculo'));
+    const listaPreview = document.getElementById('listaPreviewVehiculo');
+
+    function getInputValue(fieldName) {
+        if (!formVehiculo) return 'N/A';
+        
+        const el = formVehiculo.querySelector(`[name$="${fieldName}"]`);
+        if (!el) return 'N/A';
+
+        if (el.tagName === 'SELECT') {
+            // Compatibilidad con Select2
+            if ($(el).hasClass('select2-hidden-accessible')) {
+                const data = $(el).select2('data');
+                return (data.length > 0 && data[0].id) ? data[0].text : 'No seleccionado';
+            }
+            return el.selectedIndex !== -1 && el.value !== '' ? el.options[el.selectedIndex].text : 'No seleccionado';
+        }
+        return el.value || 'Vacío';
+    }
+
+    function createPreviewItem(label, value, isLast = false) {
+        const borderClass = isLast ? '' : 'border-bottom border-slate-200 pb-2 mb-3';
+        return `
+            <li class="${borderClass}">
+                <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">${label}</span>
+                <span class="fw-bold text-slate-900 text-break ${label.includes('Placa') || label.includes('Chasis') ? 'font-monospace' : ''}">${value}</span>
+            </li>
+        `;
+    }
+
+    btnAbrirModal.addEventListener('click', function() {
+        if (!formVehiculo.checkValidity()) {
+            formVehiculo.reportValidity();
+            return;
+        }
+
+        let htmlContent = '';
+        // Ajustamos los nombres según el modelo que compartiste antes
+        htmlContent += createPreviewItem('Propietario / Afiliado', getInputValue('propietario'));
+        htmlContent += createPreviewItem('Marca', getInputValue('marca'));
+        htmlContent += createPreviewItem('Color', getInputValue('color'));
+        htmlContent += createPreviewItem('Tipo de Vehículo', getInputValue('tipo_vehiculo'));
+        htmlContent += createPreviewItem('Tipo de Transporte', getInputValue('tipo_transporte'));
+        htmlContent += createPreviewItem('Modelo / Año', getInputValue('modelo'));
+        htmlContent += createPreviewItem('Placa', getInputValue('placa'));
+        htmlContent += createPreviewItem('Chasis / VIN', getInputValue('chasis'));
+        htmlContent += createPreviewItem('Capacidad', getInputValue('capacidad'), true);
+
+        listaPreview.innerHTML = htmlContent;
+        modalConfirmacion.show();
+    });
+
+    btnConfirmar.addEventListener('click', function() {
+        btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Registrando...';
+        btnConfirmar.disabled = true;
+        
+        const realBtn = formVehiculo.querySelector('.real-submit-btn');
+        if(realBtn) realBtn.click();
     });
 
 });

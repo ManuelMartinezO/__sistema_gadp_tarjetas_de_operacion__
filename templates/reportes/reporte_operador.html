@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe Operador - {{ operador.nombre }}</title>
+    <style>
+        /* Configuración estricta de página para xhtml2pdf */
+        @page {
+            size: a4 portrait;
+            margin: 2cm 1.5cm; /* Márgenes de documento formal */
+            @frame header_frame {
+                -pdf-frame-content: header_content;
+                left: 1.5cm; right: 1.5cm; top: 1cm; height: 1.5cm;
+            }
+            @frame footer_frame {
+                -pdf-frame-content: footer_content;
+                left: 1.5cm; right: 1.5cm; bottom: 1cm; height: 1cm;
+            }
+        }
+
+        /* Tipografía Base: Formal y compacta */
+        body {
+            font-family: "Helvetica", "Arial", sans-serif;
+            font-size: 10px; /* Letra pequeña y formal */
+            color: #000000;
+            line-height: 1.2;
+        }
+
+        /* Encabezados sin estridencias */
+        h1, h2, h3 {
+            margin: 0;
+            padding: 0;
+            color: #000000;
+        }
+
+        .doc-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .doc-subtitle {
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Títulos de sección estrictos */
+        .section-title {
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: #e6e6e6; /* Gris muy tenue */
+            border: 1px solid #000000;
+            padding: 4px 6px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        /* Tablas: Diseño técnico clásico */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        
+        th, td {
+            border: 1px solid #000000;
+            padding: 4px 5px; /* Espaciado mínimo */
+            font-size: 9px;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: left;
+        }
+
+        /* Utilidades */
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-bold { font-weight: bold; }
+        
+        /* Cajas de datos concisas */
+        .data-label {
+            font-weight: bold;
+            background-color: #f2f2f2;
+            width: 25%;
+        }
+        
+        .data-value {
+            width: 25%;
+        }
+
+        /* Padrón de Afiliados (Lista anidada estructurada) */
+        .afiliado-row {
+            background-color: #e6e6e6;
+            font-weight: bold;
+        }
+
+        .vehiculo-table {
+            margin: 0;
+            border: none;
+        }
+        
+        .vehiculo-table th, .vehiculo-table td {
+            border: 1px solid #666666;
+            border-top: none;
+            padding: 3px 5px;
+            font-size: 8.5px;
+        }
+        
+        .vehiculo-table th {
+            background-color: #ffffff;
+            font-style: italic;
+            text-transform: none;
+        }
+
+        /* Pie y cabecera de documento */
+        #header_content {
+            font-size: 8px;
+            color: #666666;
+            text-align: right;
+            border-bottom: 0.5px solid #666666;
+            padding-bottom: 2px;
+        }
+
+        #footer_content {
+            font-size: 8px;
+            color: #000000;
+            border-top: 1px solid #000000;
+            padding-top: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header_content">
+        Expediente generado el: {{ fecha_reporte|date:"d/m/Y H:i" }} | Ref: OP-{{ operador.id|stringformat:"04d" }}
+    </div>
+
+    <div id="footer_content">
+        <table style="border:none; margin:0; width:100%;">
+            <tr>
+                <td style="border:none; text-align:left; padding:0;">Documento de Uso Interno - Gobierno Autónomo Departamental</td>
+                <td style="border:none; text-align:right; padding:0;">Página <pdf:pagenumber> de <pdf:pagecount></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="doc-title">INFORME TÉCNICO DE ESTADO OPERATIVO</div>
+    <div class="doc-subtitle">SINDICATO / OPERADOR: {{ operador.nombre }}</div>
+
+    <div class="section-title">1. DATOS GENERALES Y RESUMEN DE AFILIACIÓN</div>
+    <table>
+        <tr>
+            <td class="data-label">FECHA DE REGISTRO INSTITUCIONAL:</td>
+            <td class="data-value">{{ operador.fecha_registro|date:"d/m/Y" }}</td>
+            <td class="data-label">TOTAL AFILIADOS REGISTRADOS:</td>
+            <td class="data-value text-bold">{{ total_afiliados }}</td>
+        </tr>
+        <tr>
+            <td class="data-label">TOTAL TARJETAS EMITIDAS:</td>
+            <td class="data-value">{{ totales_tarjetas.total_cantidad|default:"0" }}</td>
+            <td class="data-label">MONTO TOTAL RECAUDADO (BS):</td>
+            <td class="data-value text-bold">{{ totales_tarjetas.total_monto|default:"0.00"|floatformat:2 }}</td>
+        </tr>
+    </table>
+
+    <div class="section-title">2. RELACIÓN DE INGRESOS POR PERIODO (MENSUAL)</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 40%;">PERIODO (MES / AÑO)</th>
+                <th class="text-center" style="width: 30%;">CANTIDAD DE TARJETAS</th>
+                <th class="text-right" style="width: 30%;">MONTO RECAUDADO (BS)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ingreso in ingresos_mensuales %}
+            <tr>
+                <td>{{ ingreso.mes|date:"F Y"|upper }}</td>
+                <td class="text-center">{{ ingreso.cantidad_tarjetas }}</td>
+                <td class="text-right text-bold">{{ ingreso.monto_generado|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center">No se registran movimientos financieros para este operador.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">3. DESGLOSE DE TARJETAS POR ESTADO DE TRÁMITE</div>
+    <table>
+        <thead>
+            <tr>
+                <th>TIPO DE TRÁMITE</th>
+                <th>ESTADO ACTUAL</th>
+                <th class="text-center">VOLUMEN (TARJETAS)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tramite in tarjetas_por_tramite %}
+            <tr>
+                <td>{{ tramite.tramite__tipo_tramite|upper }}</td>
+                <td>{{ tramite.tramite__estado_tramite|upper }}</td>
+                <td class="text-center text-bold">{{ tramite.cantidad }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center">No existen trámites vinculados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">4. OBSERVACIONES Y VENCIMIENTOS (PRÓXIMOS 30 DÍAS)</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 35%;">NOMBRE DEL AFILIADO</th>
+                <th style="width: 20%;" class="text-center">PLACA VINCULADA</th>
+                <th style="width: 25%;">CATEGORÍA DE TARJETA</th>
+                <th style="width: 20%;" class="text-center">FECHA DE CADUCIDAD</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tarjeta in tarjetas_por_vencer %}
+            <tr>
+                <td>{{ tarjeta.afiliado.nombre|upper }} {{ tarjeta.afiliado.apellido|upper }}</td>
+                <td class="text-center text-bold">{{ tarjeta.vehiculo.placa }}</td>
+                <td>{{ tarjeta.get_tipo_tarjeta_display|upper }}</td>
+                <td class="text-center text-bold">{{ tarjeta.valida_hasta|date:"d/m/Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center">El operador no presenta tarjetas en periodo de caducidad.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <pdf:nextpage />
+
+    <div class="section-title">5. PADRÓN INTEGRAL DE AFILIADOS Y PARQUE AUTOMOTOR</div>
+    
+    <table style="margin-top: 10px;">
+        {% for afiliado in afiliados %}
+        <tr class="afiliado-row">
+            <td colspan="4" style="padding: 6px;">
+                TITULAR: {{ afiliado.nombre|upper }} {{ afiliado.apellido|upper }} 
+                <span style="float: right; font-weight: normal; font-size: 8.5px;">
+                    Tarjetas Emitidas: {{ afiliado.num_tarjetas }} | 
+                    Vehículos: {{ afiliado.num_vehiculos }} | 
+                    Total Aportado: Bs. {{ afiliado.aporte_total|default:"0.00"|floatformat:2 }}
+                </span>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="4" style="padding: 0;">
+                <table class="vehiculo-table">
+                    <tr>
+                        <th style="width: 20%; border-left: none;">Placa de Control</th>
+                        <th style="width: 25%;">Clase de Vehículo</th>
+                        <th style="width: 25%;">Marca de Fabricación</th>
+                        <th style="width: 30%; border-right: none;">Número de Chasis / VIN</th>
+                    </tr>
+                    {% for vehiculo in afiliado.vehiculo_set.all %}
+                    <tr>
+                        <td class="text-center text-bold" style="border-left: none;">{{ vehiculo.placa }}</td>
+                        <td>{{ vehiculo.tipo_vehiculo.tipo|upper }}</td>
+                        <td>{{ vehiculo.marca.nombre|upper }}</td>
+                        <td style="border-right: none; font-family: monospace;">{{ vehiculo.chasis }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center" style="border-left: none; border-right: none;">Sin parque automotor registrado.</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td class="text-center" style="padding: 10px;">No existen registros de afiliados para esta institución.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>

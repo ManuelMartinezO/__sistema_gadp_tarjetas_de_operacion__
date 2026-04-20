@@ -23,6 +23,9 @@
             <a href="{% url 'operador:lista_operadores' %}" class="btn btn-light-action rounded-pill px-4">
                 <i class="bi bi-arrow-left me-2"></i> Volver al Directorio
             </a>
+            <a href="{% url 'operador:reporte_pdf' operador.id %}" target="_blank" class="btn btn-light-action rounded-pill px-4">
+                REPORTE
+            </a>
         </div>
     </div>
 
@@ -50,7 +53,7 @@
                     </div>
                     <div class="z-1">
                         <span class="text-slate-400 text-uppercase tracking-wider fs-8 fw-bold d-block mb-1">Tarjetas de Operación</span>
-                        <h3 class="fw-bolder text-slate-800 mb-0 display-6">{{ operador.tarjetas_de_operacion.count }}</h3>
+                        <h3 class="fw-bolder text-slate-800 mb-0 display-6">{{ operador.operadores_tarjeta.count }}</h3>
                     </div>
                     <i class="bi bi-credit-card-2-front-fill position-absolute text-slate-50 opacity-25" style="font-size: 8rem; right: -20px; bottom: -30px;"></i>
                 </div>

@@ -40,7 +40,7 @@ class RutaForm(BootstrapFormMixin, forms.ModelForm):
 class TarjetaDeOperacionForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = TarjetaDeOperacion
-        fields = ['operador', 
+        fields = [
                   'afiliado', 
                   'vehiculo', 
                   'tipo_tarjeta',

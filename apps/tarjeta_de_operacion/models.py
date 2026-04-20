@@ -31,32 +31,33 @@ class TarjetaDeOperacion(models.Model):
     tramite = models.ForeignKey(
         Tramite,
         on_delete=models.CASCADE,
-        related_name='tarjetas_de_operacion'
+        related_name='tramites_tarjeta'
     )
     operador = models.ForeignKey(
         Operador,
         on_delete=models.PROTECT,
-        related_name='tarjetas_de_operacion'
+        related_name='operadores_tarjeta'
     )
     afiliado = models.ForeignKey(
         Afiliado,
         on_delete=models.PROTECT,
-        related_name='tarjetas_de_operacion'
+        related_name='afiliados_tarjeta'
     )
     vehiculo = models.ForeignKey(
         Vehiculo,
         on_delete=models.PROTECT,
-        related_name='tarjetas_de_operacion'
+        related_name='vehiculos_tarjeta'
     )
     ruta = models.ForeignKey(
         Ruta,
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
+        related_name='rutas_tarjeta'
     )
 
     tipo_tarjeta = models.CharField(max_length=3, choices=TIPO_TARJETA)
     validez_periodo = models.CharField(max_length=10, choices=TIEMPO, default='year')
     validez_tiempo = models.PositiveIntegerField(default=1)
-    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    monto = models.DecimalField(max_digits=10, decimal_places=2, default=40)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     fecha_emision = models.DateField(blank=True, null=True)
     valida_hasta = models.DateField(blank=True, null=True)

@@ -18,19 +18,37 @@
             <div class="card-decorator"></div>
             
             <div class="card-body p-4 p-md-5">
-                <form method="POST" enctype="multipart/form-data" class="needs-validation custom-form">
+                <form id="formNuevoTramite" method="POST" enctype="multipart/form-data" class="needs-validation custom-form">
                     {% csrf_token %}
 
                     <div class="row g-4">
                         
                         <div class="col-12">
                             <label class="form-label fs-8 fw-bold text-slate-500 text-uppercase tracking-wider mb-2">
-                                <i class="bi bi-person-badge text-indigo me-2"></i>Asignación de Usuario
+                                <i class="bi bi-person-badge text-indigo me-2"></i>Asignación de Técnico
                             </label>
                             <div class="input-wrapper">
                                 {{ form.usuario }}
                             </div>
                             <div class="form-text mt-2 text-slate-400 fs-7"><i class="bi bi-info-circle me-1"></i> Seleccione el usuario responsable de este trámite.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fs-8 fw-bold text-slate-500 text-uppercase tracking-wider mb-2">
+                                <i class="bi bi-person-badge text-indigo me-2"></i>Asignación de Empresa
+                            </label>
+                            <div class="input-wrapper">
+                                {{ form.operador }}
+                            </div>
+                            <div class="form-text mt-2 text-slate-400 fs-7"><i class="bi bi-info-circle me-1"></i> Seleccione el operador responsable de este trámite.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fs-8 fw-bold text-slate-500 text-uppercase tracking-wider mb-2">
+                                <i class="bi bi-person-badge text-indigo me-2"></i>Número de fojas
+                            </label>
+                            <div class="input-wrapper">
+                                {{ form.fojas }}
+                            </div>
+                            <div class="form-text mt-2 text-slate-400 fs-7"><i class="bi bi-info-circle me-1"></i> Ingrese la cantidad de fojas del expediente.</div>
                         </div>
 
                         <div class="col-md-12">
@@ -80,6 +98,55 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalConfirmacion" tabindex="-1" aria-labelledby="modalConfirmacionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-slate-100 bg-slate-50 px-4 py-3">
+                <h5 class="modal-title fw-bold text-slate-800 d-flex align-items-center" id="modalConfirmacionLabel">
+                    <i class="bi bi-check-circle-fill text-indigo me-2"></i> Confirmar Datos del Trámite
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-slate-600 mb-4 fs-7">Por favor, revise que la información ingresada sea correcta antes de registrar el trámite en el sistema.</p>
+                
+                <div class="bg-slate-50 p-3 rounded-4 border border-slate-200">
+                    <ul class="list-unstyled mb-0 fs-7 text-slate-700">
+                        <li class="mb-3 border-bottom border-slate-200 pb-2">
+                            <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">Técnico Asignado</span>
+                            <span id="preview-tecnico" class="fw-bold text-slate-900"></span>
+                        </li>
+                        <li class="mb-3 border-bottom border-slate-200 pb-2">
+                            <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">Empresa / Operador</span>
+                            <span id="preview-operador" class="fw-bold text-slate-900"></span>
+                        </li>
+                        <li class="mb-3 border-bottom border-slate-200 pb-2">
+                            <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">Tipo de Operación</span>
+                            <span id="preview-tipo" class="fw-bold text-slate-900"></span>
+                        </li>
+                        <li class="mb-3 border-bottom border-slate-200 pb-2 d-flex justify-content-between">
+                            <div>
+                                <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">Número de Fojas</span>
+                                <span id="preview-fojas" class="fw-bold text-slate-900"></span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">Documento Adjunto</span>
+                            <span id="preview-file" class="fw-bold text-slate-900 text-break font-monospace"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-slate-100 bg-white px-4 py-3">
+                <button type="button" class="btn btn-light-action rounded-pill px-4 m-0" data-bs-dismiss="modal">Revisar de nuevo</button>
+                <button type="button" class="btn btn-confirmacion rounded-pill px-4 m-0 ms-2" id="btnConfirmarGuardar">
+                    Sí, Guardar Trámite
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     /* VARIABLES LOCALES */
     .form-container {
@@ -91,6 +158,7 @@
         --slate-700: #334155;
         --slate-500: #64748b;
         --slate-400: #94a3b8;
+        --slate-200: #e2e8f0;
         --slate-100: #f1f5f9;
         --slate-50: #f8fafc;
     }
@@ -98,6 +166,7 @@
     .text-indigo { color: var(--indigo); }
     .text-slate-900 { color: var(--slate-900); }
     .text-slate-800 { color: var(--slate-800); }
+    .text-slate-700 { color: var(--slate-700); }
     .text-slate-500 { color: var(--slate-500); }
     .text-slate-400 { color: var(--slate-400); }
     
@@ -140,11 +209,20 @@
         padding: 0.8rem 1.5rem;
         transition: all 0.2s;
     }
+
+    .btn-confirmacion {
+        background-color: var(--indigo);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.8rem 1.5rem;
+        transition: all 0.2s;
+    }
     .btn-indigo:hover {
         background-color: var(--indigo-dark);
         color: white;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25) !important;
+        box-shadow: 0 8px 20px rgba(139, 0, 0, 0.25) !important;
     }
 
     .btn-light-action {
@@ -249,7 +327,6 @@
     }
     .select2-container--bootstrap-5 .select2-results__option--highlighted[aria-selected] {
         background-color: var(--indigo) !important;
-        /* color: rgb(255, 0, 0) !important; */
     }
 
     /* ANIMACIÓN */
@@ -264,20 +341,94 @@
 
 <script>
     $(document).ready(function() {
-        // Inicializamos Select2 específicamente para el campo de usuario
+        // 1. Inicialización de Select2 (Tu código existente)
+        const select2Config = {
+            theme: 'bootstrap-5',
+            width: '100%',
+            allowClear: true
+        };
+
         if ($('#id_usuario').length) {
             $('#id_usuario').select2({
-                theme: 'bootstrap-5',
-                width: '100%',
+                ...select2Config,
                 placeholder: "Buscar y seleccionar usuario...",
-                allowClear: true,
-                language: {
-                    noResults: function() {
-                        return "No se encontró ningún usuario con ese nombre";
-                    }
-                }
+                language: { noResults: () => "No se encontró ningún usuario con ese nombre" }
             });
         }
+
+        if ($('#id_operador').length) {
+            $('#id_operador').select2({
+                ...select2Config,
+                placeholder: "Buscar y seleccionar operador...",
+                language: { noResults: () => "No se encontró ningún operador con ese nombre" }
+            });
+        }
+
+        // ==========================================
+        // 2. LÓGICA DEL MODAL DE CONFIRMACIÓN
+        // ==========================================
+        const formTramite = document.getElementById('formNuevoTramite');
+        const btnConfirmar = document.getElementById('btnConfirmarGuardar');
+        // Instanciamos el modal de Bootstrap
+        const confirmModal = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
+
+        // Interceptamos el envío natural del formulario
+        formTramite.addEventListener('submit', function(e) {
+            e.preventDefault(); // Pausamos el envío
+
+            // Verificamos que el formulario sea válido (HTML5 validación requerida)
+            if (!formTramite.checkValidity()) {
+                e.stopPropagation();
+                formTramite.classList.add('was-validated');
+                return; // Si faltan datos, detenemos aquí y no mostramos modal
+            }
+
+            // A) Extraer nombre del Técnico desde Select2
+            const tecnicoData = $('#id_usuario').select2('data');
+            const tecnicoText = (tecnicoData.length > 0 && tecnicoData[0].id) ? tecnicoData[0].text : 'No asignado';
+
+            // B) Extraer nombre de la Empresa desde Select2
+            const operadorData = $('#id_operador').select2('data');
+            const operadorText = (operadorData.length > 0 && operadorData[0].id) ? operadorData[0].text : 'No asignado';
+
+            // C) Extraer Fojas
+            const fojasInput = document.getElementById('id_fojas');
+            const fojasVal = fojasInput ? (fojasInput.value || '0') : '0';
+
+            // D) Extraer Tipo de Trámite (Select normal de Django)
+            const tipoSelect = document.getElementById('id_tipo_tramite');
+            let tipoText = 'No especificado';
+            if (tipoSelect && tipoSelect.selectedIndex !== -1) {
+                tipoText = tipoSelect.options[tipoSelect.selectedIndex].text;
+            }
+
+            // E) Extraer Archivo
+            const fileInput = document.getElementById('id_tramite_file');
+            let fileName = 'Sin documento adjunto';
+            if (fileInput && fileInput.files.length > 0) {
+                fileName = fileInput.files[0].name;
+            }
+
+            // Inyectamos los datos en el Modal HTML
+            document.getElementById('preview-tecnico').textContent = tecnicoText;
+            document.getElementById('preview-operador').textContent = operadorText;
+            document.getElementById('preview-fojas').textContent = fojasVal;
+            document.getElementById('preview-tipo').textContent = tipoText;
+            document.getElementById('preview-file').textContent = fileName;
+
+            // Mostramos el modal
+            confirmModal.show();
+        });
+
+        // Evento cuando le dan "Sí, Guardar Trámite" dentro del modal
+        btnConfirmar.addEventListener('click', function() {
+            // Cambiamos el texto para mostrar estado de carga
+            btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Procesando...';
+            btnConfirmar.disabled = true;
+            
+            // Enviamos el formulario directamente (saltando el EventListener)
+            formTramite.submit();
+        });
     });
 </script>
 {% endblock %}

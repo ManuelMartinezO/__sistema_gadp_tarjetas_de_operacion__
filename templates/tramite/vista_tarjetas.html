@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
+            <a href="{% url 'tramite:detalle_tramite' tramite.numero_tramite %}" class="btn btn-light-action rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+            {% if tarjetas and tramite.estado_tramite == 'validado' %}
+                {% if user.rol == 'a' or user.rol == 'sa' %}
+                    <a href="{% url 'tramite:tramite_pdf' tramite.numero_tramite %}" target="_blank" class="btn btn-indigo btn-lg rounded-pill px-4 shadow-sm ms-2">
+                        <i class="bi bi-printer-fill me-2"></i> IMPRIMIR TODO
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
+<h3 style="border-bottom: 1px solid black; width: 70%;">TRAMITE: #{{ tramite.numero_tramite }}</h3>
+
+<table class="tabla_tarjetas" style="width: 70%;">
+    {% for tarjeta in tarjetas %}
+    <tr>
+        <td><b>Nro. Tramite: </b></td>
+        <td class="fila_valor">{{ tarjeta.tramite.numero_tramite }}</td>
+        <td><b>Tecnico: </b></td>
+        <td class="fila_valor">{{ tarjeta.tramite.usuario }}</td>
+    </tr>
+    <tr>
+        <td><b>Fecha: </b></td>
+        <td class="fila_valor">{{ tarjeta.fecha_registro|date:"d/m/Y" }}</td>
+        <td><b>Hora: </b></td>
+        <td class="fila_valor">{{ tarjeta.fecha_registro|time:"H:i" }}</td>
+    </tr>
+    <tr>
+        <td><b>Propietario: </b></td>
+        <td class="fila_valor" colspan="3">{{ tarjeta.afiliado.nombre }} {{ tarjeta.afiliado.apellido }}</td>
+    </tr>
+    <tr>
+        <td><b>Empresa: </b></td>
+        <td class="fila_valor" colspan="3">{{ tramite.operador }}</td>
+    </tr>
+    <tr>
+        <td><b>Placa: </b></td>
+        <td class="fila_valor">{{ tarjeta.vehiculo.placa }}</td>
+        <td><b>Tipo Trans.: </b></td>
+        <td class="fila_valor">{{ tarjeta.vehiculo.tipo_transporte }}</td>
+    </tr>
+    <tr>
+        <td><b>Modelo: </b></td>
+        <td class="fila_valor">{{ tarjeta.vehiculo.modelo }}</td>
+        <td><b>Marca: </b></td>
+        <td class="fila_valor">{{ tarjeta.vehiculo.marca }}</td>
+    </tr>
+    <tr>
+        <td><b>Nro. Registro: </b></td>
+        <td class="fila_valor">{{ tarjeta.id }}</td>
+        <td><b>Chasis: </b></td>
+        <td class="fila_valor">{{ tarjeta.vehiculo.chasis }}</td>
+    </tr>
+    <tr>
+        <td><b>Tipo Servicio: </b></td>
+        <td class="fila_valor">{{ tarjeta.vehiculo.tipo_vehiculo }}</td>
+        <td><b>Capacidad: </b></td>
+        <td class="fila_valor">{{ tarjeta.vehiculo.capacidad }}</td>
+    </tr>
+    <tr>
+        <td colspan="4"><b>Ruras Autorizadas: </b></td>
+    </tr>
+    <tr>
+        <td class="fila_valor" colspan="4">{{ tarjeta.ruta }}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid black;">
+        <td><b>Validez: </b></td>
+        <td class="fila_valor">{{ tarjeta.validez_tiempo }} {{ tarjeta.get_validez_periodo_display }}</td>
+        <td><b>Monto: </b></td>
+        <td class="fila_valor">{{ tarjeta.monto }} Bs.</td>
+    </tr>
+    {% endfor %}
+</table>
+<style>
+    .fila_valor {
+        text-transform: uppercase;
+    }
+</style>
+{% endblock %}

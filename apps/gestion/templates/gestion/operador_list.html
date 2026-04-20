@@ -1,0 +1,220 @@
+{% extends 'gestion/base_admin.html' %}
+
+{% block title %}Directorio de Operadores{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 animate-fade-in force-light-text">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
+        <div>
+            <h2 class="h3 mb-1 fw-bolder text-white d-flex align-items-center tracking-wider">
+                <i class="fas fa-building text-dorado me-3 fs-2"></i> 
+                Gestión de Operadores
+            </h2>
+            <p class="text-muted mb-0 fs-7">Sindicatos, empresas y asociaciones registradas en el parque automotor.</p>
+        </div>
+        <div>
+            <a href="{% url 'gestion:crear_operador' %}" class="btn btn-dorado-solid d-flex align-items-center gap-2 shadow-lg">
+                <i class="fas fa-plus-circle"></i> NUEVO OPERADOR
+            </a>
+        </div>
+    </div>
+
+    <div class="enterprise-card">
+        
+        <div class="p-3 border-bottom border-subtle d-flex justify-content-between align-items-center bg-surface-header flex-wrap gap-3">
+            <div class="text-muted fs-8 fw-bold text-uppercase tracking-wider">
+                <i class="fas fa-list me-2"></i> Entidades Activas ({{ operadores.count }})
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search text-muted"></i>
+                <input type="text" class="form-control-dark" id="searchOperador" placeholder="Buscar operador...">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-enterprise align-middle mb-0" id="operadorTable">
+                <thead>
+                    <tr>
+                        <th scope="col" class="ps-4" style="width: 15%;">ID Entidad</th>
+                        <th scope="col" style="width: 45%;">Nombre del Operador / Sindicato</th>
+                        <th scope="col" style="width: 25%;">Fecha de Alta</th>
+                        <th scope="col" class="pe-4 text-end" style="width: 15%;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for op in operadores %}
+                    <tr>
+                        <td class="ps-4">
+                            <span class="log-id">OPR-{{ op.id|stringformat:"04d" }}</span>
+                        </td>
+                        
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-cyber border-dorado text-dorado">
+                                    <i class="fas fa-bus-alt fs-6"></i>
+                                </div>
+                                <span class="text-main fw-bold fs-6 tracking-wider">{{ op.nombre }}</span>
+                            </div>
+                        </td>
+                        
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="text-white fs-7 font-monospace">{{ op.fecha_registro|date:"Y-m-d" }}</span>
+                                <span class="text-muted fs-8 font-monospace"><i class="far fa-clock me-1"></i>{{ op.fecha_registro|time:"H:i" }}</span>
+                            </div>
+                        </td>
+                        
+                        <td class="pe-4 text-end">
+                            <div class="d-inline-flex gap-2">
+                                <a href="{% url 'gestion:editar_operador' op.id %}" class="btn-action-cyber btn-edit" title="Editar Operador">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                
+                                <button type="button" class="btn-action-cyber btn-delete" 
+                                        onclick="openOperadorModal('{{ op.id }}', '{{ op.nombre|escapejs }}')" 
+                                        title="Eliminar Registro">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="d-flex flex-column align-items-center justify-content-center text-muted opacity-50">
+                                <i class="fas fa-building-slash fa-4x mb-3"></i>
+                                <h5 class="fw-bold tracking-wider text-uppercase text-white">Sin Registros</h5>
+                                <p class="fs-7">No hay operadores o sindicatos registrados actualmente.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-cyber" id="deleteOperadorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-surface border-granate shadow-neon-danger">
+            
+            <div class="modal-header border-bottom border-subtle">
+                <h5 class="modal-title text-neon-danger fw-bolder tracking-wider d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-2 fa-fade"></i> ELIMINAR OPERADOR
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-4 text-center">
+                <i class="fas fa-minus-circle fa-4x text-neon-danger mb-3 opacity-75"></i>
+                <h4 class="text-white fw-bold mb-3">¿Borrar Entidad Operadora?</h4>
+                <p class="text-muted fs-7 mb-4">Esta acción eliminará permanentemente al sindicato/empresa del padrón. Podría afectar a los vehículos asociados a este operador.</p>
+                
+                <div class="preview-box p-3 text-start mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-cyber border-granate text-granate fs-4"><i class="fas fa-building"></i></div>
+                        <div>
+                            <div class="text-white fw-bold fs-5 tracking-wider" id="modalOpName">NOMBRE_OPERADOR</div>
+                            <div class="badge-cyber badge-granate mt-1">Registro por eliminar</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer border-top border-subtle d-flex justify-content-between bg-surface-header">
+                <button type="button" class="btn btn-outline-secondary px-4 fw-bold tracking-wider" data-bs-dismiss="modal">CANCELAR</button>
+                <form id="deleteOpForm" method="POST" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-neon-danger px-4 fw-bold tracking-wider d-flex align-items-center gap-2">
+                        <i class="fas fa-trash"></i> CONFIRMAR BAJA
+                    </button>
+                </form>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --granate: #8b0000; --granate-light: #ff4d4d;
+        --dorado: #c5a059; --dorado-light: #d4b475;
+        --neon-danger: #ff0844;
+        --bg-surface: #1e293b; --bg-dark: #0f172a;
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --text-main: #f8fafc; --text-muted: #94a3b8;
+    }
+    .force-light-text { color: var(--text-main); }
+    .force-light-text .text-muted { color: var(--text-muted) !important; }
+    .text-main { color: var(--text-main) !important; }
+    .fs-7 { font-size: 0.85rem; } .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+    .font-monospace { font-family: 'Courier New', Consolas, monospace; }
+    
+    .text-granate { color: var(--granate-light) !important; }
+    .text-dorado { color: var(--dorado-light) !important; }
+    .text-neon-danger { color: var(--neon-danger) !important; }
+
+    .animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .enterprise-card { background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); overflow: hidden; }
+    .bg-surface-header { background-color: rgba(0, 0, 0, 0.15); }
+
+    .btn-dorado-solid { background-color: var(--dorado); color: var(--bg-dark); border: none; border-radius: 8px; font-weight: 700; letter-spacing: 0.5px; padding: 0.6rem 1.2rem; transition: all 0.3s ease; }
+    .btn-dorado-solid:hover { background-color: var(--dorado-light); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(197, 160, 89, 0.3) !important; color: var(--bg-dark); }
+
+    .search-box { position: relative; width: 300px; }
+    .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; }
+    .form-control-dark { width: 100%; background-color: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-subtle); color: var(--text-main); border-radius: 6px; padding: 0.5rem 1rem 0.5rem 2rem; font-size: 0.85rem; transition: all 0.3s; }
+    .form-control-dark:focus { outline: none; border-color: var(--dorado-light); box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.2); }
+
+    .table-enterprise { --bs-table-bg: transparent !important; color: var(--text-main) !important; border-collapse: collapse; }
+    .table-enterprise thead th { background-color: rgba(0, 0, 0, 0.2) !important; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--text-muted) !important; border-bottom: 1px solid var(--border-subtle) !important; padding: 1rem 0.5rem; }
+    .table-enterprise td { background-color: transparent !important; padding: 1.2rem 0.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important; color: var(--text-main) !important; }
+    .table-enterprise tbody tr:hover td { background-color: rgba(255, 255, 255, 0.02) !important; }
+    .table-enterprise tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--dorado); }
+
+    .log-id { font-family: 'Courier New', Consolas, monospace; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--border-subtle); }
+    
+    .avatar-cyber { width: 40px; height: 40px; border-radius: 10px; background: rgba(0, 0, 0, 0.2); display: flex; align-items: center; justify-content: center; border: 1px solid transparent; }
+    .border-dorado { border-color: rgba(197, 160, 89, 0.5) !important; background: rgba(197, 160, 89, 0.1) !important;}
+    .border-granate { border-color: rgba(139, 0, 0, 0.5) !important; background: rgba(139, 0, 0, 0.1) !important;}
+
+    .btn-action-cyber { width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-subtle); color: var(--text-muted); transition: all 0.2s; text-decoration: none; }
+    .btn-edit:hover { background: rgba(197, 160, 89, 0.15); border-color: var(--dorado); color: var(--dorado-light); }
+    .btn-delete:hover { background: rgba(255, 8, 68, 0.15); border-color: var(--neon-danger); color: var(--neon-danger); }
+
+    /* Modal */
+    .modal-cyber .bg-surface { background-color: var(--bg-surface); }
+    .modal-cyber .border-granate { border: 1px solid var(--granate) !important; }
+    .shadow-neon-danger { box-shadow: 0 0 40px rgba(255, 8, 68, 0.15); }
+    .preview-box { background-color: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; }
+    .btn-neon-danger { color: var(--white); background: var(--granate); border: 1px solid var(--neon-danger); transition: all 0.3s ease; border-radius: 8px; }
+    .btn-neon-danger:hover { background: var(--neon-danger); box-shadow: 0 0 15px rgba(255, 8, 68, 0.4); }
+    .badge-cyber { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 0.4em 0.6em; border-radius: 6px; display: inline-block; }
+    .badge-granate { background: rgba(139, 0, 0, 0.2); color: var(--granate-light); border: 1px solid rgba(139, 0, 0, 0.5); }
+</style>
+
+<script>
+    document.getElementById('searchOperador').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll('#operadorTable tbody tr');
+        rows.forEach(row => {
+            let text = row.innerText.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
+    function openOperadorModal(opId, opName) {
+        document.getElementById('modalOpName').textContent = opName;
+        let form = document.getElementById('deleteOpForm');
+        let baseUrl = "{% url 'gestion:eliminar_operador' 0 %}".replace('0', opId);
+        form.action = baseUrl;
+        let deleteModal = new bootstrap.Modal(document.getElementById('deleteOperadorModal'));
+        deleteModal.show();
+    }
+</script>
+{% endblock %}

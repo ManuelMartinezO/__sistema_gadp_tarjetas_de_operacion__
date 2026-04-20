@@ -78,7 +78,7 @@
                         <td class="text-center">
                             <div class="d-inline-flex align-items-center bg-slate-50 border border-slate-100 rounded-pill px-3 py-1">
                                 <i class="bi bi-credit-card-2-front-fill text-success me-2 opacity-75"></i>
-                                <span class="fw-bold text-slate-700">{{ operador.tarjetas_de_operacion.count }}</span>
+                                <span class="fw-bold text-slate-700">{{ operador.operadores_tarjeta.count }}</span>
                             </div>
                         </td>
                         
@@ -103,6 +103,46 @@
                     {% endfor %}
                 </tbody>
             </table>
+            
+            <div class="px-4 py-3 border-top bg-light-subtle d-flex align-items-center justify-content-between">
+                <div class="text-slate-500 fs-7">
+                    Mostrando {{ operadores.start_index }} a {{ operadores.end_index }} de {{ operadores.paginator.count }} resultados
+                </div>
+                
+                {% if operadores.has_other_pages %}
+                <nav>
+                    <ul class="pagination pagination-sm m-0">
+                        {% if operadores.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link border-0 rounded-3 me-1 text-slate-600" href="?page={{ operadores.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for i in operadores.paginator.page_range %}
+                            {% if operadores.number == i %}
+                                <li class="page-item active">
+                                    <span class="page-link border-0 rounded-3 me-1 bg-indigo shadow-sm">{{ i }}</span>
+                                </li>
+                            {% elif i > operadores.number|add:'-3' and i < operadores.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link border-0 rounded-3 me-1 text-slate-600" href="?page={{ i }}{% if q %}&q={{ q }}{% endif %}">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if operadores.has_next %}
+                            <li class="page-item">
+                                <a class="page-link border-0 rounded-3 text-slate-600" href="?page={{ operadores.next_page_number }}{% if q %}&q={{ q }}{% endif %}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
@@ -162,6 +202,27 @@
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.2s; }
     @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+    .pagination .page-link {
+        color: var(--slate-600);
+        background-color: transparent;
+        font-weight: 600;
+        padding: 0.5rem 0.8rem;
+        transition: all 0.2s;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: var(--indigo) !important;
+        color: white !important;
+    }
+    
+    .pagination .page-link:hover:not(.active) {
+        background-color: var(--slate-100);
+        color: var(--indigo);
+    }
+
+    .bg-light-subtle {
+        background-color: #fcfcfd;
+    }
 </style>
 
 <script>

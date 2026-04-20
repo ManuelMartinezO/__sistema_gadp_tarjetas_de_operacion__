@@ -96,6 +96,45 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div class="px-4 py-3 border-top bg-light-subtle d-flex align-items-center justify-content-between">
+                <div class="text-slate-500 fs-7">
+                    Mostrando {{ afiliados.start_index }} a {{ afiliados.end_index }} de {{ afiliados.paginator.count }} registros
+                </div>
+                
+                {% if afiliados.has_other_pages %}
+                <nav>
+                    <ul class="pagination pagination-sm m-0">
+                        {% if afiliados.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link border-0 rounded-3 me-1 text-slate-600" href="?page={{ afiliados.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for i in afiliados.paginator.page_range %}
+                            {% if afiliados.number == i %}
+                                <li class="page-item active">
+                                    <span class="page-link border-0 rounded-3 me-1 bg-indigo shadow-sm">{{ i }}</span>
+                                </li>
+                            {% elif i > afiliados.number|add:'-3' and i < afiliados.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link border-0 rounded-3 me-1 text-slate-600" href="?page={{ i }}{% if q %}&q={{ q }}{% endif %}">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if afiliados.has_next %}
+                            <li class="page-item">
+                                <a class="page-link border-0 rounded-3 text-slate-600" href="?page={{ afiliados.next_page_number }}{% if q %}&q={{ q }}{% endif %}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
@@ -154,6 +193,23 @@
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.2s; }
     @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+    .pagination .page-link {
+        color: var(--slate-600);
+        background-color: transparent;
+        font-weight: 600;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: var(--indigo) !important;
+        color: white !important;
+    }
+    
+    .pagination .page-link:hover:not(.active) {
+        background-color: var(--slate-100);
+        color: var(--indigo);
+    }
+
+    .bg-light-subtle { background-color: #fcfcfd; }
 </style>
 
 <script>

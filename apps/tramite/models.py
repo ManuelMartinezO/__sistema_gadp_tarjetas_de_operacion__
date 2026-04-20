@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
+from apps.operador.models import Operador
 
 class Tramite(models.Model):
 
@@ -20,6 +21,12 @@ class Tramite(models.Model):
         on_delete=models.CASCADE,
     )
 
+    operador = models.ForeignKey(
+        Operador,
+        on_delete=models.PROTECT,
+        related_name="tarjetas_de_operacion"
+    )
+
     tramite_file = models.FileField(
         upload_to='tramites/', 
         blank=True, 
@@ -35,6 +42,7 @@ class Tramite(models.Model):
     
     numero_tramite = models.PositiveIntegerField(unique=True)
     estado_deposito = models.BooleanField(default=False)
+    fojas = models.PositiveIntegerField(blank=True, null=True)
 
     tipo_tramite = models.CharField(max_length=20, choices=TIPO_TRAMITE)
     estado_tramite = models.CharField(max_length=20, choices=ESTADO_TRAMITE, default='pendiente')

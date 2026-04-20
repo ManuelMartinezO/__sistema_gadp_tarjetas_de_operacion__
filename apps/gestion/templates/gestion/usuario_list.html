@@ -1,0 +1,375 @@
+{% extends 'gestion/base_admin.html' %}
+
+{% block title %}Directorio de Usuarios{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 animate-fade-in force-light-text">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
+        <div>
+            <h2 class="h3 mb-1 fw-bolder text-white d-flex align-items-center tracking-wider">
+                <i class="fas fa-users-cog text-dorado me-3 fs-2"></i> 
+                Directorio de Usuarios
+            </h2>
+            <p class="text-muted mb-0 fs-7">Administración centralizada de cuentas, perfiles, accesos y credenciales de la institución.</p>
+        </div>
+        <div>
+            <a href="{% url 'gestion:crear_usuario' %}" class="btn btn-dorado-solid d-flex align-items-center gap-2 shadow-lg">
+                <i class="fas fa-user-plus"></i> NUEVO USUARIO
+            </a>
+        </div>
+    </div>
+
+    <div class="enterprise-card">
+        
+        <div class="p-3 border-bottom border-subtle d-flex justify-content-between align-items-center bg-surface-header flex-wrap gap-3">
+            <div class="text-muted fs-8 fw-bold text-uppercase tracking-wider">
+                <i class="fas fa-id-badge me-2"></i> Cuentas Registradas ({{ usuarios.count }})
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search text-muted"></i>
+                <input type="text" class="form-control-dark" id="searchInput" placeholder="Buscar por Username, CI o Nombre...">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-enterprise align-middle mb-0" id="usersTable">
+                <thead>
+                    <tr>
+                        <th scope="col" class="ps-4">Cuenta / Access</th>
+                        <th scope="col">Información Personal</th>
+                        <th scope="col">Contacto</th>
+                        <th scope="col">Nivel de Privilegio</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col" class="pe-4 text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-cyber {% if usuario.rol == 'sa' %}border-granate text-granate{% elif usuario.rol == 'a' %}border-dorado text-dorado{% else %}border-cyan text-cyan{% endif %}">
+                                    {{ usuario.username|make_list|first|upper }}
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold text-white fs-6 tracking-wider">{{ usuario.username }}</span>
+                                    <span class="text-muted fs-8 font-monospace">ID: USR-{{ usuario.id|stringformat:"04d" }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td>
+                            {% if usuario.perfil %}
+                                <div class="d-flex flex-column">
+                                    <span class="text-main fw-medium fs-7">{{ usuario.perfil.nombre }} {{ usuario.perfil.apellido }}</span>
+                                    <span class="text-muted fs-8"><i class="fas fa-id-card me-1 opacity-50"></i> CI: {{ usuario.perfil.ci }}</span>
+                                </div>
+                            {% else %}
+                                <span class="text-warning fs-8 fst-italic"><i class="fas fa-exclamation-triangle me-1"></i> Perfil Incompleto</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            {% if usuario.perfil %}
+                                <div class="d-flex flex-column gap-1">
+                                    <span class="text-muted fs-8"><i class="fas fa-envelope text-dorado me-1 opacity-75"></i> {{ usuario.perfil.email|default:"No registrado" }}</span>
+                                    <span class="text-muted fs-8"><i class="fas fa-phone-alt text-dorado me-1 opacity-75"></i> {{ usuario.perfil.numero_celular|default:"-" }}</span>
+                                </div>
+                            {% else %}
+                                <span class="text-muted fs-8">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            {% if usuario.rol == 'sa' %}
+                                <span class="badge-cyber badge-granate"><i class="fas fa-crown me-1"></i> Super Admin</span>
+                            {% elif usuario.rol == 'a' %}
+                                <span class="badge-cyber badge-dorado"><i class="fas fa-user-shield me-1"></i> Administrador</span>
+                            {% else %}
+                                <span class="badge-cyber badge-cyan"><i class="fas fa-user me-1"></i> Usuario Base</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            {% if usuario.is_active %}
+                                <span class="status-indicator status-active"><i class="fas fa-circle"></i> Activo</span>
+                            {% else %}
+                                <span class="status-indicator status-inactive"><i class="fas fa-circle"></i> Suspendido</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="pe-4 text-end">
+                            <div class="d-inline-flex gap-2">
+                                <a href="{% url 'gestion:editar_usuario' usuario.id %}" class="btn-action-cyber btn-edit" title="Editar Credenciales y Perfil">
+                                    <i class="fas fa-user-edit"></i>
+                                </a>
+                                
+                                {% if request.user.id != usuario.id %}
+                                    <button type="button" class="btn-action-cyber btn-delete" 
+                                            onclick="openDeleteModal('{{ usuario.id }}', '{{ usuario.username }}', '{{ usuario.perfil.nombre|default:'' }} {{ usuario.perfil.apellido|default:'' }}', '{{ usuario.get_rol_display }}')" 
+                                            title="Revocar Acceso">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                {% else %}
+                                    <button type="button" class="btn-action-cyber disabled opacity-25" title="No puedes eliminar tu propia cuenta" disabled>
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="d-flex flex-column align-items-center justify-content-center text-muted opacity-50">
+                                <i class="fas fa-users-slash fa-4x mb-3"></i>
+                                <h5 class="fw-bold tracking-wider text-uppercase text-white">Directorio Vacío</h5>
+                                <p class="fs-7">No hay usuarios registrados en el sistema.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-cyber" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-surface border-granate shadow-neon-danger">
+            
+            <div class="modal-header border-bottom border-subtle">
+                <h5 class="modal-title text-neon-danger fw-bolder tracking-wider d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-2 fa-fade"></i> ADVERTENCIA CRÍTICA
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-4 text-center">
+                <i class="fas fa-user-times fa-4x text-neon-danger mb-3 opacity-75"></i>
+                <h4 class="text-white fw-bold mb-3">¿Revocar acceso permanentemente?</h4>
+                <p class="text-muted fs-7 mb-4">Esta acción no se puede deshacer. Se eliminarán las credenciales de acceso y el perfil asociado de la base de datos.</p>
+                
+                <div class="preview-box p-3 text-start mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-cyber border-granate text-granate fs-4" id="modalUserAvatar">U</div>
+                        <div>
+                            <div class="text-white fw-bold fs-5 tracking-wider" id="modalUsername">USERNAME</div>
+                            <div class="text-muted fs-7" id="modalFullName">Nombre Completo</div>
+                            <div class="badge-cyber badge-secondary mt-1" id="modalUserRole">Rol</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer border-top border-subtle d-flex justify-content-between bg-surface-header">
+                <button type="button" class="btn btn-outline-secondary px-4 fw-bold tracking-wider" data-bs-dismiss="modal">CANCELAR</button>
+                
+                <form id="deleteForm" method="POST" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-neon-danger px-4 fw-bold tracking-wider d-flex align-items-center gap-2">
+                        <i class="fas fa-skull-crossbones"></i> CONFIRMAR BAJA
+                    </button>
+                </form>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<style>
+    /* VARIABLES COMPLEMENTARIAS */
+    :root {
+        --granate: #8b0000;
+        --granate-light: #ff4d4d;
+        --dorado: #c5a059;
+        --dorado-light: #d4b475;
+        --neon-cyan: #00f2fe;
+        --neon-danger: #ff0844;
+        --bg-surface: #1e293b;      
+        --bg-dark: #0f172a;         
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+    }
+
+    /* FIX TEXTO CLARO GLOBAL */
+    .force-light-text { color: var(--text-main); }
+    .force-light-text .text-muted { color: var(--text-muted) !important; }
+
+    /* UTILIDADES GLOBALES */
+    .fs-7 { font-size: 0.85rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 1px; }
+    .font-monospace { font-family: 'Courier New', Consolas, monospace; }
+    
+    .text-granate { color: var(--granate-light) !important; }
+    .text-dorado { color: var(--dorado-light) !important; }
+    .text-cyan { color: var(--neon-cyan) !important; }
+    .text-neon-danger { color: var(--neon-danger) !important; }
+
+    .animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* CONTENEDORES */
+    .enterprise-card {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+    .bg-surface-header { background-color: rgba(0, 0, 0, 0.2); }
+
+    /* BOTONES GLOBALES */
+    .btn-dorado-solid {
+        background-color: var(--dorado);
+        color: var(--bg-dark);
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        padding: 0.6rem 1.2rem;
+        transition: all 0.3s ease;
+    }
+    .btn-dorado-solid:hover {
+        background-color: var(--dorado-light);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(197, 160, 89, 0.3) !important;
+        color: var(--bg-dark);
+    }
+
+    /* SEARCH BOX */
+    .search-box { position: relative; width: 300px; }
+    .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; }
+    .form-control-dark {
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-main);
+        border-radius: 6px;
+        padding: 0.5rem 1rem 0.5rem 2rem;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+    }
+    .form-control-dark:focus {
+        outline: none;
+        border-color: var(--dorado-light);
+        box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.2);
+    }
+    .form-control-dark::placeholder { color: var(--text-muted); opacity: 0.5; }
+
+    /* TABLA ENTERPRISE */
+    .table-enterprise {
+        --bs-table-bg: transparent !important;
+        color: var(--text-main) !important;
+        border-collapse: collapse;
+    }
+    .table-enterprise thead th {
+        background-color: rgba(0, 0, 0, 0.2) !important; 
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        color: var(--text-muted) !important;
+        border-bottom: 1px solid var(--border-subtle) !important;
+        padding: 1rem 0.5rem;
+    }
+    .table-enterprise td {
+        background-color: transparent !important; 
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+        color: var(--text-main) !important;
+    }
+    .table-enterprise tbody tr:hover td { background-color: rgba(255, 255, 255, 0.02) !important; }
+    .table-enterprise tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--dorado); }
+
+    /* AVATARES */
+    .avatar-cyber {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.2); 
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 1.1rem;
+        border: 1px solid transparent;
+    }
+    .border-granate { border-color: rgba(139, 0, 0, 0.5) !important; background: rgba(139, 0, 0, 0.1) !important;}
+    .border-dorado { border-color: rgba(197, 160, 89, 0.5) !important; background: rgba(197, 160, 89, 0.1) !important;}
+    .border-cyan { border-color: rgba(0, 242, 254, 0.3) !important; background: rgba(0, 242, 254, 0.05) !important;}
+
+    /* BADGES ROLES */
+    .badge-cyber {
+        font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+        padding: 0.4em 0.6em; border-radius: 6px; display: inline-block;
+    }
+    .badge-granate { background: rgba(139, 0, 0, 0.2); color: var(--granate-light); border: 1px solid rgba(139, 0, 0, 0.5); }
+    .badge-dorado { background: rgba(197, 160, 89, 0.1); color: var(--dorado-light); border: 1px solid rgba(197, 160, 89, 0.3); }
+    .badge-cyan { background: rgba(0, 242, 254, 0.1); color: var(--neon-cyan); border: 1px solid rgba(0, 242, 254, 0.3); }
+    .badge-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.1); }
+
+    /* ESTADO INDICATOR */
+    .status-indicator { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;}
+    .status-active { color: #10b981; }
+    .status-inactive { color: var(--text-muted); }
+    .status-active i { font-size: 0.5rem; filter: drop-shadow(0 0 5px #10b981); }
+    .status-inactive i { font-size: 0.5rem; opacity: 0.5; }
+
+    /* BOTONES DE ACCIÓN TABLA */
+    .btn-action-cyber {
+        width: 32px; height: 32px; border-radius: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-subtle);
+        color: var(--text-muted); transition: all 0.2s; text-decoration: none;
+    }
+    .btn-edit:hover { background: rgba(197, 160, 89, 0.15); border-color: var(--dorado); color: var(--dorado-light); }
+    .btn-delete:hover { background: rgba(255, 8, 68, 0.15); border-color: var(--neon-danger); color: var(--neon-danger); }
+
+    /* MODAL CYBER */
+    .modal-cyber .bg-surface { background-color: var(--bg-surface); }
+    .modal-cyber .border-granate { border: 1px solid var(--granate) !important; }
+    .shadow-neon-danger { box-shadow: 0 0 40px rgba(255, 8, 68, 0.15); }
+    .preview-box { background-color: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; }
+    
+    .btn-neon-danger {
+        color: var(--white); background: var(--granate); border: 1px solid var(--neon-danger);
+        transition: all 0.3s ease; border-radius: 8px;
+    }
+    .btn-neon-danger:hover {
+        background: var(--neon-danger); box-shadow: 0 0 15px rgba(255, 8, 68, 0.4);
+    }
+</style>
+
+<script>
+    // Buscador en tiempo real de la tabla
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll('#usersTable tbody tr');
+        
+        rows.forEach(row => {
+            let text = row.innerText.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
+    // Función para abrir el Modal de Eliminación con los datos del usuario
+    function openDeleteModal(userId, username, fullName, role) {
+        // Llenar los datos de vista previa
+        document.getElementById('modalUsername').textContent = username;
+        document.getElementById('modalUserAvatar').textContent = username.charAt(0).toUpperCase();
+        document.getElementById('modalFullName').textContent = fullName ? fullName : 'Sin datos de perfil';
+        document.getElementById('modalUserRole').textContent = role;
+        
+        // Configurar la URL del formulario de eliminación
+        // La URL base sería algo como /gestion/usuarios/ID/eliminar/
+        let form = document.getElementById('deleteForm');
+        let baseUrl = "{% url 'gestion:eliminar_usuario' 0 %}".replace('0', userId);
+        form.action = baseUrl;
+        
+        // Abrir Modal
+        let deleteModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+        deleteModal.show();
+    }
+</script>
+{% endblock %}
