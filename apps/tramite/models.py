@@ -3,79 +3,106 @@ from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from apps.operador.models import Operador
 
+# ===== CLASE TRAMITE =====
 class Tramite(models.Model):
 
-    TIPO_TRAMITE = (
-        ('otorgacion', 'Otorgación Nueva de Tarjetas de Operación'),
-        ('renovacion', 'Renovación de Tarjetas de Operación'),
+    TIPO = (
+        ('o', 'Otorgación Nueva de Tarjetas de Operación'),
+        ('r', 'Renovación de Tarjetas de Operación'),
+    )
+    ESTADO = (
+        ('p', 'PENDIENTE'),
+        ('v', 'VALIDO'),
+        ('o', 'OBSERVADO'),
+    )
+    LICENCIA = (
+        ('l1','InterProvincial'),
+        ('l2','Interprov.ATL'),
+        ('l3','Interprov.Confederado'),
+        ('l4','Interprov.Confe.SCZ'),
+        ('l5','Interprov.Cooperativas'),
     )
 
-    ESTADO_TRAMITE = (
-        ('pendiente', 'Tramite Pendiente'),
-        ('validado', 'Tramite Validado'),
-        ('observado', 'Tramite Observado'),
-    )
+    # === CHOICES ===
+    tipo = models.CharField(max_length=1, choices=TIPO)
+    estado = models.CharField(max_length=1, choices=ESTADO, default='p')
+    licencia = models.CharField(max_length=2, choices=LICENCIA)
     
+    # === RELACIONES ===
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE,
+        related_name='tramite_usuario'
     )
-
     operador = models.ForeignKey(
         Operador,
         on_delete=models.PROTECT,
-        related_name="tarjetas_de_operacion"
+        related_name="tramite_operador"
     )
 
-    tramite_file = models.FileField(
-        upload_to='tramites/', 
+    # === DOCUMENTOS, INFORMES, RESOLUCIONES ===
+    informe_tecnico = models.FileField(
+        upload_to='informes_tecnicos/', 
         blank=True, 
         null=True,
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])],
     )
-    reporte_file = models.FileField(
-        upload_to='reportes/',
+    informe_legal = models.FileField(
+        upload_to='informes_legales/',
         blank=True,
         null=True,
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])]
     )
-    
-    numero_tramite = models.PositiveIntegerField(unique=True)
-    estado_deposito = models.BooleanField(default=False)
-    fojas = models.PositiveIntegerField(blank=True, null=True)
+    resolucion_administrativa = models.FileField(
+        upload_to='resolucion_administrativa/',
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])]
+    )
 
-    tipo_tramite = models.CharField(max_length=20, choices=TIPO_TRAMITE)
-    estado_tramite = models.CharField(max_length=20, choices=ESTADO_TRAMITE, default='pendiente')
+    # === AUTO ===
+    numero = models.PositiveIntegerField(unique=True)
+    deposito = models.BooleanField(default=False)
     
-    fecha_validacion = models.DateTimeField(blank=True, null=True)
-    fecha_observacion = models.DateTimeField(blank=True, null=True)
+    # === FORMULARIO ===
+    fojas = models.PositiveIntegerField(blank=True, null=True)
+    rutas = models.TextField()
+    observacion = models.TextField(blank=True, null=True)
+
+    # === FECHA AUTO/FORM ===
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
+    # === FUNCIONES EXTRAS ===
+    # ==== INICIAR EL DOCUMENTO DESDE EL NUMERO 2000 ====
     def save(self, *args, **kwargs):
-        if not self.numero_tramite:
-            ultimo_tramite = Tramite.objects.order_by('-numero_tramite').first()
+        if not self.numero:
+            ultimo_tramite = Tramite.objects.order_by('-numero').first()
             
-            if ultimo_tramite and ultimo_tramite.numero_tramite:
-                self.numero_tramite = ultimo_tramite.numero_tramite + 1
+            if ultimo_tramite and ultimo_tramite.numero:
+                self.numero = ultimo_tramite.numero + 1
             else:
-                self.numero_tramite = 2000
+                self.numero = 2000
                 
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Trámite N° {self.numero_tramite} - Usuario: {self.usuario.username}"
+        return f"Trámite N° {self.numero} - Usuario: {self.usuario.username}"
 
+# ===== CLASE DEPOSITO =====
 class Deposito(models.Model):
     
-    tramite = models.OneToOneField(
+    # === RELACIONES ===
+    tramite = models.ForeignKey(
         Tramite, 
         on_delete=models.CASCADE, 
-        related_name='deposito'    
+        related_name='deposito_tramite'
     )
     
-    numero_deposito = models.CharField(max_length=50, unique=True)
-    monto_deposito = models.DecimalField(max_digits=10, decimal_places=2)
+    # === FORMULARIO ===
+    numero = models.CharField(max_length=50, unique=True)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
     
+    # === FECHA AUTO/FORM ===
     fecha_deposito = models.DateTimeField()
     fecha_registro = models.DateTimeField(auto_now_add=True)
 

@@ -1,16 +1,8 @@
 from django.db import models
 from apps.afiliado.models import Afiliado
 
-# Create your models here.
 class MarcaVehiculo(models.Model):
     nombre = models.CharField(max_length=100)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.nombre
-
-class ColorVehiculo(models.Model):
-    nombre = models.CharField(max_length=50)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -25,41 +17,37 @@ class TipoVehiculo(models.Model):
 
 class Vehiculo(models.Model):
 
-    TIPO_TRANSPORTE = (
-        ('pasajeros', 'PASAJEROS'),
-        ('carga', 'CARGA'),
+    TRANSPORTE = (
+        ('p', 'PASAJEROS'),
+        ('c', 'CARGA'),
     )
 
+    # === RELACIONES ===
+    afiliado = models.ForeignKey(
+        Afiliado,
+        on_delete=models.PROTECT,
+        related_name='vehiculo_afiliado'
+    )
     marca = models.ForeignKey(
         MarcaVehiculo,
         on_delete=models.PROTECT,
-        related_name='vehiculos'
+        related_name='vehiculo_marca'
     )
-
-    color = models.ForeignKey(
-        ColorVehiculo,
-        on_delete=models.PROTECT,
-        related_name='vehiculos'
-    )
-
-    tipo_vehiculo = models.ForeignKey(
+    tipo = models.ForeignKey(
         TipoVehiculo,
         on_delete=models.PROTECT,
-        related_name='vehiculos'
+        related_name='vehiculo_tipo'
     )
 
-    propietario = models.ForeignKey(
-        Afiliado,
-        on_delete=models.PROTECT,
-    )
-
-    tipo_transporte = models.CharField(max_length=20, choices=TIPO_TRANSPORTE, default='pasajeros')
-
+    # === FORMULARIO ===
+    propietario = models.CharField(max_length=500, blank=True)
+    transporte = models.CharField(max_length=20, choices=TRANSPORTE)
     modelo = models.PositiveIntegerField()
     placa = models.CharField(max_length=7, unique=True)
     chasis = models.CharField(max_length=100, unique=True)
     capacidad = models.PositiveIntegerField()
     
+    # === FECHA ===
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import ColorVehiculo, TipoVehiculo, MarcaVehiculo, Vehiculo
-from .forms import ColorVehiculoForm, TipoVehiculoForm, MarcaVehiculoForm, VehiculoForm
+from .models import TipoVehiculo, MarcaVehiculo, Vehiculo
+from .forms import TipoVehiculoForm, MarcaVehiculoForm, VehiculoForm
 from django.http import JsonResponse
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -55,7 +55,6 @@ def crear_vehiculo (request):
         form = VehiculoForm()
     contexto = {
         'form': form,
-        'form_color': ColorVehiculoForm(),
         'form_marca': MarcaVehiculoForm(),
         'form_tipo': TipoVehiculoForm(),
     }
@@ -84,7 +83,6 @@ def crear_atributo (request):
         
         # Diccionario que conecta el string con la Clase del Formulario
         formularios = {
-            'color': ColorVehiculoForm,
             'marca': MarcaVehiculoForm,
             'tipo_vehiculo': TipoVehiculoForm,
         }

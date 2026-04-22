@@ -1,8 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Operador
-from .forms import OperadorForm
 from django.core.paginator import Paginator
-
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.db.models import Count, Sum
@@ -10,6 +8,7 @@ from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from datetime import timedelta
 from xhtml2pdf import pisa # Importamos la librería para el PDF
+from .forms import OperadorForm
 
 def lista_operadores(request):
     # Obtenemos todos los operadores ordenados

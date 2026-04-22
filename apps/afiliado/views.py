@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Afiliado
-from .forms import AfiliadoForm
 from django.db.models import Q
 from django.core.paginator import Paginator
 

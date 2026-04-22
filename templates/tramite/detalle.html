@@ -1,480 +1,238 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="tramite-detalle-container pb-5 animate-up">
+    <h2>Expediente Nº {{ tramite.numero }}</h2>
+    <p><strong>Estado:</strong> {{ tramite.get_estado_display }}</p>
     
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-4 gap-3">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2 fs-7 fw-medium">
-                    <li class="breadcrumb-item"><a href="{% url 'tramite:lista_tramites' %}" class="text-indigo text-decoration-none"><i class="bi bi-folder2-open me-1"></i>Trámites</a></li>
-                    <li class="breadcrumb-item text-slate-500 active" aria-current="page">Detalle #{{ tramite.numero_tramite|stringformat:"06d" }}</li>
-                </ol>
-            </nav>
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <div>
-                    <h2 class="fw-bold text-slate-900 mb-0">Expediente Nº {{ tramite.numero_tramite }}</h2>
-                </div>
-                {% if tramite.estado_tramite == 'pendiente' %}
-                    <span class="badge bg-warning-50 text-warning border border-warning-200 px-3 py-2 rounded-pill fs-8 tracking-wider"><i class="bi bi-hourglass-split me-1"></i> PENDIENTE DE REVISIÓN</span>
-                {% elif tramite.estado_tramite == 'validado' %}
-                    <span class="badge bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-2 rounded-pill fs-8 tracking-wider"><i class="bi bi-check-circle-fill me-1"></i> TRÁMITE VALIDADO</span>
+    <a href="{% url 'tramite:lista_tramites' %}">Volver</a>
+
+    {% if tarjetas and tramite.estado == 'v' %}
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            <a href="{% url 'tramite:tramite_pdf' tramite.numero %}" target="_blank">IMPRIMIR TODO</a>
+        {% endif %}
+    {% endif %}
+
+    <hr>
+
+    <h3>Información del Trámite: {{ tramite.operador }}</h3>
+    <p><strong>Tipo:</strong> {{ tramite.get_tipo_display }}</p>
+    <p><strong>Fecha:</strong> {{ tramite.fecha_registro }}</p>
+
+    <h4>Documentos</h4>
+    <ul>
+        <li>Informe Técnico: {% if tramite.informe_tecnico %}<a href="{{ tramite.informe_tecnico.url }}">Ver</a>{% else %}No subido{% endif %}</li>
+        <li>Informe Legal: {% if tramite.informe_legal %}<a href="{{ tramite.informe_legal.url }}">Ver</a>{% else %}No subido{% endif %}</li>
+        <li>Resolucion Administrativa: {% if tramite.resolucion_administrativa %}<a href="{{ tramite.resolucion_administrativa.url }}">Ver</a>{% else %}No subido{% endif %}</li>
+    </ul>
+
+    <a href="{% url 'tramite:editar_tramite' tramite.numero %}">Editar Trámite</a> | 
+    <a href="{% url 'tramite:vista' tramite.numero %}">Vista previa</a>
+
+    {% if tarjetas and tramite.estado == 'v' %}
+        <h4>Tarjetas Asociadas ({{ tarjetas.count }})</h4>
+        <ul>
+            {% for tarjeta in tarjetas %}
+                <li>
+                    <strong>Placa:</strong> {{ tarjeta.vehiculo.placa }} ({{ tarjeta.vehiculo.marca }}) <br>
+                    <strong>Ruta:</strong> {{ tarjeta.ruta.ruta }} <br>
+                    <strong>Monto:</strong> Bs. {{ tarjeta.monto }} <br>
+                    <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}">Ver credencial</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <hr>
+
+    {% if user.rol == 'a' or user.rol == 'sa' %}
+        {% if tramite.estado == 'validado' and tramite.informe_tecnico %}
+            <h4>Estado Financiero</h4>
+            {% if n_tarjetas > 0 %}
+                {% if tramite.estado_deposito %}
+                    <p style="color: green;">Pago Confirmado. Trámite finalizado.</p>
                 {% else %}
-                    <span class="badge bg-red-50 text-danger border border-red-200 px-3 py-2 rounded-pill fs-8 tracking-wider"><i class="bi bi-exclamation-octagon-fill me-1"></i> TRÁMITE OBSERVADO</span>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
-            <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-light-action rounded-pill px-3">
-                <i class="bi bi-arrow-left me-1"></i> Volver
-            </a>
-            {% if tarjetas and tramite.estado_tramite == 'validado' %}
-                {% if user.rol == 'a' or user.rol == 'sa' %}
-                    <a href="{% url 'tramite:tramite_pdf' tramite.numero_tramite %}" target="_blank" class="btn btn-indigo btn-lg rounded-pill px-4 shadow-sm ms-2">
-                        <i class="bi bi-printer-fill me-2"></i> IMPRIMIR TODO
-                    </a>
-                {% endif %}
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="row g-4 g-xl-5">
-        
-        <div class="col-lg-8">
-            <div class="card modern-card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-0">
-                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-0">
-                        <i class="bi bi-info-square text-indigo me-2"></i>Información del Trámite
-                    </h6>
-                    <h3 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-4 mb-0">
-                        {{ tramite.operador }}
-                    </h3>
-                </div>
-                
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="info-box">
-                                <label class="info-label">Tipo de Trámite</label>
-                                <span class="fw-bold text-indigo fs-6 d-block">{{ tramite.get_tipo_tramite_display }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="info-box">
-                                <label class="info-label">Fecha de Registro</label>
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-calendar-event text-slate-400 me-2 fs-5"></i>
-                                    <span class="fw-bold text-slate-800 fs-6">{{ tramite.fecha_registro|date:"d \d\e F \d\e Y, H:i" }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h6 class="fw-bold text-slate-700 text-uppercase tracking-wider fs-8 mb-3 mt-4 pt-4 border-top border-slate-100">
-                        <i class="bi bi-file-earmark-medical text-slate-400 me-2"></i>Documentos Adjuntos
-                    </h6>
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="file-box p-3 rounded-4 border border-slate-200 transition-all d-flex align-items-center justify-content-between h-100">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon-circle-sm bg-red-50 text-danger me-3 flex-shrink-0">
-                                        <i class="bi bi-file-earmark-pdf-fill"></i>
-                                    </div>
-                                    <div>
-                                        <span class="fw-bold text-slate-800 d-block lh-1 mb-1">Informe Técnico</span>
-                                        {% if not tramite.tramite_file %}<span class="badge bg-slate-100 text-slate-500 fw-medium">No subido</span>{% endif %}
-                                    </div>
-                                </div>
-                                {% if tramite.tramite_file %}
-                                    <a href="{{ tramite.tramite_file.url }}" target="_blank" class="btn btn-sm btn-light-action rounded-circle"><i class="bi bi-eye"></i></a>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="file-box p-3 rounded-4 border border-slate-200 transition-all d-flex align-items-center justify-content-between h-100">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon-circle-sm bg-indigo-50 text-indigo me-3 flex-shrink-0">
-                                        <i class="bi bi-clipboard-check-fill"></i>
-                                    </div>
-                                    <div>
-                                        <span class="fw-bold text-slate-800 d-block lh-1 mb-1">Reporte Final</span>
-                                        {% if not tramite.reporte_file %}<span class="badge bg-slate-100 text-slate-500 fw-medium">No subido</span>{% endif %}
-                                    </div>
-                                </div>
-                                {% if tramite.reporte_file %}
-                                    <a href="{{ tramite.reporte_file.url }}" target="_blank" class="btn btn-sm btn-light-action rounded-circle"><i class="bi bi-eye"></i></a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-footer bg-slate-50 border-top border-slate-100 p-3 text-end rounded-bottom-4">
-                    {% if not tramite.estado_deposito and tramite.reporte_file %}
-                        <a href="{% url 'tramite:editar_tramite' tramite.numero_tramite %}" class="btn btn-sm btn-outline-indigo rounded-pill px-4 fw-medium">
-                            <i class="bi bi-pencil-square me-2"></i> {% if user.rol == 'u' %} Editar Reporte {% else %} Editar Trámite {% endif %}
-                        </a>
-                    {% endif %}
-                    <a href="{% url 'tramite:vista' tramite.numero_tramite %}" class="btn btn-sm btn-outline-indigo rounded-pill px-4 fw-medium">
-                        <i class="bi bi-pencil-square me-2"></i> Vista previa
-                    </a>
-                </div>
-            </div>
-
-            {% if tarjetas and tramite.estado_tramite == 'validado' %}
-                <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
-                    <h5 class="fw-bold text-slate-800 mb-0 d-flex align-items-center">
-                        <i class="bi bi-credit-card-2-front text-indigo me-2"></i> Tarjetas Asociadas
-                    </h5>
-                    <span class="badge bg-slate-800 text-white rounded-pill px-3 py-2 fs-8">{{ tarjetas.count }} Generadas</span>
-                </div>
-                
-                <div class="row g-3">
-                    {% for tarjeta in tarjetas %}
-                    <div class="col-12">
-                        <div class="p-3 border border-slate-200 rounded-4 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between bg-white shadow-sm transition-all hover-lift">
-                            
-                            <div class="d-flex align-items-center mb-3 mb-sm-0">
-                                <div class="placa-badge shadow-sm me-4 flex-shrink-0">
-                                    <span class="placa-text">{{ tarjeta.vehiculo.placa }}</span>
-                                    <div class="placa-footer">BOLIVIA</div>
-                                </div>
-                                
-                                <div>
-                                    <span class="fw-bold text-slate-800 d-block fs-6 mb-1">{{ tarjeta.vehiculo.marca }} <span class="text-slate-400 fw-normal">|</span> {{ tarjeta.vehiculo.tipo_vehiculo }}</span>
-                                    <div class="text-slate-500 fs-8 d-flex align-items-center text-truncate" style="max-width: 250px;" title="{{ tarjeta.ruta.nombre }}">
-                                        <i class="bi bi-signpost-split text-indigo me-1"></i> {{ tarjeta.ruta.ruta|default:"Ruta no especificada" }}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="text-start text-sm-end border-top border-sm-0 pt-2 pt-sm-0 mt-2 mt-sm-0 border-slate-100">
-                                <label class="info-label mb-0">Monto Abonado</label>
-                                <div class="fw-bolder text-slate-900 font-monospace fs-5 mb-1">Bs. {{ tarjeta.monto }}</div>
-                                <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}" class="text-indigo fs-8 fw-bold text-decoration-none hover-underline">
-                                    Ver credencial <i class="bi bi-arrow-right-short"></i>
-                                </a>
-                            </div>
-                            
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-        </div>
-
-        <div class="col-lg-4">
-            
-            {% if user.rol == 'a' or user.rol == 'sa' %}
-                {% if tramite.estado_tramite == 'validado' and tramite.reporte_file and tramite.tramite_file %}
-                    
-                    <div class="card modern-card border-0 shadow-sm mb-4 status-indicator {% if tramite.estado_deposito %}is-success{% else %}is-warning{% endif %}">
-                        <div class="card-body p-4">
-                            <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-4 border-bottom border-slate-100 pb-2">
-                                <i class="bi bi-wallet2 text-slate-400 me-2"></i>Estado Financiero
-                            </h6>
-                            
-                            {% if n_tarjetas > 0 %}
-                                {% if tramite.estado_deposito %}
-                                    <div class="text-center py-3">
-                                        <div class="icon-circle-large bg-emerald-50 text-emerald-600 mx-auto mb-3 shadow-sm border border-emerald-100">
-                                            <i class="bi bi-check-lg"></i>
-                                        </div>
-                                        <h5 class="fw-bold text-slate-800 mb-1">Pago Confirmado</h5>
-                                        <p class="text-slate-500 fs-7 mb-0 lh-sm">El comprobante ha sido procesado exitosamente. El trámite está finalizado.</p>
-                                    </div>
-                                {% else %}
-                                    <div class="alert bg-warning-50 border border-warning-200 text-warning rounded-3 fs-7 fw-medium mb-4 p-3 shadow-sm d-flex align-items-start">
-                                        <i class="bi bi-exclamation-triangle-fill fs-5 me-2 mt-1"></i> 
-                                        <span>Pendiente de registro de comprobante bancario.</span>
-                                    </div>
-                                    <form method="POST" id="formDeposito" class="custom-form needs-confirmation" data-form-type="deposito">
-                                        {% csrf_token %}
-                                        <label class="info-label text-slate-500 mb-2">Registrar Depósito</label>
-                                        <div class="mb-3 form-inputs-wrapper bg-white p-2 rounded-3 border border-slate-100 shadow-sm">
-                                            {{ form_deposito.as_p }}
-                                        </div>
-                                        <button type="button" class="btn btn-warning-custom w-100 rounded-pill shadow-sm fw-bold btn-confirm-trigger">
-                                            Notificar Depósito <i class="bi bi-arrow-right ms-1"></i>
-                                        </button>
-                                        <button type="submit" name="btn_deposito" class="d-none real-submit-btn"></button>
-                                    </form>
-                                {% endif %}
-                            {% else %}
-                                <div class="text-center py-4 bg-slate-50 rounded-4 border border-slate-200 border-dashed">
-                                    <i class="bi bi-credit-card-2-front text-slate-300 fs-1 d-block mb-2"></i>
-                                    <p class="text-slate-500 fs-7 mb-0 px-3">Debe agregar tarjetas al trámite para habilitar el pago.</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endif %}
-            {% endif %}
-
-            {% if user.rol == 'u' and not tramite.reporte_file %}
-            <div class="card modern-card border-0 shadow-sm mb-4 status-indicator is-indigo">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-3">
-                        <i class="bi bi-cloud-arrow-up text-indigo me-2"></i>Cargar Reporte Final
-                    </h6>
-                    <form method="POST" enctype="multipart/form-data" id="formReporte" class="custom-form file-input-modern needs-confirmation" data-form-type="reporte">
+                    <form method="POST" id="formDeposito" class="needs-confirmation" data-form-type="deposito">
                         {% csrf_token %}
-                        <div class="form-inputs-wrapper mb-3 bg-slate-50 p-3 rounded-4 border border-slate-100">
-                            {{ form_reporte.as_p }}
-                        </div>
-                        <button type="button" class="btn btn-indigo w-100 rounded-pill shadow-sm btn-confirm-trigger">
-                            Subir Documento <i class="bi bi-send ms-1"></i>
-                        </button>
-                        <button type="submit" name="btn_reporte" class="d-none real-submit-btn"></button>
+                        {{ form_deposito.as_p }}
+                        
+                        <button type="button" class="btn-confirm-trigger">Notificar Depósito</button>
+                        <button type="submit" name="btn_deposito" class="real-submit-btn" style="display:none;"></button>
                     </form>
-                </div>
-            </div>
-            {% endif %}
-
-            {% if user.rol == 'a' or user.rol == 'sa' %}
-                {% if tramite.estado_tramite == 'validado' and tramite.reporte_file and tramite.tramite_file and not tramite.estado_deposito %}
-                <div class="card modern-card border-0 shadow-sm bg-indigo-50 border border-indigo-100">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold text-indigo-dark text-uppercase tracking-wider fs-8 mb-4 d-flex align-items-center">
-                            <div class="icon-circle-sm bg-white text-indigo shadow-sm me-2"><i class="bi bi-plus-lg"></i></div>
-                            Añadir Tarjeta de Operación
-                        </h6>
-                        <form method="POST" id="formTarjeta" class="custom-form small-forms needs-confirmation" data-form-type="tarjeta">
-                            {% csrf_token %}
-                            <div class="form-inputs-wrapper bg-white p-3 rounded-4 shadow-sm mb-3">
-                                {{ form_tarjeta.as_p }}
-                            </div>
-                            <button type="button" class="btn btn-indigo w-100 rounded-pill shadow-sm btn-confirm-trigger">
-                                Registrar Nueva Tarjeta
-                            </button>
-                            <button type="submit" name="btn_tarjeta" class="d-none real-submit-btn"></button>
-                        </form>
-                    </div>
-                </div>
                 {% endif %}
+            {% else %}
+                <p>Debe agregar tarjetas al trámite para habilitar el pago.</p>
             {% endif %}
+        {% endif %}
+    {% endif %}
 
-        </div>
+    {% if user.rol == 'u' and not tramite.informe_tecnico %}
+        <h4>Informe Tecnico</h4>
+        <form method="POST" enctype="multipart/form-data" id="formReporte" class="needs-confirmation" data-form-type="reporte">
+            {% csrf_token %}
+            {{ form_informe_tecnico.as_p }}
+            
+            <button type="button" class="btn-confirm-trigger">Subir Documento</button>
+            <button type="submit" name="btn_reporte" class="real-submit-btn" style="display:none;"></button>
+        </form>
+    {% endif %}
+
+    {% if user.rol == 'a' or user.rol == 'sa' and tramite.informe_tecnico %}
+        <h4>Agregar Informe Legal y Resolucion Administrativa</h4>
+        <form method="POST" enctype="multipart/form-data" id="formReporte" class="needs-confirmation" data-form-type="reporte">
+            {% csrf_token %}
+            {{ form_informe_resolucion.as_p }}
+            
+            <button type="button" class="btn-confirm-trigger">Subir Documento</button>
+            <button type="submit" name="btn_informe_resolucion" class="real-submit-btn" style="display:none;"></button>
+        </form>
+    {% endif %}
+
+    {% if user.rol == 'a' or user.rol == 'sa' %}
+        {% if tramite.estado == 'v' and tramite.informe_tecnico and not tramite.estado_deposito %}
+            <h4>Añadir Tarjeta de Operación</h4>
+            <form method="POST" id="formTarjeta" class="needs-confirmation small-forms" data-form-type="tarjeta">
+                {% csrf_token %}
+                {{ form_tarjeta.as_p }}
+                <button type="button" class="btn-confirm-trigger">Registrar Nueva Tarjeta</button>
+                <button type="submit" name="btn_tarjeta" class="real-submit-btn" style="display:none;"></button>
+            </form>
+        {% endif %}
+    {% endif %}
+
+
+    <div id="modalConfirmacionForms" style="display:none; border: 2px solid black; padding: 20px; margin-top: 20px; background: #eee;">
+        <h3>Confirmar Acción</h3>
+        <p>Por favor, verifique los datos ingresados antes de continuar:</p>
+        <ul id="listaPreviewModal"></ul>
+        
+        <button type="button" onclick="document.getElementById('modalConfirmacionForms').style.display='none'">Cancelar</button>
+        <button type="button" id="btnConfirmarAccionModal">Sí, Confirmar</button>
     </div>
-</div>
 
-<div class="modal fade" id="modalConfirmacionForms" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <div class="modal-header border-bottom border-slate-100 bg-slate-50 px-4 py-3">
-                <h5 class="modal-title fw-bold text-slate-800 d-flex align-items-center">
-                    <i class="bi bi-check-circle-fill text-indigo me-2"></i> Confirmar Acción
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <p class="text-slate-600 mb-4 fs-7">Por favor, verifique los datos ingresados antes de continuar.</p>
+    <div id="modalNuevaRuta" style="display:none; border: 2px solid blue; padding: 20px; margin-top: 20px; background: #eef;">
+        <h3>Agregar Nueva Ruta</h3>
+        <form id="formNuevaRuta">
+            {% csrf_token %}
+            <label>Nombre de la Ruta:</label>
+            <input type="text" id="id_nueva_ruta" name="ruta" required>
+            
+            <button type="button" onclick="document.getElementById('modalNuevaRuta').style.display='none'">Cancelar</button>
+            <button type="submit">Guardar Ruta</button>
+        </form>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // --- 1. Botón para abrir modal de "Nueva Ruta" al lado del Select ---
+        const rutaSelect = document.getElementById('id_tarjeta-ruta');
+        if (rutaSelect) {
+            const btnAñadirRuta = document.createElement('button');
+            btnAñadirRuta.type = 'button';
+            btnAñadirRuta.innerText = '+ Nueva Ruta';
+            // Al hacer clic, mostramos el div oculto nativamente (sin Bootstrap)
+            btnAñadirRuta.onclick = () => document.getElementById('modalNuevaRuta').style.display = 'block';
+            rutaSelect.parentNode.insertBefore(btnAñadirRuta, rutaSelect.nextSibling);
+        }
+
+        // --- 2. Inicializar Select2 ---
+        $('.small-forms select').select2({ width: '100%', placeholder: "Buscar..." });
+
+        // --- 3. AJAX: Enviar Nueva Ruta ---
+        const formNuevaRuta = document.getElementById('formNuevaRuta');
+        if (formNuevaRuta) {
+            formNuevaRuta.addEventListener('submit', function(e) {
+                e.preventDefault(); 
+                fetch("{% url 'tarjeta:crear_ruta_ajax' %}", {
+                    method: "POST",
+                    body: new FormData(formNuevaRuta),
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Agregar nueva opción al select
+                        const nuevaOpcion = new Option(data.nombre, data.id, true, true);
+                        rutaSelect.add(nuevaOpcion); 
+                        $(rutaSelect).trigger('change');
+                        
+                        // Cerrar modal y limpiar
+                        document.getElementById('modalNuevaRuta').style.display = 'none';
+                        formNuevaRuta.reset();
+                    } else {
+                        alert("Error al guardar la ruta.");
+                    }
+                });
+            });
+        }
+
+        // --- 4. Lógica: Extraer datos y mostrar Modal Genérico de Confirmación ---
+        let formActivo = null;
+        const modalConfirmacion = document.getElementById('modalConfirmacionForms');
+        const listaPreview = document.getElementById('listaPreviewModal');
+        const btnConfirmar = document.getElementById('btnConfirmarAccionModal');
+
+        // Auxiliar: Leer valor de los inputs
+        function leerValor(idInput, esSelect2 = false) {
+            if (esSelect2) {
+                const data = $('#' + idInput).select2('data');
+                return (data.length > 0 && data[0].id) ? data[0].text : 'No seleccionado';
+            }
+            const el = document.getElementById(idInput);
+            if (!el) return 'N/A';
+            if (el.tagName === 'SELECT') return el.options[el.selectedIndex]?.text || 'N/A';
+            if (el.type === 'file') return el.files.length > 0 ? el.files[0].name : 'Sin archivo';
+            return el.value || 'Vacío';
+        }
+
+        // Cuando presionan cualquier botón de "Guardar" de los 3 formularios
+        document.querySelectorAll('.btn-confirm-trigger').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const form = this.closest('form.needs-confirmation');
+                const tipoForm = form.getAttribute('data-form-type');
                 
-                <div class="bg-slate-50 p-3 rounded-4 border border-slate-200">
-                    <ul class="list-unstyled mb-0 fs-7 text-slate-700" id="listaPreviewModal">
-                        </ul>
-                </div>
-            </div>
-            <div class="modal-footer border-top border-slate-100 bg-white px-4 py-3">
-                <button type="button" class="btn btn-light-action rounded-pill px-4 m-0" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-indigo rounded-pill px-4 m-0 ms-2" id="btnConfirmarAccionModal">
-                    Sí, Confirmar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="modalNuevaRuta" tabindex="-1" aria-labelledby="modalNuevaRutaLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <div class="modal-header border-bottom border-slate-100 bg-slate-50 px-4 py-3">
-                <h6 class="modal-title fw-bold text-slate-800 d-flex align-items-center" id="modalNuevaRutaLabel">
-                    <div class="icon-circle-sm bg-indigo-50 text-indigo me-2" style="width:30px;height:30px;font-size:0.9rem;"><i class="bi bi-signpost-split"></i></div>
-                    Agregar Nueva Ruta
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <form id="formNuevaRuta" class="custom-form">
-                    {% csrf_token %}
-                    <div class="mb-4">
-                        <label for="id_nueva_ruta" class="form-label text-slate-500 fw-bold fs-8 text-uppercase tracking-wider">Nombre de la Ruta</label>
-                        <input type="text" class="form-control" id="id_nueva_ruta" name="ruta" required placeholder="Ej: Potosí - Uyuni">
-                    </div>
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-light-action rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-indigo rounded-pill px-4" id="btnGuardarRuta">Guardar Ruta</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    /* Estilos Originales ... */
-    .tramite-detalle-container { --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #e0e7ff; --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-600: #475569; --slate-500: #64748b; --slate-400: #94a3b8; --slate-300: #cbd5e1; --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc; --emerald-600: #059669; --emerald-200: #a7f3d0; --emerald-100: #d1fae5; --emerald-50: #ecfdf5; --warning-main: #d97706; --warning-200: #fde68a; --warning-50: #fffbeb; --red-main: #dc2626; --red-200: #fecaca; --red-50: #fef2f2; }
-    .text-indigo { color: var(--indigo); } .text-indigo-light { color: #818cf8; } .text-indigo-dark { color: var(--indigo-dark); } .text-slate-900 { color: var(--slate-900); } .text-slate-800 { color: var(--slate-800); } .text-slate-700 { color: var(--slate-700); } .text-slate-600 { color: var(--slate-600); } .text-slate-500 { color: var(--slate-500); } .text-slate-400 { color: var(--slate-400); } .text-emerald-600 { color: var(--emerald-600); } .text-warning { color: var(--warning-main) !important; } .text-danger { color: var(--red-main) !important; } .bg-slate-50 { background-color: var(--slate-50); } .bg-slate-100 { background-color: var(--slate-100); } .bg-slate-800 { background-color: var(--slate-800); } .bg-indigo-50 { background-color: var(--indigo-light); } .bg-emerald-50 { background-color: var(--emerald-50); } .bg-warning-50 { background-color: var(--warning-50); } .bg-red-50 { background-color: var(--red-50); } .bg-white { background-color: #fff; } .border-slate-100 { border-color: var(--slate-100) !important; } .border-slate-200 { border-color: var(--slate-200) !important; } .border-emerald-200 { border-color: var(--emerald-200) !important; } .border-emerald-100 { border-color: var(--emerald-100) !important; } .border-warning-200 { border-color: var(--warning-200) !important; } .border-red-200 { border-color: var(--red-200) !important; } .border-indigo-100 { border-color: #c7d2fe !important; } .border-dashed { border-style: dashed !important; border-width: 2px !important; } .fs-7 { font-size: 0.85rem; } .fs-8 { font-size: 0.75rem; } .tracking-wider { letter-spacing: 1px; } .font-monospace { font-family: 'Courier New', Courier, monospace; } .hover-underline:hover { text-decoration: underline !important; } .modern-card { border-radius: 16px; background-color: #fff; overflow: hidden;} .status-indicator { position: relative; overflow: hidden; } .status-indicator::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; } .status-indicator.is-success::before { background-color: var(--emerald-600); } .status-indicator.is-warning::before { background-color: var(--warning-main); } .status-indicator.is-indigo::before { background-color: var(--indigo); } .info-box { background-color: var(--slate-50); border: 1px solid var(--slate-100); border-radius: 12px; padding: 1.25rem; height: 100%; display: flex; flex-direction: column; justify-content: center; transition: all 0.2s ease; } .info-label { color: var(--slate-400); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; display: block; } .file-box:hover { background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border-color: var(--slate-300) !important; } .placa-badge { display: inline-flex; flex-direction: column; background-color: #f8fafc; border: 2px solid #cbd5e1; border-radius: 6px; overflow: hidden; min-width: 90px; } .placa-text { font-family: 'Courier New', Courier, monospace; font-weight: 800; font-size: 1rem; color: #1e293b; padding: 2px 8px; letter-spacing: 1px; background-color: #fff; text-align: center;} .placa-footer { background-color: #1e293b; color: #fff; font-size: 0.45rem; font-weight: 700; text-transform: uppercase; width: 100%; text-align: center; padding: 1px 0; letter-spacing: 1px; } .hover-lift { transition: all 0.2s ease; } .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; border-color: var(--indigo-light) !important; } .icon-circle-large { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; } .icon-circle-sm { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; } .btn-light-action { background-color: #fff; border: 1px solid var(--slate-200); color: var(--slate-700); font-weight: 600; transition: all 0.2s; } .btn-light-action:hover { background-color: var(--slate-50); color: var(--indigo); border-color: var(--slate-300); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05);} .btn-outline-indigo { border: 1px solid var(--indigo); color: var(--indigo); transition: 0.2s; font-weight: 600; background: transparent;} .btn-outline-indigo:hover { background: var(--indigo); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); } .btn-indigo { background-color: var(--indigo); color: white; transition: 0.2s; font-weight: 600; border: none;} .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); } .btn-warning-custom { background-color: var(--warning-main); color: white; border: none; transition: 0.2s; } .btn-warning-custom:hover { background-color: #b45309; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25); } .form-inputs-wrapper p { margin-bottom: 1rem; } .form-inputs-wrapper p label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.3rem; display: block; } .custom-form input[type="text"], .custom-form input[type="number"], .custom-form input[type="file"], .custom-form select { width: 100%; background-color: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.6rem 1rem; color: var(--slate-700); transition: 0.2s; font-size: 0.9rem; } .custom-form input:focus, .custom-form select:focus { background-color: #fff; border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-light); outline: none; } .file-input-modern input[type="file"] { width: 100%; font-size: 0.85rem; color: var(--slate-500); background: transparent; border: none; padding: 0;} .file-input-modern input[type="file"]::file-selector-button { background-color: #fff; color: var(--slate-700); border: 1px solid #cbd5e1; padding: 0.4rem 0.8rem; border-radius: 8px; margin-right: 1rem; cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 0.85rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); } .file-input-modern input[type="file"]::file-selector-button:hover { background-color: var(--slate-50); border-color: var(--indigo-light); color: var(--indigo);} .select2-container--bootstrap-5 .select2-selection { background-color: #fff !important; border: 1px solid #e2e8f0 !important; border-radius: 10px !important; min-height: 40px !important; padding: 0.2rem 0.5rem; display: flex; align-items: center; } .select2-container--bootstrap-5.select2-container--focus .select2-selection { background-color: #fff !important; border-color: var(--indigo) !important; box-shadow: 0 0 0 3px var(--indigo-light) !important; } .animate-up { opacity: 0; transform: translateY(15px); animation: fadeInUp 0.5s ease forwards; } @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-</style>
-
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    
-    // --- Lógica del Botón Nueva Ruta ---
-    const rutaSelect = document.getElementById('id_tarjeta-ruta');
-    if (rutaSelect) {
-        const btnAñadirRuta = document.createElement('button');
-        btnAñadirRuta.type = 'button';
-        btnAñadirRuta.className = 'btn btn-indigo ms-2 d-flex align-items-center justify-content-center px-3';
-        btnAñadirRuta.setAttribute('data-bs-toggle', 'modal');
-        btnAñadirRuta.setAttribute('data-bs-target', '#modalNuevaRuta');
-        btnAñadirRuta.style.borderRadius = '10px';
-        btnAñadirRuta.innerHTML = '<i class="bi bi-plus-lg"></i>';
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'd-flex align-items-stretch w-100'; 
-        rutaSelect.parentNode.insertBefore(wrapper, rutaSelect);
-        wrapper.appendChild(rutaSelect);
-        wrapper.appendChild(btnAñadirRuta);
-        rutaSelect.style.marginBottom = '0'; 
-    }
-
-    // --- Inicializar Select2 ---
-    $('.small-forms select').select2({
-        theme: 'bootstrap-5',
-        width: '100%',
-        placeholder: "Buscar y seleccionar...",
-        allowClear: true
-    });
-
-    // --- Lógica de AJAX Nueva Ruta ---
-    const formNuevaRuta = document.getElementById('formNuevaRuta');
-    if (formNuevaRuta) {
-        formNuevaRuta.addEventListener('submit', function(e) {
-            e.preventDefault(); 
-            const formData = new FormData(formNuevaRuta);
-            fetch("{% url 'tarjeta:crear_ruta_ajax' %}", {
-                method: "POST",
-                body: formData,
-                headers: { "X-Requested-With": "XMLHttpRequest" }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const nuevaOpcion = new Option(data.nombre, data.id, true, true);
-                    rutaSelect.add(nuevaOpcion); 
-                    $(rutaSelect).trigger('change');
-                    const modalInstance = bootstrap.Modal.getInstance(document.getElementById('modalNuevaRuta'));
-                    if (modalInstance) { modalInstance.hide(); }
-                    document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-                    document.body.classList.remove('modal-open');
-                    document.body.style.overflow = '';
-                    document.body.style.paddingRight = '';
-                    formNuevaRuta.reset();
-                } else {
-                    alert("Hubo un error al guardar.");
+                if (!form.checkValidity()) {
+                    form.reportValidity(); return;
                 }
-            })
-            .catch(error => console.error('Error:', error));
+
+                formActivo = form;
+                listaPreview.innerHTML = '';
+                let html = '';
+
+                // Construimos la lista de resumen según qué formulario sea
+                if (tipoForm === 'deposito') {
+                    html += `<li>Depósito: ${leerValor('id_deposito-numero_deposito')}</li>`;
+                    html += `<li>Monto: Bs. ${leerValor('id_deposito-monto_deposito')}</li>`;
+                } else if (tipoForm === 'reporte') {
+                    html += `<li>Archivo: ${leerValor('id_reporte-reporte_file')}</li>`;
+                } else if (tipoForm === 'tarjeta') {
+                    html += `<li>Afiliado: ${leerValor('id_tarjeta-afiliado', true)}</li>`;
+                    html += `<li>Placa: ${leerValor('id_tarjeta-vehiculo', true)}</li>`;
+                    html += `<li>Ruta: ${leerValor('id_tarjeta-ruta', true)}</li>`;
+                    html += `<li>Monto: Bs. ${leerValor('id_tarjeta-monto')}</li>`;
+                }
+
+                // Mostrar el modal
+                listaPreview.innerHTML = html;
+                modalConfirmacion.style.display = 'block';
+            });
         });
-    }
 
-    // ==========================================
-    // LÓGICA DE CONFIRMACIÓN MULTI-FORMULARIOS
-    // ==========================================
-    let activeFormToSubmit = null;
-    const confirmModal = new bootstrap.Modal(document.getElementById('modalConfirmacionForms'));
-    const listaPreview = document.getElementById('listaPreviewModal');
-    const btnConfirmar = document.getElementById('btnConfirmarAccionModal');
-
-    // Función auxiliar para obtener el texto de un input
-    function getInputValue(inputId, isSelect2 = false) {
-        if (isSelect2) {
-            const data = $('#' + inputId).select2('data');
-            return (data.length > 0 && data[0].id) ? data[0].text : 'No seleccionado';
-        }
-        const el = document.getElementById(inputId);
-        if (!el) return 'N/A';
-        if (el.tagName === 'SELECT') {
-            return el.selectedIndex !== -1 ? el.options[el.selectedIndex].text : 'No seleccionado';
-        }
-        if (el.type === 'file') {
-            return el.files.length > 0 ? el.files[0].name : 'Sin archivo';
-        }
-        return el.value || 'Vacío';
-    }
-
-    // Función auxiliar para crear un item de la lista (HTML)
-    function createPreviewItem(label, value, isLast = false) {
-        const borderClass = isLast ? '' : 'border-bottom border-slate-200 pb-2 mb-3';
-        return `
-            <li class="${borderClass}">
-                <span class="d-block text-slate-400 text-uppercase fw-bold fs-8 tracking-wider mb-1">${label}</span>
-                <span class="fw-bold text-slate-900 ${value.includes('.') ? 'font-monospace' : ''}">${value}</span>
-            </li>
-        `;
-    }
-
-    // Interceptamos todos los botones que abren la confirmación
-    document.querySelectorAll('.btn-confirm-trigger').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            const form = this.closest('form.needs-confirmation');
-            const formType = form.getAttribute('data-form-type');
-            
-            // Validar HTML5
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
+        // 5. Confirmación final
+        btnConfirmar.addEventListener('click', function() {
+            if (formActivo) {
+                btnConfirmar.innerText = "Guardando...";
+                btnConfirmar.disabled = true;
+                // Clickea el botón submit real invisible
+                formActivo.querySelector('.real-submit-btn').click(); 
             }
-
-            activeFormToSubmit = form;
-            listaPreview.innerHTML = ''; // Limpiar lista
-            let htmlContent = '';
-
-            // Armar el preview dependiendo del formulario que se tocó
-            if (formType === 'deposito') {
-                htmlContent += createPreviewItem('Número de Depósito', getInputValue('id_deposito-numero_deposito'));
-                htmlContent += createPreviewItem('Monto Depositado', 'Bs. ' + getInputValue('id_deposito-monto_deposito'));
-                htmlContent += createPreviewItem('Fecha del Depósito', getInputValue('id_deposito-fecha_deposito'), true);
-            
-            } else if (formType === 'reporte') {
-                htmlContent += createPreviewItem('Documento PDF', getInputValue('id_reporte-reporte_file'), true);
-            
-            } else if (formType === 'tarjeta') {
-                htmlContent += createPreviewItem('Afiliado', getInputValue('id_tarjeta-afiliado', true));
-                htmlContent += createPreviewItem('Vehículo (Placa)', getInputValue('id_tarjeta-vehiculo', true));
-                htmlContent += createPreviewItem('Ruta', getInputValue('id_tarjeta-ruta', true));
-                htmlContent += createPreviewItem('Tipo de Tarjeta', getInputValue('id_tarjeta-tipo_tarjeta'));
-                htmlContent += createPreviewItem('Monto a Pagar', 'Bs. ' + getInputValue('id_tarjeta-monto'), true);
-            }
-
-            listaPreview.innerHTML = htmlContent;
-            confirmModal.show();
         });
-    });
 
-    // Acción final al confirmar el Modal
-    btnConfirmar.addEventListener('click', function() {
-        if (activeFormToSubmit) {
-            btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Guardando...';
-            btnConfirmar.disabled = true;
-            
-            // Buscamos el botón "real" (oculto) dentro de ese formulario específico y lo clickeamos
-            const realBtn = activeFormToSubmit.querySelector('.real-submit-btn');
-            if(realBtn) realBtn.click();
-        }
     });
-
-});
-</script>
+    </script>
 {% endblock %}

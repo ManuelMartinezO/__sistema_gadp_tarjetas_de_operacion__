@@ -8,7 +8,6 @@ from django.contrib.auth import login, logout
 from django.db import transaction
 from apps.usuario.permisos import es_admin, es_usuario_normal, es_superadmin
 from apps.operador.models import Operador
-from apps.operador.forms import OperadorForm
 from django.contrib import messages
 
 # # Función auxiliar para el decorador: verifica si es superusuario
@@ -82,7 +81,7 @@ def operador_list(request):
 @user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def crear_operador(request):
     if request.method == 'POST':
-        form = OperadorForm(request.POST)
+        form = PerfilForm(request.POST)
         if form.is_valid():
             operador = form.save()
             messages.success(request, f"Operador '{operador.nombre}' registrado con éxito.")
@@ -90,22 +89,22 @@ def crear_operador(request):
         else:
             messages.error(request, "Error al registrar. Verifique los datos.")
     else:
-        form = OperadorForm()
+        form = PerfilForm()
         
     return render(request, 'gestion/operador_form.html', {'form': form, 'accion': 'Crear'})
 
-@login_required
-@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
+# @login_required
+# @user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def editar_operador(request, pk):
     operador = get_object_or_404(Operador, pk=pk)
     if request.method == 'POST':
-        form = OperadorForm(request.POST, instance=operador)
+        form = PerfilForm(request.POST, instance=operador)
         if form.is_valid():
             form.save()
             messages.success(request, f"Operador '{operador.nombre}' actualizado correctamente.")
             return redirect('gestion:operador_list')
     else:
-        form = OperadorForm(instance=operador)
+        form = PerfilForm(instance=operador)
         
     return render(request, 'gestion/operador_form.html', {'form': form, 'accion': 'Editar'})
 

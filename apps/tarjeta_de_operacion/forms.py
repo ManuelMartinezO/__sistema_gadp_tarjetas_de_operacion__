@@ -1,5 +1,5 @@
 from django import forms
-from .models import TarjetaDeOperacion, Ruta
+from .models import TarjetaDeOperacion
 
 class BootstrapFormMixin:
     def __init__(self, *args, **kwargs):
@@ -16,13 +16,7 @@ class BootstrapFormMixin:
                     'style': 'border-radius: 10px;'
                 })
 
-class RutaForm(BootstrapFormMixin, forms.ModelForm):
-    class Meta:
-        model = Ruta
-        fields = ['ruta']
-        # widgets = {
-        #     'ruta': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Potosí - Uyuni'}),
-        # }
+
 
 # class RecorridoForm(forms.ModelForm):
 #     class Meta:
@@ -41,18 +35,19 @@ class TarjetaDeOperacionForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = TarjetaDeOperacion
         fields = [
-                  'afiliado', 
-                  'vehiculo', 
-                  'tipo_tarjeta',
-                  'ruta',
-                  'hora_recorrido',
-                  'viceversa',
-                  'monto',
-                  'validez_periodo', 
-                  'validez_tiempo']
-        widgets = {
-            'viceversa': forms.CheckboxInput(attrs={'class': 'form-check-input'})
-        }
+                #   'afiliado', 
+                # #   'vehiculo', 
+                # #   'tipo_tarjeta',
+                # #   'ruta',
+                # #   'hora_recorrido',
+                # #   'viceversa',
+                # #   'monto',
+                # #   'validez_periodo', 
+                #   'validez_tiempo'
+                  ]
+        # widgets = {
+        #     'viceversa': forms.CheckboxInput(attrs={'class': 'form-check-input'})
+        # }
         
     #     widgets = {
     #         # 'tramite': forms.Select(attrs={'class': 'form-select'}),

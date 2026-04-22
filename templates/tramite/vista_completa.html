@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<div>
+    <h3>NUMERO DE TRAMITE: {{ tramite.numero }}</h3>
+    <p><strong>Tipo:</strong> {{ tramite.get_tipo_display }}</p>
+    <p><strong>Licencia:</strong> {{ tramite.get_licencia_display }}</p>
+    <p><strong>Ruta:</strong> {{ tramite.rutas }}</p>
+    <h4>Documentos</h4>
+    <ul>
+        <li>Informe Técnico: {% if tramite.informe_tecnico %}<a href="{{ tramite.informe_tecnico.url }}">Ver</a>{% else %}No subido{% endif %}</li>
+        <li>Informe Legal: {% if tramite.informe_legal %}<a href="{{ tramite.informe_legal.url }}">Ver</a>{% else %}No subido{% endif %}</li>
+        <li>Resolucion Administrativa: {% if tramite.resolucion_administrativa %}<a href="{{ tramite.resolucion_administrativa.url }}">Ver</a>{% else %}No subido{% endif %}</li>
+    </ul>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h5>INFORME TECNICO</h5>
+    {{ form_informe_tecnico.as_p }}
+    <button name="btn_inf_tecnico" type="submit">
+        SUBIR INFORME TECNICO
+    </button>
+</form>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h5>INFORME Y RESOLUCION</h5>
+    {{ form_informe_resolucion.as_p }}
+    <button name="btn_inf_res" type="submit">
+        SUBIR DOCUMENTO
+    </button>
+</form>
+
+<form method="POST">
+    {% csrf_token %}
+    <h5>DEPOSITOS</h5>
+    {{ form_deposito.as_p }}
+    <button name="btn_deposito" type="submit">
+        AGREGAR DEPOSITO
+    </button>
+</form>
+
+<div>
+    <ul>
+        {% for deposito in depositos %}
+        <li>{{ deposito.numero }} - {{ deposito.monto }} Bs - {{ deposito.fecha_deposito }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<form method="POST">
+    {% csrf_token %}
+    <h5>MARCA VEHICULO</h5>
+    {{ form_marcaVehiculo.as_p }}
+    <button name="btn_marcaV" type="submit">
+        CREAR
+    </button>
+</form>
+
+<form method="POST">
+    {% csrf_token %}
+    <h5>TIPO VEHICULO</h5>
+    {{ form_tipoVehiculo.as_p }}
+    <button name="btn_tipoV" type="submit">
+        CREAR
+    </button>
+</form>
+
+<form method="POST">
+    {% csrf_token %}
+    <h5>afiliado</h5>
+    {{ form_afiliado.nombre_completo }}
+    <h5>vehiculo</h5>
+    {{ form_vehiculo.as_p }}
+    <button name="btn_tarjeta" type="submit">
+        ENVIAR
+    </button>
+</form>
+<datalist id="lista_afiliados">
+    {% for afiliado in afiliados_existentes %}
+        <option value="{{ afiliado.nombre_completo }}"></option>
+    {% endfor %}
+</datalist>
+
+<div>
+    <h5>LISTA DE TARJETAS</h5>
+    <ul>
+        {% for tarjeta in tarjetas %}
+        <li>
+            <strong>ID</strong> {{ tarjeta.id }} -
+            <strong>PLACA</strong> {{ tarjeta.vehiculo.placa }} -
+            <strong>PROPIETARIO</strong> {{ tarjeta.vehiculo.propietario }} -
+            <strong>AFILIADO</strong> {{ tarjeta.vehiculo.afiliado.nombre_completo }} -
+            <strong>VALOR</strong> {{ tarjeta.monto }} -
+            <strong>RUTA</strong> {{ tarjeta.ruta }} -
+            <strong>LICENCIA</strong> {{ tarjeta.licencia }} -
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

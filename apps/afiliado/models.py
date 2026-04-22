@@ -5,10 +5,9 @@ class Afiliado(models.Model):
     operador = models.ForeignKey(
         Operador,
         on_delete=models.PROTECT,
-        related_name='afiliados'
+        related_name='afiliado_operador'
     )
-    nombre = models.CharField(max_length=200)
-    apellido = models.CharField(max_length=200)
+    nombre_completo = models.CharField(max_length=500)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -8,70 +8,107 @@ class BootstrapFormMixin:
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control', 'style': 'border-radius: 10px;'})
 
-class TramiteEviadoForm(BootstrapFormMixin, forms.ModelForm):
+class NuevoTramiteForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Tramite
         fields = [
             'usuario',
             'operador',
+            'tipo',
+            'licencia',
             'fojas',
-            'tipo_tramite',
-            'tramite_file',
+            'rutas',
         ]
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        # Sobrescribimos el queryset del campo 'usuario' para filtrar solo por rol 'u'
-        if 'usuario' in self.fields:
-            self.fields['usuario'].queryset = Usuario.objects.filter(rol='u', is_active=True)
 
-class EditarTramiteForm(BootstrapFormMixin, forms.ModelForm):
+class InformeTecnicoForm(forms.ModelForm):
     class Meta:
         model = Tramite
         fields = [
-            'usuario',
-            'tipo_tramite',
+            'informe_tecnico',
+            'estado',
+            'observacion',
         ]
 
-class EditarInformeForm(BootstrapFormMixin, forms.ModelForm):
+class InformeAndResolucionForm(forms.ModelForm):
     class Meta:
         model = Tramite
         fields = [
-            'tramite_file'
+            'informe_legal',
+            'resolucion_administrativa',
         ]
 
-class EditarReporteForm(BootstrapFormMixin, forms.ModelForm):
-    class Meta:
-        model = Tramite
-        fields = [
-            'reporte_file'
-        ]
-
-class EditarEstadoForm(BootstrapFormMixin, forms.ModelForm):
-    class Meta:
-        model = Tramite
-        fields = [
-            'estado_tramite'
-        ]
-
-class TramiteReportadoForm(BootstrapFormMixin, forms.ModelForm):
-    class Meta:
-        model = Tramite
-        fields = [
-            'reporte_file',
-            'estado_tramite',
-        ]
-
-class DepositoForm(BootstrapFormMixin, forms.ModelForm):
+class DepositoForm(forms.ModelForm):
     class Meta:
         model = Deposito
-        fields = ['numero_deposito', 
-                  'monto_deposito', 
-                  'fecha_deposito']
+        fields = [
+            'numero', 
+            'monto', 
+            'fecha_deposito',
+        ]
         widgets = {
-            'fecha_deposito': forms.DateTimeInput(attrs={
-                'class': 'form-control', 
-                'type': 'datetime-local'
-            }),
+            'fecha_deposito': forms.DateInput(
+                # format='%Y-%m-%d' # Opcional: si necesitas un formato específico al cargar
+                attrs={
+                    'type': 'date', # Esto renderiza el calendario HTML5
+                }
+            ),
         }
+
+
+
+
+
+# class TramiteEviadoForm(BootstrapFormMixin, forms.ModelForm):
+#     class Meta:
+#         model = Tramite
+#         fields = [
+#             'usuario',
+#             'operador',
+#             'fojas',
+#             'tipo_tramite',
+#             'tramite_file',
+#         ]
+    
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+        
+#         # Sobrescribimos el queryset del campo 'usuario' para filtrar solo por rol 'u'
+#         if 'usuario' in self.fields:
+#             self.fields['usuario'].queryset = Usuario.objects.filter(rol='u', is_active=True)
+
+# class EditarTramiteForm(BootstrapFormMixin, forms.ModelForm):
+#     class Meta:
+#         model = Tramite
+#         fields = [
+#             'usuario',
+#             'tipo_tramite',
+#         ]
+
+# class EditarInformeForm(BootstrapFormMixin, forms.ModelForm):
+#     class Meta:
+#         model = Tramite
+#         fields = [
+#             'tramite_file'
+#         ]
+
+# class EditarReporteForm(BootstrapFormMixin, forms.ModelForm):
+#     class Meta:
+#         model = Tramite
+#         fields = [
+#             'reporte_file'
+#         ]
+
+# class EditarEstadoForm(BootstrapFormMixin, forms.ModelForm):
+#     class Meta:
+#         model = Tramite
+#         fields = [
+#             'estado_tramite'
+#         ]
+
+# class TramiteReportadoForm(BootstrapFormMixin, forms.ModelForm):
+#     class Meta:
+#         model = Tramite
+#         fields = [
+#             'reporte_file',
+#             'estado_tramite',
+#         ]
