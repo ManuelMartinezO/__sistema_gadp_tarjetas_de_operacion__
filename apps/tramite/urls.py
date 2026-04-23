@@ -9,5 +9,5 @@ urlpatterns = [
     path('tramite/<int:numero>/', views.vista_completa_tramite, name='detalle_tramite'),
     path('tramite/vista/<int:numero>/', views.vista, name='vista'),
     path('tramite/editar/<int:numero_tramite>/', views.editar_tramite, name='editar_tramite'),
-    path('tramite/pdf/<int:numero_tramite>/', views.generar_pdf_tramite, name='tramite_pdf'),
+    path('tramite/pdf/<int:numero>/', views.generar_pdf_tramite, name='tramite_pdf'),
 ]

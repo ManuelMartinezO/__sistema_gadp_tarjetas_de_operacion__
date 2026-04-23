@@ -2,175 +2,183 @@
 
 {% block content %}
 
-<div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center mb-3">
-    <a href="{% url 'tramite:detalle_tramite' tramite.numero %}" class="btn btn-light-action rounded-pill px-3">
-        <i class="bi bi-arrow-left me-1"></i> Volver
+<div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center mb-3" style="width: 70%;">
+    <a href="{% url 'tramite:detalle_tramite' tramite.numero %}" class="btn btn-light border border-dark rounded-2 shadow-sm px-3 py-1 text-dark fw-bold">
+        <i class="bi bi-arrow-left text-dark me-1" style="stroke-width: 2px;"></i> Volver
     </a>
-    {% if tarjetas and tramite.estado_tramite == 'validado' %}
+    {% if tarjetas and tramite.estado == 'v' %}
         {% if user.rol == 'a' or user.rol == 'sa' %}
-            <a href="{% url 'tramite:tramite_pdf' tramite.numero %}" target="_blank" class="btn btn-indigo btn-lg rounded-pill px-4 shadow-sm ms-2">
-                <i class="bi bi-printer-fill me-2"></i> IMPRIMIR TODO
+            <a href="{% url 'tramite:tramite_pdf' tramite.numero %}" target="_blank" class="btn btn-outline-dark rounded-2 shadow-sm px-3 py-1 ms-1 fw-bold">
+                <i class="bi bi-printer-fill text-dark me-1"></i> Imprimir Todo
             </a>
         {% endif %}
     {% endif %}
 </div>
 
-<h3 style="border-bottom: 1px solid black; width: 70%; margin-bottom: 20px;">TRAMITE: #{{ tramite.numero }}</h3>
+<div style="width: 70%; border-bottom: 2px solid #0f172a; margin-bottom: 15px; padding-bottom: 6px; display: flex; align-items: center;">
+    <i class="bi bi-folder2-open text-dark me-2" style="font-size: 1.4rem;"></i>
+    <h4 style="margin: 0; color: #0f172a; font-weight: 700; font-size: 1.25rem; letter-spacing: 0.5px;">
+        TRAMITE: <span style="color: #8b0000;">#{{ tramite.numero }}</span>
+    </h4>
+</div>
 
 {% for item in tarjetas_data %}
 <form method="POST" id="form-tarjeta-{{ item.obj.id }}">
     {% csrf_token %}
     <input type="hidden" name="tarjeta_id" value="{{ item.obj.id }}">
     
-    <table class="tabla_tarjetas" style="width: 70%; margin-bottom: 30px; border: 1px solid #ddd; padding: 10px; background-color: #fcfcfc;">
+    <table class="tabla_tarjetas" style="width: 70%; margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 6px; border-collapse: separate; border-spacing: 0; padding: 10px; background-color: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        
         <tr>
-            <td colspan="4" style="text-align: right; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+            <td colspan="4" style="text-align: right; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">
                 
-                <button type="button" class="btn btn-sm btn-info text-white vista-{{ item.obj.id }}" style="margin-right: 5px;" onclick="manejarImpresion('{% url 'tarjeta:tarjeta_pdf' item.obj.id %}', '{{ item.obj.estado }}')">
-                    🖨️ Imprimir
+                <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" style="margin-right: 4px;" onclick="manejarImpresion('{% url 'tarjeta:tarjeta_pdf' item.obj.id %}', '{{ item.obj.estado }}')">
+                    <i class="bi bi-printer-fill text-dark me-1"></i> Imprimir
                 </button>
 
-                <button type="button" class="btn btn-sm btn-warning vista-{{ item.obj.id }}" onclick="toggleEdicion('{{ item.obj.id }}', true)">
-                    ✏️ Editar Tarjeta
+                <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" onclick="toggleEdicion('{{ item.obj.id }}', true)">
+                    <i class="bi bi-pencil-square text-dark me-1"></i> Editar Tarjeta
                 </button>
                 
-                <button type="button" class="btn btn-sm btn-success edicion-{{ item.obj.id }}" style="display: none;" onclick="confirmarEdicion('{{ item.obj.id }}')">
-                    💾 Guardar Cambios
+                <button type="button" class="btn btn-sm btn-dark edicion-{{ item.obj.id }} fw-bold py-1 px-2 shadow-sm" style="display: none;" onclick="confirmarEdicion('{{ item.obj.id }}')">
+                    <i class="bi bi-check-circle-fill text-white me-1"></i> Guardar Cambios
                 </button>
-                <button type="button" class="btn btn-sm btn-secondary edicion-{{ item.obj.id }}" style="display: none;" onclick="toggleEdicion('{{ item.obj.id }}', false)">
-                    ❌ Cancelar
+                <button type="button" class="btn btn-sm btn-outline-secondary edicion-{{ item.obj.id }} fw-bold py-1 px-2" style="display: none;" onclick="toggleEdicion('{{ item.obj.id }}', false)">
+                    <i class="bi bi-x-circle-fill text-secondary me-1"></i> Cancelar
                 </button>
             </td>
         </tr>
 
         <tr>
-            <td style="padding-top: 10px;"><b>Nro. Tramite: </b></td>
+            <td class="label-viva" style="padding-top: 10px;">Nro. Tramite:</td>
             <td class="fila_valor" style="padding-top: 10px;">{{ item.obj.tramite.numero }}</td>
-            <td style="padding-top: 10px;"><b>Tecnico: </b></td>
-            <td class="fila_valor" style="padding-top: 10px;">{{ item.obj.tramite.usuario }}</td>
+            <td class="label-viva" style="padding-top: 10px;">Tecnico:</td>
+            <td class="fila_valor text-muted-custom" style="padding-top: 10px;">{{ item.obj.tramite.usuario }}</td>
         </tr>
         <tr>
-            <td><b>Nro. Registro: </b></td>
-            <td class="fila_valor">{{ item.obj.id }}</td>
-            <td><b>Empresa: </b></td>
+            <td class="label-viva">Nro. Registro:</td>
+            <td class="fila_valor">
+                <span class="badge-registro">#{{ item.obj.id }}</span>
+            </td>
+            <td class="label-viva">Empresa:</td>
             <td class="fila_valor">{{ tramite.operador }}</td>
         </tr>
         
         <tr>
-            <td><b>Estado: </b></td>
+            <td class="label-viva">Estado:</td>
             <td class="fila_valor" colspan="3">
-                <span style="padding: 3px 8px; border-radius: 4px; font-weight: bold; color: white;
-                    {% if item.obj.estado == 'p' %}background-color: #ffc107; color: black;
-                    {% elif item.obj.estado == 'e' %}background-color: #28a745;
-                    {% elif item.obj.estado == 'v' %}background-color: #dc3545;{% endif %}">
+                <span class="badge-estado 
+                    {% if item.obj.estado == 'p' %}badge-pendiente
+                    {% elif item.obj.estado == 'e' %}badge-emitida
+                    {% elif item.obj.estado == 'v' %}badge-vencida{% endif %}">
                     {{ item.obj.get_estado_display }}
                 </span>
             </td>
         </tr>
 
         <tr>
-            <td><b>Afiliado: </b></td>
+            <td class="label-viva">Afiliado:</td>
             <td class="fila_valor">
                 <span class="vista-{{ item.obj.id }}">{{ item.obj.afiliado.nombre_completo }}</span>
-                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                <div class="edicion-{{ item.obj.id }} edicion-wrapper" style="display: none;">
                     {{ item.form_tarjeta.nombre_afiliado }}
                 </div>
             </td>
-            <td><b>Propietario: </b></td>
+            <td class="label-viva">Propietario:</td>
             <td class="fila_valor">
                 <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.propietario }}</span>
-                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                <div class="edicion-{{ item.obj.id }} edicion-wrapper" style="display: none;">
                     {{ item.form_vehiculo.propietario }}
                 </div>
             </td>
         </tr>
 
         <tr>
-            <td><b>Placa: </b></td>
+            <td class="label-viva">Placa:</td>
             <td class="fila_valor">
                 <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.placa }}</span>
-                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                <div class="edicion-{{ item.obj.id }} edicion-wrapper" style="display: none;">
                     {{ item.form_vehiculo.placa }}
                 </div>
             </td>
-            <td><b>Tipo Trans.: </b></td>
+            <td class="label-viva">Tipo Trans.:</td>
             <td class="fila_valor">
                 <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.get_transporte_display }}</span>
-                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                <div class="edicion-{{ item.obj.id }} edicion-wrapper" style="display: none;">
                     {{ item.form_vehiculo.transporte }} 
                 </div>
             </td>
         </tr>
         <tr>
-            <td><b>Modelo: </b></td>
+            <td class="label-viva">Modelo:</td>
             <td class="fila_valor">
                 <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.modelo }}</span>
-                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                <div class="edicion-{{ item.obj.id }} edicion-wrapper" style="display: none;">
                     {{ item.form_vehiculo.modelo }}
                 </div>
             </td>
-            <td><b>Marca: </b></td>
+            <td class="label-viva">Marca:</td>
             <td class="fila_valor">
                 <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.marca }}</span>
-                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                <div class="edicion-{{ item.obj.id }} edicion-wrapper" style="display: none;">
                     {{ item.form_vehiculo.marca }} 
                 </div>
             </td>
         </tr>
         <tr>
-            <td><b>Tipo: </b></td>
+            <td class="label-viva">Tipo:</td>
             <td class="fila_valor">
                 <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.tipo }}</span>
-                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                <div class="edicion-{{ item.obj.id }} edicion-wrapper" style="display: none;">
                     {{ item.form_vehiculo.tipo }} 
                 </div>
             </td>
-            <td><b>Chasis: </b></td>
+            <td class="label-viva">Chasis:</td>
             <td class="fila_valor">
                 <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.chasis }}</span>
-                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                <div class="edicion-{{ item.obj.id }} edicion-wrapper" style="display: none;">
                     {{ item.form_vehiculo.chasis }}
                 </div>
             </td>
         </tr>
         <tr>
-            <td><b>Capacidad: </b></td>
+            <td class="label-viva">Capacidad:</td>
             <td class="fila_valor" colspan="3">
                 <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.capacidad }}</span>
-                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                <div class="edicion-{{ item.obj.id }} edicion-wrapper" style="display: none;">
                     {{ item.form_vehiculo.capacidad }}
                 </div>
             </td>
         </tr>
         
         <tr>
-            <td colspan="4"><b>Rutas Autorizadas: </b></td>
+            <td colspan="4" class="label-viva" style="padding-top: 6px;">Rutas Autorizadas:</td>
         </tr>
         <tr>
             <td class="fila_valor" colspan="4">
                 <span class="vista-{{ item.obj.id }}">{{ item.obj.ruta }}</span>
-                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                <div class="edicion-{{ item.obj.id }} edicion-wrapper" style="display: none;">
                     {{ item.form_tarjeta.ruta }}
                 </div>
             </td>
         </tr>
         <tr>
-            <td><b>Validez: </b></td>
-            <td class="fila_valor">{{ item.obj.validez }} Año</td>
+            <td class="label-viva">Validez:</td>
+            <td class="fila_valor">{{ item.obj.validez }} Año(s)</td>
             
-            <td><b>Monto: </b></td>
+            <td class="label-viva">Monto:</td>
             <td class="fila_valor">
                 {{ item.obj.monto }} Bs.
             </td>
         </tr>
 
-        <tr style="border-top: 1px dashed #ccc; border-bottom: 1px solid black;">
-            <td style="padding-top: 10px; padding-bottom: 10px;"><b>Fec. Emisión: </b></td>
-            <td class="fila_valor" style="padding-top: 10px; padding-bottom: 10px;">
+        <tr style="background-color: #f8fafc;">
+            <td class="label-viva" style="padding-top: 8px; padding-bottom: 8px; border-top: 1px solid #e2e8f0; border-bottom-left-radius: 6px;">Fec. Emisión:</td>
+            <td class="fila_valor" style="padding-top: 8px; padding-bottom: 8px; border-top: 1px solid #e2e8f0;">
                 {{ item.obj.fecha_emision|date:"d/m/Y"|default:"NO EMITIDA" }}
             </td>
-            <td style="padding-top: 10px; padding-bottom: 10px;"><b>Válida Hasta: </b></td>
-            <td class="fila_valor" style="padding-top: 10px; padding-bottom: 10px;">
+            <td class="label-viva" style="padding-top: 8px; padding-bottom: 8px; border-top: 1px solid #e2e8f0;">Válida Hasta:</td>
+            <td class="fila_valor" style="padding-top: 8px; padding-bottom: 8px; border-top: 1px solid #e2e8f0; border-bottom-right-radius: 6px;">
                 {{ item.obj.valida_hasta|date:"d/m/Y"|default:"---" }}
             </td>
         </tr>
@@ -179,34 +187,34 @@
 {% endfor %}
 
 <div id="modal-confirmacion-edicion" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content-soft">
         <span class="cerrar-modal" onclick="cerrarModalEdicion()">&times;</span>
-        <h4 style="color: #0056b3;">Vista Previa de Modificaciones</h4>
-        <p>Revisa los nuevos datos antes de actualizar la tarjeta:</p>
+        <h5 style="color: #0f172a; font-weight: 700; margin-bottom: 15px;">Vista Previa de Modificaciones</h5>
+        <p style="color: #475569; font-size: 0.9em;">Revisa los nuevos datos antes de actualizar la tarjeta:</p>
         
-        <div id="preview-content-edicion" style="background: #f4f4f4; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+        <div id="preview-content-edicion" style="background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 15px; color: #1e293b; font-size: 0.9em;">
         </div>
 
-        <div style="display: flex; gap: 10px;">
-            <button class="btn btn-secondary w-100" onclick="cerrarModalEdicion()">Cancelar</button>
-            <button class="btn btn-success w-100" onclick="enviarFormularioEdicion()">Confirmar y Actualizar</button>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-light border w-100 text-dark fw-bold hover-soft" onclick="cerrarModalEdicion()">Cancelar</button>
+            <button class="btn btn-dark w-100 fw-bold" onclick="enviarFormularioEdicion()">Confirmar y Actualizar</button>
         </div>
     </div>
 </div>
 
 <div id="modal-confirmacion-impresion" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content-soft">
         <span class="cerrar-modal" onclick="cerrarModalImpresion()">&times;</span>
-        <h4 style="color: #17a2b8;">Confirmar Emisión e Impresión</h4>
-        <p>¿Estás seguro de que deseas imprimir esta tarjeta por primera vez?</p>
+        <h5 style="color: #0f172a; font-weight: 700; margin-bottom: 15px;">Confirmar Emisión</h5>
+        <p style="color: #475569; font-size: 0.9em;">¿Estás seguro de que deseas imprimir esta tarjeta por primera vez?</p>
         
-        <div style="background-color: #fff3cd; color: #856404; padding: 12px; border-left: 4px solid #ffeeba; margin-bottom: 15px; border-radius: 4px;">
-            <strong>⚠️ Atención:</strong> Al generar la impresión, la tarjeta cambiará su estado a <b>EMITIDA</b> y se establecerán las fechas oficiales de validez.
+        <div style="background-color: #fffbeb; color: #92400e; padding: 10px; border: 1px solid #fde68a; margin-bottom: 15px; border-radius: 4px; font-size: 0.85em;">
+            <strong>Atención:</strong> Al generar la impresión, el estado cambiará a <b>EMITIDA</b> y se establecerá su validez oficial.
         </div>
 
-        <div style="display: flex; gap: 10px;">
-            <button class="btn btn-secondary w-100" onclick="cerrarModalImpresion()">Cancelar</button>
-            <a id="btn-confirmar-impresion" href="#" target="_blank" class="btn btn-info text-white w-100" style="text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center;" onclick="cerrarYRecargar()">
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-light border w-100 text-dark fw-bold hover-soft" onclick="cerrarModalImpresion()">Cancelar</button>
+            <a id="btn-confirmar-impresion" href="#" target="_blank" class="btn btn-dark w-100 fw-bold" style="text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center;" onclick="cerrarYRecargar()">
                 Confirmar e Imprimir
             </a>
         </div>
@@ -214,34 +222,94 @@
 </div>
 
 <div id="modal-alerta-vencida" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content-soft">
         <span class="cerrar-modal" onclick="cerrarModalVencida()">&times;</span>
-        <h4 style="color: #dc3545;">Tarjeta Vencida</h4>
-        <div style="background-color: #f8d7da; color: #721c24; padding: 12px; border-left: 4px solid #f5c6cb; margin-bottom: 15px; border-radius: 4px;">
-            <strong>🚫 Error:</strong> Esta tarjeta ya se encuentra en estado <b>VENCIDA</b>. No es posible imprimirla ni generar un PDF desde este registro.
+        <h5 style="color: #991b1b; font-weight: 700; margin-bottom: 15px;">Tarjeta Vencida</h5>
+        <div style="background-color: #fef2f2; color: #991b1b; padding: 10px; border: 1px solid #fecaca; margin-bottom: 15px; border-radius: 4px; font-size: 0.85em;">
+            <strong>Error:</strong> Esta tarjeta se encuentra <b>VENCIDA</b>. No es posible generar su PDF.
         </div>
-        <button class="btn btn-secondary w-100" onclick="cerrarModalVencida()">Entendido</button>
+        <button class="btn btn-light border w-100 text-dark fw-bold hover-soft" onclick="cerrarModalVencida()">Entendido</button>
     </div>
 </div>
 
 <style>
-    .fila_valor { text-transform: uppercase; }
-    .input-edicion {
-        width: 90%;
-        padding: 4px;
+    /* ESPACIADOS COMPACTOS */
+    .tabla_tarjetas td { padding-bottom: 3px; padding-top: 3px; }
+    
+    /* ETIQUETAS MÁS VIVAS */
+    .label-viva { 
+        font-weight: 700; 
+        color: #8b0000; /* Azul intenso y profesional */
+        font-size: 0.85em; 
+        width: 15%; 
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    
+    .fila_valor { 
+        text-transform: uppercase; 
+        color: #0f172a; 
+        font-size: 0.9em; 
+        font-weight: 500;
+    }
+    
+    .text-muted-custom { color: #475569 !important; }
+
+    /* REGISTRO SUAVE */
+    .badge-registro {
+        background-color: #f0f9ff;
+        color: #0369a1;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 0.9em;
+        border: 1px solid #bae6fd;
+    }
+
+    /* BOTONES INTERNOS */
+    .hover-soft:hover { background-color: #f8fafc !important; }
+    
+    /* BADGES DE ESTADO */
+    .badge-estado { padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8em; letter-spacing: 0.5px; }
+    .badge-pendiente { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .badge-emitida { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-vencida { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+    /* INPUTS DE EDICIÓN (Reducidos) */
+    .edicion-wrapper input, .edicion-wrapper select {
+        width: 95%;
+        padding: 2px 6px;
         font-size: 0.9em;
         text-transform: uppercase;
-        border: 1px solid #007bff;
+        border: 1px solid #94a3b8;
         border-radius: 4px;
+        background-color: #f8fafc;
+        color: #0f172a;
+        transition: all 0.2s;
     }
+    .edicion-wrapper input:focus, .edicion-wrapper select:focus {
+        outline: none;
+        border-color: #ff1900;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+    }
+
+    /* MODALES MÁS COMPACTOS */
     .modal-overlay {
         display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.6); z-index: 1000; align-items: center; justify-content: center;
+        background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(2px);
+        z-index: 1000; align-items: center; justify-content: center;
     }
-    .modal-content {
-        background-color: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%; position: relative;
+    .modal-content-soft {
+        background-color: white; padding: 20px; border-radius: 8px; width: 400px; 
+        max-width: 90%; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        border: 1px solid #cbd5e1;
     }
-    .cerrar-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #aaa; }
+    .cerrar-modal { 
+        position: absolute; top: 12px; right: 15px; font-size: 22px; 
+        cursor: pointer; color: #64748b; transition: color 0.2s; line-height: 1;
+    }
+    .cerrar-modal:hover { color: #0f172a; }
 </style>
 
 <script>
@@ -264,12 +332,12 @@
     function confirmarEdicion(tarjetaId) {
         formActual = document.getElementById('form-tarjeta-' + tarjetaId);
         let formData = new FormData(formActual);
-        let htmlPreview = '<ul>';
+        let htmlPreview = '<ul style="margin: 0; padding-left: 20px;">';
         
         for (let [key, value] of formData.entries()) {
             if (key !== 'csrfmiddlewaretoken' && key !== 'tarjeta_id' && value.trim() !== '') {
-                let nombreLegible = key.toUpperCase().replace('_', ' ');
-                htmlPreview += `<li><strong>${nombreLegible}:</strong> ${value}</li>`;
+                let nombreLegible = key.toUpperCase().replace(/_/g, ' ');
+                htmlPreview += `<li style="margin-bottom: 2px;"><strong>${nombreLegible}:</strong> ${value}</li>`;
             }
         }
         htmlPreview += '</ul>';
@@ -294,16 +362,13 @@
         }
     }
 
-    // --- LÓGICA DE IMPRESIÓN INTELIGENTE ---
+    // --- LÓGICA DE IMPRESIÓN ---
     function manejarImpresion(urlPdf, estado) {
         if (estado === 'v') {
-            // Si está vencida, mostramos alerta
             document.getElementById('modal-alerta-vencida').style.display = 'flex';
         } else if (estado === 'e') {
-            // Si ya está emitida, abrimos el PDF directo
             window.open(urlPdf, '_blank');
         } else {
-            // Si está pendiente, inyectamos la URL en el enlace <a> del modal y lo mostramos
             document.getElementById('btn-confirmar-impresion').href = urlPdf;
             document.getElementById('modal-confirmacion-impresion').style.display = 'flex';
         }
@@ -318,11 +383,7 @@
     }
 
     function cerrarYRecargar() {
-        // Cerramos el modal
         cerrarModalImpresion();
-        
-        // Recargamos la vista principal después de 1.5 segundos
-        // para asegurar que el backend ya cambió el estado a 'EMITIDA'
         setTimeout(function() {
             window.location.reload();
         }, 1500);

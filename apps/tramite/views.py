@@ -447,8 +447,8 @@ def editar_tramite (request, numero_tramite):
 # ========== GENERACION DE PDFs ===========
 @login_required()
 @user_passes_test(es_admin)
-def generar_pdf_tramite (request, numero_tramite):
-    tramite = get_object_or_404(Tramite, numero_tramite=numero_tramite)
+def generar_pdf_tramite (request, numero):
+    tramite = get_object_or_404(Tramite, numero=numero)
     tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
     costo_total = sum(tarjeta.monto for tarjeta in tarjetas)
     for tarjeta in tarjetas:
@@ -457,18 +457,18 @@ def generar_pdf_tramite (request, numero_tramite):
         
         # Generar un texto estructurado y profesional para el escáner
         texto_qr = (
-            "🏛️ G.A.D. POTOSI - SEC. TRANSPORTE\n"
-            "----------------------------------\n"
-            f"📄 TARJETA Nº: {tarjeta.id:06d}\n"
-            f"🚗 PLACA: {tarjeta.vehiculo.placa}\n"
-            f"🚙 VEHICULO: {tarjeta.vehiculo.marca.nombre} {tarjeta.vehiculo.modelo}\n"
-            f"👤 TITULAR: {tarjeta.afiliado.nombre} {tarjeta.afiliado.apellido}\n"
-            f"🏢 OPERADOR: {tarjeta.operador.nombre}\n"
-            f"📌 SERVICIO: {tarjeta.get_tipo_tarjeta_display().upper()}\n"
-            f"✅ EMISION: {fecha_emision_str}\n"
-            f"⛔ VENCE: {valida_hasta_str}\n"
-            "----------------------------------\n"
-            f"🔍 Ref. Trámite: {tramite.numero_tramite}"
+            # "🏛️ G.A.D. POTOSI - SEC. TRANSPORTE\n"
+            # "----------------------------------\n"
+            # f"📄 TARJETA Nº: {tarjeta.id:06d}\n"
+            # f"🚗 PLACA: {tarjeta.vehiculo.placa}\n"
+            # f"🚙 VEHICULO: {tarjeta.vehiculo.marca.nombre} {tarjeta.vehiculo.modelo}\n"
+            # f"👤 TITULAR: {tarjeta.afiliado.nombre_completo}\n"
+            # f"🏢 OPERADOR: {tarjeta.operador.nombre}\n"
+            # f"📌 SERVICIO: {tarjeta.licencia().upper()}\n"
+            # # f"✅ EMISION: {fecha_emision_str}\n"
+            # # f"⛔ VENCE: {valida_hasta_str}\n"
+            # "----------------------------------\n"
+            # f"🔍 Ref. Trámite: {tramite.numero_tramite}"
         )
         qr = qrcode.QRCode(
             version=1,  
@@ -492,7 +492,7 @@ def generar_pdf_tramite (request, numero_tramite):
     template = get_template('pdf/tramite.html')
     template_render = template.render(contexto)
     response = HttpResponse(content_type = 'application/pdf')
-    response['Content-Disposition'] = f'inline; filename="Tramite_{tramite.numero_tramite}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="Tramite_{tramite.numero}.pdf"'
     pisa_status = pisa.CreatePDF(template_render, dest=response)
     if pisa_status.err:
         return HttpResponse('Error al generar el PDF')
