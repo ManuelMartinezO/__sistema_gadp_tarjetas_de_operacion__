@@ -213,7 +213,7 @@
                     <p class="text-slate-600 fs-7 mb-4 lh-sm">
                         Esta tarjeta fue generada a partir de un trámite aprobado en el sistema.
                     </p>
-                    <a href="{% url 'tramite:detalle_tramite' tarjeta.tramite.numero_tramite %}" class="btn btn-white w-100 rounded-pill shadow-sm fs-7 fw-bold text-indigo">
+                    <a href="{% url 'tramite:detalle_tramite' tarjeta.tramite.numero %}" class="btn btn-white w-100 rounded-pill shadow-sm fs-7 fw-bold text-indigo">
                         Ver Trámite #{{ tarjeta.tramite.numero_tramite }}
                     </a>
                     

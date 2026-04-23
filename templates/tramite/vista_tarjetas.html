@@ -2,83 +2,331 @@
 
 {% block content %}
 
-<div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
-            <a href="{% url 'tramite:detalle_tramite' tramite.numero_tramite %}" class="btn btn-light-action rounded-pill px-3">
-                <i class="bi bi-arrow-left me-1"></i> Volver
+<div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center mb-3">
+    <a href="{% url 'tramite:detalle_tramite' tramite.numero %}" class="btn btn-light-action rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i> Volver
+    </a>
+    {% if tarjetas and tramite.estado_tramite == 'validado' %}
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            <a href="{% url 'tramite:tramite_pdf' tramite.numero %}" target="_blank" class="btn btn-indigo btn-lg rounded-pill px-4 shadow-sm ms-2">
+                <i class="bi bi-printer-fill me-2"></i> IMPRIMIR TODO
             </a>
-            {% if tarjetas and tramite.estado_tramite == 'validado' %}
-                {% if user.rol == 'a' or user.rol == 'sa' %}
-                    <a href="{% url 'tramite:tramite_pdf' tramite.numero_tramite %}" target="_blank" class="btn btn-indigo btn-lg rounded-pill px-4 shadow-sm ms-2">
-                        <i class="bi bi-printer-fill me-2"></i> IMPRIMIR TODO
-                    </a>
-                {% endif %}
-            {% endif %}
-        </div>
-<h3 style="border-bottom: 1px solid black; width: 70%;">TRAMITE: #{{ tramite.numero_tramite }}</h3>
+        {% endif %}
+    {% endif %}
+</div>
 
-<table class="tabla_tarjetas" style="width: 70%;">
-    {% for tarjeta in tarjetas %}
-    <tr>
-        <td><b>Nro. Tramite: </b></td>
-        <td class="fila_valor">{{ tarjeta.tramite.numero_tramite }}</td>
-        <td><b>Tecnico: </b></td>
-        <td class="fila_valor">{{ tarjeta.tramite.usuario }}</td>
-    </tr>
-    <tr>
-        <td><b>Fecha: </b></td>
-        <td class="fila_valor">{{ tarjeta.fecha_registro|date:"d/m/Y" }}</td>
-        <td><b>Hora: </b></td>
-        <td class="fila_valor">{{ tarjeta.fecha_registro|time:"H:i" }}</td>
-    </tr>
-    <tr>
-        <td><b>Propietario: </b></td>
-        <td class="fila_valor" colspan="3">{{ tarjeta.afiliado.nombre }} {{ tarjeta.afiliado.apellido }}</td>
-    </tr>
-    <tr>
-        <td><b>Empresa: </b></td>
-        <td class="fila_valor" colspan="3">{{ tramite.operador }}</td>
-    </tr>
-    <tr>
-        <td><b>Placa: </b></td>
-        <td class="fila_valor">{{ tarjeta.vehiculo.placa }}</td>
-        <td><b>Tipo Trans.: </b></td>
-        <td class="fila_valor">{{ tarjeta.vehiculo.tipo_transporte }}</td>
-    </tr>
-    <tr>
-        <td><b>Modelo: </b></td>
-        <td class="fila_valor">{{ tarjeta.vehiculo.modelo }}</td>
-        <td><b>Marca: </b></td>
-        <td class="fila_valor">{{ tarjeta.vehiculo.marca }}</td>
-    </tr>
-    <tr>
-        <td><b>Nro. Registro: </b></td>
-        <td class="fila_valor">{{ tarjeta.id }}</td>
-        <td><b>Chasis: </b></td>
-        <td class="fila_valor">{{ tarjeta.vehiculo.chasis }}</td>
-    </tr>
-    <tr>
-        <td><b>Tipo Servicio: </b></td>
-        <td class="fila_valor">{{ tarjeta.vehiculo.tipo_vehiculo }}</td>
-        <td><b>Capacidad: </b></td>
-        <td class="fila_valor">{{ tarjeta.vehiculo.capacidad }}</td>
-    </tr>
-    <tr>
-        <td colspan="4"><b>Ruras Autorizadas: </b></td>
-    </tr>
-    <tr>
-        <td class="fila_valor" colspan="4">{{ tarjeta.ruta }}</td>
-    </tr>
-    <tr style="border-bottom: 1px solid black;">
-        <td><b>Validez: </b></td>
-        <td class="fila_valor">{{ tarjeta.validez_tiempo }} {{ tarjeta.get_validez_periodo_display }}</td>
-        <td><b>Monto: </b></td>
-        <td class="fila_valor">{{ tarjeta.monto }} Bs.</td>
-    </tr>
-    {% endfor %}
-</table>
+<h3 style="border-bottom: 1px solid black; width: 70%; margin-bottom: 20px;">TRAMITE: #{{ tramite.numero }}</h3>
+
+{% for item in tarjetas_data %}
+<form method="POST" id="form-tarjeta-{{ item.obj.id }}">
+    {% csrf_token %}
+    <input type="hidden" name="tarjeta_id" value="{{ item.obj.id }}">
+    
+    <table class="tabla_tarjetas" style="width: 70%; margin-bottom: 30px; border: 1px solid #ddd; padding: 10px; background-color: #fcfcfc;">
+        <tr>
+            <td colspan="4" style="text-align: right; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                
+                <button type="button" class="btn btn-sm btn-info text-white vista-{{ item.obj.id }}" style="margin-right: 5px;" onclick="manejarImpresion('{% url 'tarjeta:tarjeta_pdf' item.obj.id %}', '{{ item.obj.estado }}')">
+                    🖨️ Imprimir
+                </button>
+
+                <button type="button" class="btn btn-sm btn-warning vista-{{ item.obj.id }}" onclick="toggleEdicion('{{ item.obj.id }}', true)">
+                    ✏️ Editar Tarjeta
+                </button>
+                
+                <button type="button" class="btn btn-sm btn-success edicion-{{ item.obj.id }}" style="display: none;" onclick="confirmarEdicion('{{ item.obj.id }}')">
+                    💾 Guardar Cambios
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary edicion-{{ item.obj.id }}" style="display: none;" onclick="toggleEdicion('{{ item.obj.id }}', false)">
+                    ❌ Cancelar
+                </button>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="padding-top: 10px;"><b>Nro. Tramite: </b></td>
+            <td class="fila_valor" style="padding-top: 10px;">{{ item.obj.tramite.numero }}</td>
+            <td style="padding-top: 10px;"><b>Tecnico: </b></td>
+            <td class="fila_valor" style="padding-top: 10px;">{{ item.obj.tramite.usuario }}</td>
+        </tr>
+        <tr>
+            <td><b>Nro. Registro: </b></td>
+            <td class="fila_valor">{{ item.obj.id }}</td>
+            <td><b>Empresa: </b></td>
+            <td class="fila_valor">{{ tramite.operador }}</td>
+        </tr>
+        
+        <tr>
+            <td><b>Estado: </b></td>
+            <td class="fila_valor" colspan="3">
+                <span style="padding: 3px 8px; border-radius: 4px; font-weight: bold; color: white;
+                    {% if item.obj.estado == 'p' %}background-color: #ffc107; color: black;
+                    {% elif item.obj.estado == 'e' %}background-color: #28a745;
+                    {% elif item.obj.estado == 'v' %}background-color: #dc3545;{% endif %}">
+                    {{ item.obj.get_estado_display }}
+                </span>
+            </td>
+        </tr>
+
+        <tr>
+            <td><b>Afiliado: </b></td>
+            <td class="fila_valor">
+                <span class="vista-{{ item.obj.id }}">{{ item.obj.afiliado.nombre_completo }}</span>
+                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                    {{ item.form_tarjeta.nombre_afiliado }}
+                </div>
+            </td>
+            <td><b>Propietario: </b></td>
+            <td class="fila_valor">
+                <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.propietario }}</span>
+                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                    {{ item.form_vehiculo.propietario }}
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td><b>Placa: </b></td>
+            <td class="fila_valor">
+                <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.placa }}</span>
+                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                    {{ item.form_vehiculo.placa }}
+                </div>
+            </td>
+            <td><b>Tipo Trans.: </b></td>
+            <td class="fila_valor">
+                <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.get_transporte_display }}</span>
+                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                    {{ item.form_vehiculo.transporte }} 
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td><b>Modelo: </b></td>
+            <td class="fila_valor">
+                <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.modelo }}</span>
+                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                    {{ item.form_vehiculo.modelo }}
+                </div>
+            </td>
+            <td><b>Marca: </b></td>
+            <td class="fila_valor">
+                <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.marca }}</span>
+                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                    {{ item.form_vehiculo.marca }} 
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td><b>Tipo: </b></td>
+            <td class="fila_valor">
+                <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.tipo }}</span>
+                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                    {{ item.form_vehiculo.tipo }} 
+                </div>
+            </td>
+            <td><b>Chasis: </b></td>
+            <td class="fila_valor">
+                <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.chasis }}</span>
+                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                    {{ item.form_vehiculo.chasis }}
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td><b>Capacidad: </b></td>
+            <td class="fila_valor" colspan="3">
+                <span class="vista-{{ item.obj.id }}">{{ item.obj.vehiculo.capacidad }}</span>
+                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                    {{ item.form_vehiculo.capacidad }}
+                </div>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="4"><b>Rutas Autorizadas: </b></td>
+        </tr>
+        <tr>
+            <td class="fila_valor" colspan="4">
+                <span class="vista-{{ item.obj.id }}">{{ item.obj.ruta }}</span>
+                <div class="edicion-{{ item.obj.id }}" style="display: none;">
+                    {{ item.form_tarjeta.ruta }}
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td><b>Validez: </b></td>
+            <td class="fila_valor">{{ item.obj.validez }} Año</td>
+            
+            <td><b>Monto: </b></td>
+            <td class="fila_valor">
+                {{ item.obj.monto }} Bs.
+            </td>
+        </tr>
+
+        <tr style="border-top: 1px dashed #ccc; border-bottom: 1px solid black;">
+            <td style="padding-top: 10px; padding-bottom: 10px;"><b>Fec. Emisión: </b></td>
+            <td class="fila_valor" style="padding-top: 10px; padding-bottom: 10px;">
+                {{ item.obj.fecha_emision|date:"d/m/Y"|default:"NO EMITIDA" }}
+            </td>
+            <td style="padding-top: 10px; padding-bottom: 10px;"><b>Válida Hasta: </b></td>
+            <td class="fila_valor" style="padding-top: 10px; padding-bottom: 10px;">
+                {{ item.obj.valida_hasta|date:"d/m/Y"|default:"---" }}
+            </td>
+        </tr>
+    </table>
+</form>
+{% endfor %}
+
+<div id="modal-confirmacion-edicion" class="modal-overlay">
+    <div class="modal-content">
+        <span class="cerrar-modal" onclick="cerrarModalEdicion()">&times;</span>
+        <h4 style="color: #0056b3;">Vista Previa de Modificaciones</h4>
+        <p>Revisa los nuevos datos antes de actualizar la tarjeta:</p>
+        
+        <div id="preview-content-edicion" style="background: #f4f4f4; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary w-100" onclick="cerrarModalEdicion()">Cancelar</button>
+            <button class="btn btn-success w-100" onclick="enviarFormularioEdicion()">Confirmar y Actualizar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-confirmacion-impresion" class="modal-overlay">
+    <div class="modal-content">
+        <span class="cerrar-modal" onclick="cerrarModalImpresion()">&times;</span>
+        <h4 style="color: #17a2b8;">Confirmar Emisión e Impresión</h4>
+        <p>¿Estás seguro de que deseas imprimir esta tarjeta por primera vez?</p>
+        
+        <div style="background-color: #fff3cd; color: #856404; padding: 12px; border-left: 4px solid #ffeeba; margin-bottom: 15px; border-radius: 4px;">
+            <strong>⚠️ Atención:</strong> Al generar la impresión, la tarjeta cambiará su estado a <b>EMITIDA</b> y se establecerán las fechas oficiales de validez.
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary w-100" onclick="cerrarModalImpresion()">Cancelar</button>
+            <a id="btn-confirmar-impresion" href="#" target="_blank" class="btn btn-info text-white w-100" style="text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center;" onclick="cerrarYRecargar()">
+                Confirmar e Imprimir
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="modal-alerta-vencida" class="modal-overlay">
+    <div class="modal-content">
+        <span class="cerrar-modal" onclick="cerrarModalVencida()">&times;</span>
+        <h4 style="color: #dc3545;">Tarjeta Vencida</h4>
+        <div style="background-color: #f8d7da; color: #721c24; padding: 12px; border-left: 4px solid #f5c6cb; margin-bottom: 15px; border-radius: 4px;">
+            <strong>🚫 Error:</strong> Esta tarjeta ya se encuentra en estado <b>VENCIDA</b>. No es posible imprimirla ni generar un PDF desde este registro.
+        </div>
+        <button class="btn btn-secondary w-100" onclick="cerrarModalVencida()">Entendido</button>
+    </div>
+</div>
+
 <style>
-    .fila_valor {
+    .fila_valor { text-transform: uppercase; }
+    .input-edicion {
+        width: 90%;
+        padding: 4px;
+        font-size: 0.9em;
         text-transform: uppercase;
+        border: 1px solid #007bff;
+        border-radius: 4px;
     }
+    .modal-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.6); z-index: 1000; align-items: center; justify-content: center;
+    }
+    .modal-content {
+        background-color: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%; position: relative;
+    }
+    .cerrar-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #aaa; }
 </style>
+
+<script>
+    // --- LÓGICA DE EDICIÓN ---
+    function toggleEdicion(tarjetaId, modoEdicion) {
+        let elementosVista = document.querySelectorAll('.vista-' + tarjetaId);
+        let elementosEdicion = document.querySelectorAll('.edicion-' + tarjetaId);
+
+        if (modoEdicion) {
+            elementosVista.forEach(el => el.style.display = 'none');
+            elementosEdicion.forEach(el => el.style.display = ''); 
+        } else {
+            elementosVista.forEach(el => el.style.display = '');
+            elementosEdicion.forEach(el => el.style.display = 'none');
+        }
+    }
+
+    let formActual = null;
+
+    function confirmarEdicion(tarjetaId) {
+        formActual = document.getElementById('form-tarjeta-' + tarjetaId);
+        let formData = new FormData(formActual);
+        let htmlPreview = '<ul>';
+        
+        for (let [key, value] of formData.entries()) {
+            if (key !== 'csrfmiddlewaretoken' && key !== 'tarjeta_id' && value.trim() !== '') {
+                let nombreLegible = key.toUpperCase().replace('_', ' ');
+                htmlPreview += `<li><strong>${nombreLegible}:</strong> ${value}</li>`;
+            }
+        }
+        htmlPreview += '</ul>';
+        
+        document.getElementById('preview-content-edicion').innerHTML = htmlPreview;
+        document.getElementById('modal-confirmacion-edicion').style.display = 'flex';
+    }
+
+    function cerrarModalEdicion() {
+        document.getElementById('modal-confirmacion-edicion').style.display = 'none';
+        formActual = null;
+    }
+
+    function enviarFormularioEdicion() {
+        if(formActual) {
+            let inputOculto = document.createElement('input');
+            inputOculto.type = 'hidden';
+            inputOculto.name = 'btn_actualizar_tarjeta';
+            inputOculto.value = '1';
+            formActual.appendChild(inputOculto);
+            formActual.submit();
+        }
+    }
+
+    // --- LÓGICA DE IMPRESIÓN INTELIGENTE ---
+    function manejarImpresion(urlPdf, estado) {
+        if (estado === 'v') {
+            // Si está vencida, mostramos alerta
+            document.getElementById('modal-alerta-vencida').style.display = 'flex';
+        } else if (estado === 'e') {
+            // Si ya está emitida, abrimos el PDF directo
+            window.open(urlPdf, '_blank');
+        } else {
+            // Si está pendiente, inyectamos la URL en el enlace <a> del modal y lo mostramos
+            document.getElementById('btn-confirmar-impresion').href = urlPdf;
+            document.getElementById('modal-confirmacion-impresion').style.display = 'flex';
+        }
+    }
+
+    function cerrarModalImpresion() {
+        document.getElementById('modal-confirmacion-impresion').style.display = 'none';
+    }
+    
+    function cerrarModalVencida() {
+        document.getElementById('modal-alerta-vencida').style.display = 'none';
+    }
+
+    function cerrarYRecargar() {
+        // Cerramos el modal
+        cerrarModalImpresion();
+        
+        // Recargamos la vista principal después de 1.5 segundos
+        // para asegurar que el backend ya cambió el estado a 'EMITIDA'
+        setTimeout(function() {
+            window.location.reload();
+        }, 1500);
+    }
+</script>
+
 {% endblock %}

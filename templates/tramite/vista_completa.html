@@ -1,104 +1,300 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
+<style>
+    /* --- ESTRUCTURA GENERAL --- */
+    .contenedor-principal {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        margin-top: 20px;
+    }
+    .columna-izquierda { flex: 2; }
+    .columna-derecha { flex: 1; }
+    
+    .bloque-form {
+        border: 1px solid #e0e0e0;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+        background-color: #fafafa;
+    }
 
-<div>
-    <h3>NUMERO DE TRAMITE: {{ tramite.numero }}</h3>
+    input[type="text"], input[type="number"], input[type="file"], select, textarea {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        margin-top: 4px;
+        margin-bottom: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    /* --- BOTONES --- */
+    .btn {
+        width: 100%;
+        padding: 10px;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .btn-verde { background-color: #28a745; }
+    .btn-verde:hover { background-color: #218838; }
+    .btn-rojo { background-color: #dc3545; }
+    .btn-rojo:hover { background-color: #c82333; }
+    .btn-gris { background-color: #6c757d; }
+    .btn-gris:hover { background-color: #5a6268; }
+
+    /* --- MODALES --- */
+    .modal-overlay {
+        display: none; /* Oculto por defecto */
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        width: 400px;
+        max-width: 90%;
+        position: relative;
+    }
+    /* El modal de confirmación debe estar por encima de los otros modales */
+    #modal-confirmacion { z-index: 2000; } 
+    
+    .cerrar-modal {
+        position: absolute;
+        top: 10px; right: 15px;
+        font-size: 24px;
+        cursor: pointer;
+        color: #aaa;
+    }
+    .cerrar-modal:hover { color: #000; }
+    
+    ul { padding-left: 20px; }
+</style>
+
+<div class="bloque-form" style="background-color: #fff;">
+    <h5>NÚMERO DE TRÁMITE: {{ tramite.numero }}</h5>
     <p><strong>Tipo:</strong> {{ tramite.get_tipo_display }}</p>
-    <p><strong>Licencia:</strong> {{ tramite.get_licencia_display }}</p>
+    <p><strong>Licencia:</strong> {{ tramite.licencia }}</p>
     <p><strong>Ruta:</strong> {{ tramite.rutas }}</p>
-    <h4>Documentos</h4>
+    
+    <h5>Documentos Actuales</h5>
     <ul>
         <li>Informe Técnico: {% if tramite.informe_tecnico %}<a href="{{ tramite.informe_tecnico.url }}">Ver</a>{% else %}No subido{% endif %}</li>
         <li>Informe Legal: {% if tramite.informe_legal %}<a href="{{ tramite.informe_legal.url }}">Ver</a>{% else %}No subido{% endif %}</li>
-        <li>Resolucion Administrativa: {% if tramite.resolucion_administrativa %}<a href="{{ tramite.resolucion_administrativa.url }}">Ver</a>{% else %}No subido{% endif %}</li>
+        <li>Resolución Administrativa: {% if tramite.resolucion_administrativa %}<a href="{{ tramite.resolucion_administrativa.url }}">Ver</a>{% else %}No subido{% endif %}</li>
     </ul>
 </div>
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <h5>INFORME TECNICO</h5>
-    {{ form_informe_tecnico.as_p }}
-    <button name="btn_inf_tecnico" type="submit">
-        SUBIR INFORME TECNICO
-    </button>
-</form>
+<div class="contenedor-principal">
+    
+    <div class="columna-izquierda">
+        <div class="bloque-form">
+            <form method="POST" class="formulario-con-preview">
+                {% csrf_token %}
+                <h5 style="color: #28a745;">REGISTRAR NUEVA TARJETA DE OPERACIÓN</h5>
+                <hr>
+                
+                <h5>Datos del Afiliado</h5>
+                {{ form_afiliado.nombre_completo }}
+                <datalist id="lista_afiliados">
+                    {% for afiliado in afiliados_existentes %}
+                        <option value="{{ afiliado.nombre_completo }}"></option>
+                    {% endfor %}
+                </datalist>
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <h5>INFORME Y RESOLUCION</h5>
-    {{ form_informe_resolucion.as_p }}
-    <button name="btn_inf_res" type="submit">
-        SUBIR DOCUMENTO
-    </button>
-</form>
+                <h5>Datos del Vehículo</h5>
+                {{ form_vehiculo.as_p }}
+                
+                <button name="btn_tarjeta" type="submit" class="btn btn-verde">
+                    ENVIAR DATOS
+                </button>
+            </form>
+        </div>
 
-<form method="POST">
-    {% csrf_token %}
-    <h5>DEPOSITOS</h5>
-    {{ form_deposito.as_p }}
-    <button name="btn_deposito" type="submit">
-        AGREGAR DEPOSITO
-    </button>
-</form>
+        <a href="{% url 'tramite:vista' tramite.numero %}">Vista previa</a>
 
-<div>
-    <ul>
-        {% for deposito in depositos %}
-        <li>{{ deposito.numero }} - {{ deposito.monto }} Bs - {{ deposito.fecha_deposito }}</li>
-        {% endfor %}
-    </ul>
+        <div class="bloque-form">
+            <h5>LISTA DE TARJETAS GENERADAS</h5>
+            <ul>
+                {% for tarjeta in tarjetas %}
+                <li>
+                    <strong>ID</strong> {{ tarjeta.id }} - <strong>PLACA</strong> {{ tarjeta.vehiculo.placa }} - <strong>PROPIETARIO</strong> {{ tarjeta.vehiculo.propietario }} - <strong>AFILIADO</strong> {{ tarjeta.vehiculo.afiliado.nombre_completo }} - <strong>VALOR</strong> {{ tarjeta.monto }}
+                    <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}">Ver credencial</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="columna-derecha">
+        <button class="btn btn-rojo" onclick="abrirModal('modal-inf-tecnico')">Subir Informe Técnico</button>
+        <button class="btn btn-rojo" onclick="abrirModal('modal-inf-res')">Subir Informe/Resolución</button>
+        
+        <div class="bloque-form" style="padding: 10px;">
+            <button class="btn btn-rojo" onclick="abrirModal('modal-deposito')">Agregar Depósito</button>
+            <ul style="font-size: 0.9em; margin-bottom: 0;">
+                {% for deposito in depositos %}
+                <li>{{ deposito.numero }} - {{ deposito.monto }} Bs</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <button class="btn btn-verde" onclick="abrirModal('modal-marca')">Crear Marca</button>
+        <button class="btn btn-verde" onclick="abrirModal('modal-tipo')">Crear Tipo de Vehículo</button>
+    </div>
 </div>
 
-<form method="POST">
-    {% csrf_token %}
-    <h5>MARCA VEHICULO</h5>
-    {{ form_marcaVehiculo.as_p }}
-    <button name="btn_marcaV" type="submit">
-        CREAR
-    </button>
-</form>
-
-<form method="POST">
-    {% csrf_token %}
-    <h5>TIPO VEHICULO</h5>
-    {{ form_tipoVehiculo.as_p }}
-    <button name="btn_tipoV" type="submit">
-        CREAR
-    </button>
-</form>
-
-<form method="POST">
-    {% csrf_token %}
-    <h5>afiliado</h5>
-    {{ form_afiliado.nombre_completo }}
-    <h5>vehiculo</h5>
-    {{ form_vehiculo.as_p }}
-    <button name="btn_tarjeta" type="submit">
-        ENVIAR
-    </button>
-</form>
-<datalist id="lista_afiliados">
-    {% for afiliado in afiliados_existentes %}
-        <option value="{{ afiliado.nombre_completo }}"></option>
-    {% endfor %}
-</datalist>
-
-<div>
-    <h5>LISTA DE TARJETAS</h5>
-    <ul>
-        {% for tarjeta in tarjetas %}
-        <li>
-            <strong>ID</strong> {{ tarjeta.id }} -
-            <strong>PLACA</strong> {{ tarjeta.vehiculo.placa }} -
-            <strong>PROPIETARIO</strong> {{ tarjeta.vehiculo.propietario }} -
-            <strong>AFILIADO</strong> {{ tarjeta.vehiculo.afiliado.nombre_completo }} -
-            <strong>VALOR</strong> {{ tarjeta.monto }} -
-            <strong>RUTA</strong> {{ tarjeta.ruta }} -
-            <strong>LICENCIA</strong> {{ tarjeta.licencia }} -
-        </li>
-        {% endfor %}
-    </ul>
+<div id="modal-inf-tecnico" class="modal-overlay">
+    <div class="modal-content">
+        <span class="cerrar-modal" onclick="cerrarModal('modal-inf-tecnico')">&times;</span>
+        <form method="POST" enctype="multipart/form-data" class="formulario-con-preview">
+            {% csrf_token %}
+            <h5>INFORME TÉCNICO</h5>
+            {{ form_informe_tecnico.as_p }}
+            <button name="btn_inf_tecnico" type="submit" class="btn btn-rojo">SUBIR INFORME</button>
+        </form>
+    </div>
 </div>
+
+<div id="modal-inf-res" class="modal-overlay">
+    <div class="modal-content">
+        <span class="cerrar-modal" onclick="cerrarModal('modal-inf-res')">&times;</span>
+        <form method="POST" enctype="multipart/form-data" class="formulario-con-preview">
+            {% csrf_token %}
+            <h5>INFORME Y RESOLUCIÓN</h5>
+            {{ form_informe_resolucion.as_p }}
+            <button name="btn_inf_res" type="submit" class="btn btn-rojo">SUBIR DOCUMENTO</button>
+        </form>
+    </div>
+</div>
+
+<div id="modal-deposito" class="modal-overlay">
+    <div class="modal-content">
+        <span class="cerrar-modal" onclick="cerrarModal('modal-deposito')">&times;</span>
+        <form method="POST" class="formulario-con-preview">
+            {% csrf_token %}
+            <h5>DEPÓSITOS</h5>
+            {{ form_deposito.as_p }}
+            <button name="btn_deposito" type="submit" class="btn btn-rojo">AGREGAR DEPÓSITO</button>
+        </form>
+    </div>
+</div>
+
+<div id="modal-marca" class="modal-overlay">
+    <div class="modal-content">
+        <span class="cerrar-modal" onclick="cerrarModal('modal-marca')">&times;</span>
+        <form method="POST" class="formulario-con-preview">
+            {% csrf_token %}
+            <h5>MARCA VEHÍCULO</h5>
+            {{ form_marcaVehiculo.as_p }}
+            <button name="btn_marcaV" type="submit" class="btn btn-verde">CREAR MARCA</button>
+        </form>
+    </div>
+</div>
+
+<div id="modal-tipo" class="modal-overlay">
+    <div class="modal-content">
+        <span class="cerrar-modal" onclick="cerrarModal('modal-tipo')">&times;</span>
+        <form method="POST" class="formulario-con-preview">
+            {% csrf_token %}
+            <h5>TIPO VEHÍCULO</h5>
+            {{ form_tipoVehiculo.as_p }}
+            <button name="btn_tipoV" type="submit" class="btn btn-verde">CREAR TIPO</button>
+        </form>
+    </div>
+</div>
+
+<div id="modal-confirmacion" class="modal-overlay">
+    <div class="modal-content">
+        <span class="cerrar-modal" onclick="cerrarModal('modal-confirmacion')">&times;</span>
+        <h4 style="color: #0056b3;">Vista Previa de Datos</h4>
+        <p>Revisa la información antes de guardarla:</p>
+        
+        <div id="preview-content" style="background: #f4f4f4; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+            </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button id="btn-cancelar-submit" class="btn btn-gris" onclick="cerrarModal('modal-confirmacion')">Cancelar</button>
+            <button id="btn-confirmar-submit" class="btn btn-verde">Confirmar y Guardar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- LÓGICA PARA ABRIR Y CERRAR MODALES BÁSICOS ---
+    function abrirModal(id) {
+        document.getElementById(id).style.display = 'flex';
+    }
+    function cerrarModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    // --- LÓGICA DE INTERCEPCIÓN Y VISTA PREVIA ---
+    let formularioPendiente = null;
+    let botonPresionado = null;
+
+    // 1. Capturar qué botón de submit se presionó (necesario para Django)
+    document.querySelectorAll('.formulario-con-preview button[type="submit"]').forEach(boton => {
+        boton.addEventListener('click', function() {
+            botonPresionado = this.name;
+        });
+    });
+
+    // 2. Interceptar el envío de los formularios
+    document.querySelectorAll('.formulario-con-preview').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Evitamos que se envíe inmediatamente
+            formularioPendiente = this; // Guardamos el formulario actual
+
+            // Generamos la lista de datos extraídos del formulario
+            let htmlPreview = '<ul>';
+            let datos = new FormData(this);
+            
+            for (let [llave, valor] of datos.entries()) {
+                // Ignoramos el token de seguridad y los prefijos de Django si están vacíos
+                if(llave !== 'csrfmiddlewaretoken' && valor !== '') {
+                    // Limpiamos los prefijos visuales si usas 'prefix' en Django (ej. 'afiliado-nombre_completo' a 'nombre_completo')
+                    let nombreLegible = llave.split('-').pop().toUpperCase().replace('_', ' ');
+                    
+                    // Si es un archivo, mostramos su nombre
+                    if(valor instanceof File) {
+                        valor = valor.name || 'Ningún archivo adjunto';
+                    }
+                    htmlPreview += `<li><strong>${nombreLegible}:</strong> ${valor}</li>`;
+                }
+            }
+            htmlPreview += '</ul>';
+
+            // Insertamos los datos en el modal de confirmación y lo mostramos
+            document.getElementById('preview-content').innerHTML = htmlPreview;
+            abrirModal('modal-confirmacion');
+        });
+    });
+
+    // 3. Confirmar el envío final
+    document.getElementById('btn-confirmar-submit').addEventListener('click', function() {
+        if(formularioPendiente) {
+            // Creamos un input oculto para enviarle a Django el nombre del botón que clickeamos originalmente
+            if(botonPresionado) {
+                let inputOculto = document.createElement('input');
+                inputOculto.type = 'hidden';
+                inputOculto.name = botonPresionado;
+                inputOculto.value = '1';
+                formularioPendiente.appendChild(inputOculto);
+            }
+            // Ahora sí, enviamos el formulario
+            formularioPendiente.submit();
+        }
+    });
+</script>
 {% endblock %}

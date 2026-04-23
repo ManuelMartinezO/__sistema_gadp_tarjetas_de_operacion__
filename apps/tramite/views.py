@@ -20,7 +20,8 @@ from apps.vehiculo.models import Vehiculo
 from apps.afiliado.forms import NuevoAfiliadoForm
 from apps.operador.forms import NuevoOperadorForm
 from apps.vehiculo.forms import NuevoVehiculoForm, TipoVehiculoForm, MarcaVehiculoForm
-
+from django.db import transaction
+from apps.tarjeta_de_operacion.forms import EditarTarjetaForm
 
 def vista_completa_tramite(request, numero):
     tramite = get_object_or_404(Tramite, numero=numero)
@@ -67,10 +68,6 @@ def vista_completa_tramite(request, numero):
                     nombre_completo=nombre_ingresado,
                     defaults={'operador': tramite.operador}
                 )
-                
-                # afiliado = form_afiliado.save(commit=False)
-                # afiliado.operador = tramite.operador
-                # afiliado.save()
                 vehiculo = form_vehiculo.save(commit=False)
                 if not vehiculo.propietario:
                     vehiculo.propietario = afiliado.nombre_completo
@@ -232,13 +229,99 @@ def lista_tramites(request):
 #     }
 #     return render(request, 'tramite/lista.html', contexto)
 
-def vista(request, numero_tramite):
-    tramite = get_object_or_404(Tramite, numero_tramite=numero_tramite)
+def vista(request, numero):
+    tramite = get_object_or_404(Tramite, numero=numero)
     tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
+    
+    if request.method == 'POST':
+        if 'btn_actualizar_tarjeta' in request.POST:
+            tarjeta_id = request.POST.get('tarjeta_id')
+            
+            try:
+                # 1. Recuperamos la tarjeta específica
+                tarjeta_edit = TarjetaDeOperacion.objects.get(id=tarjeta_id)
+                
+                # 2. Reconstruimos los forms usando 'instance' (para saber qué actualizar) 
+                # y el 'prefix' dinámico (para saber qué datos del POST agarrar)
+                prefijo_vehiculo = f"vehiculo_{tarjeta_id}"
+                prefijo_tarjeta = f"tarjeta_{tarjeta_id}"
+                
+                form_vehiculo_edit = NuevoVehiculoForm(
+                    request.POST, 
+                    instance=tarjeta_edit.vehiculo, 
+                    prefix=prefijo_vehiculo
+                )
+                form_tarjeta_edit = EditarTarjetaForm(
+                    request.POST, 
+                    instance=tarjeta_edit, 
+                    prefix=prefijo_tarjeta
+                )
+                
+                # # 3. Validamos y guardamos (atomic evita que se guarde uno sí y otro no)
+                # if form_vehiculo_edit.is_valid() and form_tarjeta_edit.is_valid():
+                #     with transaction.atomic():
+                #         form_vehiculo_edit.save()
+                #         form_tarjeta_edit.save()
+                    
+                #     # Recargamos la vista para ver los cambios
+                #     # Ojo: si la url de esta función es otra, cambiala aquí
+                #     return redirect('tramite:vista', numero=tramite.numero) 
+                # 3. Validamos y guardamos
+                if form_vehiculo_edit.is_valid() and form_tarjeta_edit.is_valid():
+                    with transaction.atomic():
+                        vehiculo = form_vehiculo_edit.save(commit=False)
+                        tarjeta = form_tarjeta_edit.save(commit=False)
+                        
+                        # --- MAGIA DEL AFILIADO ---
+                        # Capturamos el texto que escribiste en el input
+                        nombre_editado = form_tarjeta_edit.cleaned_data.get('nombre_afiliado')
+                        
+                        # Buscamos o creamos el afiliado con ese nombre
+                        afiliado_obj, created = Afiliado.objects.get_or_create(
+                            nombre_completo=nombre_editado,
+                            defaults={'operador': tramite.operador} # Asigna operador si es nuevo
+                        )
+                        
+                        # Asignamos este afiliado tanto a la tarjeta como al vehículo
+                        tarjeta.afiliado = afiliado_obj
+                        vehiculo.afiliado = afiliado_obj
+                        
+                        vehiculo.save()
+                        tarjeta.save()
+                    
+                    return redirect('tramite:vista', numero=tramite.numero)
+                else:
+                    # Útil para depurar en consola si algo no guarda
+                    print("Errores Vehiculo:", form_vehiculo_edit.errors)
+                    print("Errores Tarjeta:", form_tarjeta_edit.errors)
+                    
+            except TarjetaDeOperacion.DoesNotExist:
+                print("Error: La tarjeta no existe")
+            except Exception as e:
+                print(f"Error al actualizar la tarjeta: {e}")
+
+    # --- PREPARACIÓN DE DATOS PARA EL TEMPLATE (MÉTODO GET Y FALLBACK) ---
+    tarjetas_data = []
+    
+    for tarjeta in tarjetas:
+        # Por cada tarjeta, creamos formularios pre-llenados con su información
+        # Es CRÍTICO usar el mismo formato de prefix aquí para que el HTML coincida
+        f_vehiculo = NuevoVehiculoForm(instance=tarjeta.vehiculo, prefix=f"vehiculo_{tarjeta.id}")
+        f_tarjeta = EditarTarjetaForm(instance=tarjeta, prefix=f"tarjeta_{tarjeta.id}")
+        
+        # Empaquetamos todo en un diccionario
+        tarjetas_data.append({
+            'obj': tarjeta,
+            'form_vehiculo': f_vehiculo,
+            'form_tarjeta': f_tarjeta
+        })
+    
     contexto = {
-        'tramite':tramite,
-        'tarjetas':tarjetas,
+        'tramite': tramite,
+        'tarjetas': tarjetas, # Lo mantenemos por si lo usas en un {% if tarjetas %}
+        'tarjetas_data': tarjetas_data, # Esta es la lista que usará nuestro bucle en el HTML
     }
+    
     return render(request, 'tramite/vista_tarjetas.html', contexto)
 
 @login_required()

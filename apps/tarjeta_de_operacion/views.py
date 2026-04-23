@@ -12,6 +12,8 @@ from django.db.models import Q
 from django.http import JsonResponse
 from apps.tramite.models import Tramite
 from django.core.paginator import Paginator
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 def lista_tarjetas(request):
     # Optimización: select_related para evitar consultas N+1
@@ -107,10 +109,26 @@ def editar_tarjeta (request, id_tarjeta):
 
 def generar_pdf_tarjeta (request, id_tarjeta):
     tarjeta = get_object_or_404(TarjetaDeOperacion, id=id_tarjeta)
+    
+    if tarjeta.estado == 'p':
+        # 1. Asignamos la fecha de emisión al día de hoy
+        tarjeta.fecha_emision = timezone.now().date()
+        
+        # 2. Calculamos la fecha de validez (sumamos los años)
+        tarjeta.valida_hasta = tarjeta.fecha_emision + relativedelta(years=tarjeta.validez)
+        
+        # 3. Cambiamos el estado a Emitida
+        tarjeta.estado = 'e'
+        
+        # 4. Guardamos en la base de datos
+        tarjeta.save()
+
     texto_qr = (
         f"PLACA: {tarjeta.vehiculo.placa}\n"
         f"MARCA: {tarjeta.vehiculo.marca}\n"
         f"MODELO: {tarjeta.vehiculo.modelo}\n"
+        f"ESTADO: {tarjeta.get_estado_display()}\n" # Opcional: mostrar estado en QR
+        f"VENCE: {tarjeta.valida_hasta}\n"
     )
     qr = qrcode.QRCode(
         version=1,  

@@ -17,6 +17,31 @@ class BootstrapFormMixin:
                 })
 
 
+class EditarTarjetaForm(forms.ModelForm):
+    # 1. Creamos un campo de texto libre para el nombre del afiliado
+    nombre_afiliado = forms.CharField(
+        max_length=200, 
+        required=True,
+        widget=forms.TextInput(attrs={
+            'list': 'lista_afiliados', # Le conectamos el datalist que ya tienes
+            'autocomplete': 'off'
+        })
+    )
+
+    class Meta:
+        model = TarjetaDeOperacion
+        # 2. Quitamos el campo 'afiliado' real y dejamos solo la ruta
+        fields = ['ruta'] 
+        widgets = {
+            'ruta': forms.Textarea(attrs={'rows': 2}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # 3. Si la tarjeta ya existe, rellenamos el input con el nombre del afiliado actual
+        if self.instance and self.instance.pk and self.instance.afiliado:
+            self.fields['nombre_afiliado'].initial = self.instance.afiliado.nombre_completo
+
 
 # class RecorridoForm(forms.ModelForm):
 #     class Meta:

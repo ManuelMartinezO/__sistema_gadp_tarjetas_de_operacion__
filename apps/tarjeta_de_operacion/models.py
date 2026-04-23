@@ -8,6 +8,13 @@ from dateutil.relativedelta import relativedelta
 
 class TarjetaDeOperacion(models.Model):
 
+    ESTADO = (
+        ('p', 'PENDIENTE'),
+        ('e', 'EMITIDA'),
+        ('v', 'VENCIDA'),
+    )
+    estado = models.CharField(max_length=1, choices=ESTADO, default='p')
+
     tramite = models.ForeignKey(
         Tramite,
         on_delete=models.CASCADE,
