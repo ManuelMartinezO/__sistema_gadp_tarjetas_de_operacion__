@@ -2,7 +2,6 @@
 
 {% block content %}
 <style>
-    /* --- VARIABLES BASE --- */
     :root {
         --color-principal: #8b0000;
         --color-hover: #6a0000;
@@ -11,7 +10,6 @@
         --bg-suave: #f8fafc;
     }
 
-    /* --- ENCABEZADOS Y TEXTOS --- */
     .header-pagina {
         display: flex;
         justify-content: space-between;
@@ -20,6 +18,7 @@
         padding-bottom: 15px;
         border-bottom: 2px solid var(--bg-suave);
     }
+
     .titulo-principal {
         color: var(--color-texto);
         font-weight: 800;
@@ -28,13 +27,13 @@
         align-items: center;
         gap: 10px;
     }
+
     .subtitulo-principal {
         color: #64748b;
         margin: 5px 0 0 0;
         font-size: 0.95rem;
     }
 
-    /* --- BOTONES --- */
     .btn-custom {
         padding: 8px 16px;
         border: none;
@@ -51,16 +50,42 @@
         letter-spacing: 0.5px;
         text-decoration: none;
     }
-    .btn-principal { background-color: var(--color-principal); color: white; }
-    .btn-principal:hover { background-color: var(--color-hover); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(139,0,0,0.2); color: white;}
+
+    .btn-principal { 
+        background-color: var(--color-principal); 
+        color: white; 
+    }
+
+    .btn-principal:hover { 
+        background-color: var(--color-hover); 
+        transform: translateY(-1px); 
+        box-shadow: 0 4px 6px rgba(139,0,0,0.2); 
+        color: white;
+    }
     
-    .btn-gris { background-color: #f1f5f9; color: #475569; border: 1px solid var(--color-borde); }
-    .btn-gris:hover { background-color: #e2e8f0; color: var(--color-texto); }
+    .btn-gris { 
+        background-color: #f1f5f9; 
+        color: #475569; 
+        border: 1px solid var(--color-borde); 
+    }
 
-    .btn-accion { background-color: white; color: var(--color-texto); border: 1px solid var(--color-borde); }
-    .btn-accion:hover { background-color: var(--bg-suave); border-color: var(--color-principal); color: var(--color-principal); }
+    .btn-gris:hover { 
+        background-color: #e2e8f0; 
+        color: var(--color-texto); 
+    }
 
-    /* --- PANEL DE FILTROS --- */
+    .btn-accion { 
+        background-color: white; 
+        color: var(--color-texto); 
+        border: 1px solid var(--color-borde); 
+    }
+
+    .btn-accion:hover { 
+        background-color: var(--bg-suave); 
+        border-color: var(--color-principal); 
+        color: var(--color-principal); 
+    }
+
     .panel-filtros {
         background-color: white;
         border: 1px solid var(--color-borde);
@@ -69,20 +94,24 @@
         margin-bottom: 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
+
     .flex-filtros {
         display: flex;
         gap: 15px;
         align-items: flex-end;
         flex-wrap: wrap;
     }
+
     .form-group {
         display: flex;
         flex-direction: column;
     }
+
     .form-group-busqueda {
         flex: 1; 
         min-width: 250px;
     }
+
     .form-group label {
         font-size: 0.8rem;
         font-weight: 700;
@@ -90,6 +119,7 @@
         margin-bottom: 5px;
         text-transform: uppercase;
     }
+
     .form-group input {
         width: 100%;
         padding: 8px 12px;
@@ -101,6 +131,7 @@
         transition: border-color 0.2s;
         box-sizing: border-box;
     }
+
     .form-group input:focus {
         outline: none;
         border-color: var(--color-principal);
@@ -108,7 +139,6 @@
         box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
     }
 
-    /* --- MODALES NATIVOS (<dialog>) --- */
     dialog {
         background: white; 
         padding: 25px; 
@@ -119,30 +149,77 @@
         color: var(--color-texto);
         max-width: 90vw;
     }
+
     dialog::backdrop {
         background: rgba(15, 23, 42, 0.6); 
         backdrop-filter: blur(3px);
     }
-    dialog h3 { margin-top: 0; color: var(--color-texto); font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 20px;}
-    
-    dialog label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase; }
-    dialog input[type="text"], dialog input[type="number"], dialog select, dialog p {
-        width: 100%; padding: 8px 12px; border: 1px solid #94a3b8; border-radius: 4px;
-        background-color: var(--bg-suave); color: var(--color-texto); font-size: 0.95em;
-        margin-bottom: 12px; margin-top: 0; box-sizing: border-box; transition: border-color 0.2s;
+
+    dialog h3 { 
+        margin-top: 0; 
+        color: var(--color-texto); 
+        font-weight: 800; 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        margin-bottom: 20px;
     }
-    dialog input:focus, dialog select:focus {
-        outline: none; border-color: var(--color-principal); background-color: white;
+    
+    dialog label { 
+        display: block; 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        color: #475569; 
+        margin-bottom: 4px; 
+        text-transform: uppercase; 
+    }
+
+    dialog input[type="text"], 
+    dialog input[type="number"], 
+    dialog select, 
+    dialog p {
+        width: 100%; 
+        padding: 8px 12px; 
+        border: 1px solid #94a3b8; 
+        border-radius: 4px;
+        background-color: var(--bg-suave); 
+        color: var(--color-texto); 
+        font-size: 0.95em;
+        margin-bottom: 12px; 
+        margin-top: 0; 
+        box-sizing: border-box; 
+        transition: border-color 0.2s;
+    }
+
+    dialog input:focus, 
+    dialog select:focus {
+        outline: none; 
+        border-color: var(--color-principal); 
+        background-color: white;
         box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
     }
     
-    .botones-modal { display: flex; gap: 10px; margin-top: 20px; }
-    .botones-modal button { flex: 1; }
+    .botones-modal { 
+        display: flex; 
+        gap: 10px; 
+        margin-top: 20px; 
+    }
+
+    .botones-modal button { 
+        flex: 1; 
+    }
 
     .lista-preview-styled {
-        background: var(--bg-suave); padding: 12px 25px; border: 1px solid #cbd5e1; 
-        border-radius: 6px; margin-bottom: 20px; color: #1e293b; font-size: 0.9em; 
-        max-height: 250px; overflow-y: auto; list-style: none;
+        background: var(--bg-suave); 
+        padding: 12px 25px; 
+        border: 1px solid #cbd5e1; 
+        border-radius: 6px; 
+        margin-bottom: 20px; 
+        color: #1e293b; 
+        font-size: 0.9em; 
+        max-height: 250px; 
+        overflow-y: auto; 
+        list-style: none;
     }
 </style>
 
@@ -150,87 +227,85 @@
     <div class="header-pagina">
         <div>
             <h2 class="titulo-principal">
-                <i class="bi bi-buildings-fill" style="color: var(--color-principal);"></i> Empresas Operadoras
+                <i class="bi bi-buildings-fill" style="color: var(--color-principal);" aria-hidden="true"></i> Empresas Operadoras
             </h2>
             <p class="subtitulo-principal">Directorio de organizaciones y federaciones registradas en el sistema</p>
         </div>
         
         {% if user.rol == 'a' or user.rol == 'sa' %}
             <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('modalOperador').showModal()">
-                <i class="bi bi-plus-lg me-1"></i> Nueva Empresa
+                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Nueva Empresa
             </button>
         {% endif %}
     </div>
 
     <div class="panel-filtros">
         <form id="searchForm" class="flex-filtros" onsubmit="event.preventDefault();">
-            
             <div class="form-group form-group-busqueda">
-                <label for="q"><i class="bi bi-search me-1"></i> Búsqueda Rápida</label>
+                <label for="q"><i class="bi bi-search me-1" aria-hidden="true"></i> Búsqueda Rápida</label>
                 <input type="text" id="q" name="q" value="{{ q }}" placeholder="Buscar por organización o federación..." autocomplete="off">
             </div>
             
             <div class="form-group">
                 <a href="{% url 'operador:lista_operadores' %}" id="btnLimpiar" class="btn-custom btn-gris" style="display: {% if q %}inline-flex{% else %}none{% endif %}; padding-top: 9px; padding-bottom: 9px;">
-                    <i class="bi bi-eraser me-1"></i> Limpiar
+                    <i class="bi bi-eraser me-1" aria-hidden="true"></i> Limpiar
                 </a>
             </div>
-            
         </form>
     </div>
 
-    <div id="resultados-tabla">
+    <div id="resultados-tabla" aria-live="polite">
         {% include 'operador/parcial_tabla.html' %}
     </div>
 </div>
 
 <dialog id="modalOperador" style="width: 480px;">
-    <h3><i class="bi bi-building-add" style="color: var(--color-principal);"></i> Registrar Operador</h3>
+    <h3><i class="bi bi-building-add" style="color: var(--color-principal);" aria-hidden="true"></i> Registrar Operador</h3>
     <form id="formOperador" method="POST" action="">
         {% csrf_token %}
         <input type="hidden" name="submit_operador" value="1">
         
         <div style="display: flex; gap: 10px; align-items: flex-start;">
             <div style="flex: 1;">
-                <label>Organización:</label>
+                <label for="{{ form_operador.organizacion.id_for_label }}">Organización:</label>
                 {{ form_operador.organizacion }}
             </div>
-            <button type="button" class="btn-custom btn-accion w-auto" style="margin-top: 23px; padding: 8px 12px;" onclick="document.getElementById('modalOrganizacion').showModal()" title="Agregar Organización">
-                <i class="bi bi-plus-lg"></i>
+            <button type="button" class="btn-custom btn-accion w-auto" style="margin-top: 23px; padding: 8px 12px;" onclick="document.getElementById('modalOrganizacion').showModal()" title="Agregar Organización" aria-label="Agregar Organización">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
             </button>
         </div>
 
         <div style="display: flex; gap: 10px; align-items: flex-start;">
             <div style="flex: 1;">
-                <label>Federación:</label>
+                <label for="{{ form_operador.federacion.id_for_label }}">Federación:</label>
                 {{ form_operador.federacion }}
             </div>
-            <button type="button" class="btn-custom btn-accion w-auto" style="margin-top: 23px; padding: 8px 12px;" onclick="document.getElementById('modalFederacion').showModal()" title="Agregar Federación">
-                <i class="bi bi-plus-lg"></i>
+            <button type="button" class="btn-custom btn-accion w-auto" style="margin-top: 23px; padding: 8px 12px;" onclick="document.getElementById('modalFederacion').showModal()" title="Agregar Federación" aria-label="Agregar Federación">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
             </button>
         </div>
 
         <div class="botones-modal">
             <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modalOperador').close()">Cancelar</button>
-            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacionGenerica('formOperador', 'modalOperador', 'modalConfirmacionOperador', 'listaPreviewOperador')">Continuar <i class="bi bi-arrow-right"></i></button>
+            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacionGenerica('formOperador', 'modalOperador', 'modalConfirmacionOperador', 'listaPreviewOperador')">Continuar <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
         </div>
     </form>
 </dialog>
 
 <dialog id="modalConfirmacionOperador" style="width: 420px;">
-    <h3><i class="bi bi-exclamation-triangle-fill text-warning"></i> Confirmar Operador</h3>
+    <h3><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> Confirmar Operador</h3>
     <p style="color: #475569; font-size: 0.9em; margin-bottom: 15px;">Por favor, revisa la información antes de guardarla:</p>
     
     <ul id="listaPreviewOperador" class="lista-preview-styled"></ul>
     
     <div class="botones-modal">
-        <button type="button" class="btn-custom btn-gris" onclick="cerrarYVolver('modalConfirmacionOperador', 'modalOperador')"><i class="bi bi-pencil"></i> Editar</button>
-        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formOperador').submit()"><i class="bi bi-check-lg"></i> Guardar</button>
+        <button type="button" class="btn-custom btn-gris" onclick="cerrarYVolver('modalConfirmacionOperador', 'modalOperador')"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</button>
+        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formOperador').submit()"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar</button>
     </div>
 </dialog>
 
 <dialog id="modalOrganizacion" style="width: 400px;">
-    <h3><i class="bi bi-diagram-3-fill" style="color: var(--color-principal);"></i> Crear Organización</h3>
+    <h3><i class="bi bi-diagram-3-fill" style="color: var(--color-principal);" aria-hidden="true"></i> Crear Organización</h3>
     <form id="formOrganizacion" method="POST" action="">
         {% csrf_token %}
         <input type="hidden" name="submit_organizacion" value="1">
@@ -241,25 +316,25 @@
         
         <div class="botones-modal">
             <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modalOrganizacion').close()">Cancelar</button>
-            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacionGenerica('formOrganizacion', 'modalOrganizacion', 'modalConfirmacionOrganizacion', 'listaPreviewOrganizacion')">Continuar <i class="bi bi-arrow-right"></i></button>
+            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacionGenerica('formOrganizacion', 'modalOrganizacion', 'modalConfirmacionOrganizacion', 'listaPreviewOrganizacion')">Continuar <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
         </div>
     </form>
 </dialog>
 
 <dialog id="modalConfirmacionOrganizacion" style="width: 420px;">
-    <h3><i class="bi bi-exclamation-triangle-fill text-warning"></i> Confirmar Organización</h3>
+    <h3><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> Confirmar Organización</h3>
     <p style="color: #475569; font-size: 0.9em; margin-bottom: 15px;">Revisa los datos de la nueva organización:</p>
     
     <ul id="listaPreviewOrganizacion" class="lista-preview-styled"></ul>
     
     <div class="botones-modal">
-        <button type="button" class="btn-custom btn-gris" onclick="cerrarYVolver('modalConfirmacionOrganizacion', 'modalOrganizacion')"><i class="bi bi-pencil"></i> Editar</button>
-        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formOrganizacion').submit()"><i class="bi bi-check-lg"></i> Guardar</button>
+        <button type="button" class="btn-custom btn-gris" onclick="cerrarYVolver('modalConfirmacionOrganizacion', 'modalOrganizacion')"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</button>
+        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formOrganizacion').submit()"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar</button>
     </div>
 </dialog>
 
 <dialog id="modalFederacion" style="width: 400px;">
-    <h3><i class="bi bi-diagram-2-fill" style="color: var(--color-principal);"></i> Crear Federación</h3>
+    <h3><i class="bi bi-diagram-2-fill" style="color: var(--color-principal);" aria-hidden="true"></i> Crear Federación</h3>
     <form id="formFederacion" method="POST" action="">
         {% csrf_token %}
         <input type="hidden" name="submit_federacion" value="1">
@@ -270,92 +345,115 @@
         
         <div class="botones-modal">
             <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modalFederacion').close()">Cancelar</button>
-            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacionGenerica('formFederacion', 'modalFederacion', 'modalConfirmacionFederacion', 'listaPreviewFederacion')">Continuar <i class="bi bi-arrow-right"></i></button>
+            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacionGenerica('formFederacion', 'modalFederacion', 'modalConfirmacionFederacion', 'listaPreviewFederacion')">Continuar <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
         </div>
     </form>
 </dialog>
 
 <dialog id="modalConfirmacionFederacion" style="width: 420px;">
-    <h3><i class="bi bi-exclamation-triangle-fill text-warning"></i> Confirmar Federación</h3>
+    <h3><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> Confirmar Federación</h3>
     <p style="color: #475569; font-size: 0.9em; margin-bottom: 15px;">Revisa los datos de la nueva federación:</p>
     
     <ul id="listaPreviewFederacion" class="lista-preview-styled"></ul>
     
     <div class="botones-modal">
-        <button type="button" class="btn-custom btn-gris" onclick="cerrarYVolver('modalConfirmacionFederacion', 'modalFederacion')"><i class="bi bi-pencil"></i> Editar</button>
-        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formFederacion').submit()"><i class="bi bi-check-lg"></i> Guardar</button>
+        <button type="button" class="btn-custom btn-gris" onclick="cerrarYVolver('modalConfirmacionFederacion', 'modalFederacion')"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</button>
+        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formFederacion').submit()"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar</button>
     </div>
 </dialog>
 
 <script>
-    // --- LÓGICA DE MODALES DE CONFIRMACIÓN (GENÉRICA) ---
-    function mostrarConfirmacionGenerica(idForm, idModalActual, idModalConfirm, idListaPreview) {
-        const formulario = document.getElementById(idForm);
-        const listaPreview = document.getElementById(idListaPreview);
-        
-        listaPreview.innerHTML = ''; 
-
-        for (let i = 0; i < formulario.elements.length; i++) {
-            let elemento = formulario.elements[i];
+    const mostrarConfirmacionGenerica = (idForm, idModalActual, idModalConfirm, idListaPreview) => {
+        try {
+            const formulario = document.getElementById(idForm);
+            const listaPreview = document.getElementById(idListaPreview);
             
-            // Filtramos inputs internos o botones
-            if (elemento.name && elemento.name !== 'csrfmiddlewaretoken' && !elemento.name.startsWith('submit_') && elemento.tagName !== 'BUTTON') {
-                let valorMostrado = elemento.value;
-                
-                if (elemento.tagName === 'SELECT' && elemento.selectedIndex >= 0) {
-                    valorMostrado = elemento.options[elemento.selectedIndex].text;
+            if (!formulario || !listaPreview) throw new Error("Elementos requeridos del DOM no encontrados");
+
+            listaPreview.innerHTML = ''; 
+
+            Array.from(formulario.elements).forEach(elemento => {
+                const esElementoValido = elemento.name && 
+                                         elemento.name !== 'csrfmiddlewaretoken' && 
+                                         !elemento.name.startsWith('submit_') && 
+                                         elemento.tagName !== 'BUTTON';
+                                         
+                if (esElementoValido) {
+                    let valorMostrado = elemento.value.trim();
+                    
+                    if (elemento.tagName === 'SELECT' && elemento.selectedIndex >= 0) {
+                        valorMostrado = elemento.options[elemento.selectedIndex].text;
+                    }
+                    
+                    const li = document.createElement('li');
+                    li.style.marginBottom = '6px';
+                    li.style.paddingLeft = '0';
+                    
+                    const nombreLimpio = elemento.name.toUpperCase().replace(/_/g, ' ');
+                    const valorSeguro = valorMostrado ? valorMostrado.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '<em>Vacío</em>';
+                    
+                    li.innerHTML = `<strong>${nombreLimpio}:</strong> <span style="color: var(--color-principal); font-weight: 600;">${valorSeguro}</span>`;
+                    listaPreview.appendChild(li);
                 }
-                
-                // Formateo visual estandarizado para las listas de preview
-                let li = document.createElement('li');
-                li.style.marginBottom = '6px';
-                li.style.paddingLeft = '0';
-                let nombreLimpio = elemento.name.toUpperCase().replace(/_/g, ' ');
-                li.innerHTML = `<strong>${nombreLimpio}:</strong> <span style="color: var(--color-principal); font-weight: 600;">${valorMostrado || '<em>Vacío</em>'}</span>`;
-                listaPreview.appendChild(li);
-            }
+            });
+            
+            document.getElementById(idModalActual).close();
+            document.getElementById(idModalConfirm).showModal();
+        } catch (error) {
+            console.error("Error al generar la vista previa:", error);
         }
-        
-        document.getElementById(idModalActual).close();
-        document.getElementById(idModalConfirm).showModal();
-    }
+    };
 
-    function cerrarYVolver(idModalActual, idModalAnterior) {
-        document.getElementById(idModalActual).close();
-        document.getElementById(idModalAnterior).showModal();
-    }
+    const cerrarYVolver = (idModalActual, idModalAnterior) => {
+        try {
+            document.getElementById(idModalActual).close();
+            document.getElementById(idModalAnterior).showModal();
+        } catch (error) {
+            console.error("Error al alternar los modales:", error);
+        }
+    };
 
-    // --- LÓGICA DEL BUSCADOR AJAX ---
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", () => {
         const inputQ = document.getElementById('q');
         const contenedorResultados = document.getElementById('resultados-tabla');
         const btnLimpiar = document.getElementById('btnLimpiar');
         let timeout = null;
 
-        function realizarBusqueda(url) {
-            fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+        const mostrarError = () => {
+            contenedorResultados.innerHTML = `
+                <div style="padding: 15px; text-align: center; color: #8b0000; background-color: #fee2e2; border-radius: 6px; margin-top: 15px;">
+                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Ocurrió un error al cargar los datos. Por favor, revisa tu conexión e intenta de nuevo.
+                </div>
+            `;
+        };
+
+        const realizarBusqueda = async (url) => {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
                 }
-            })
-            .then(response => response.text())
-            .then(html => {
+
+                const html = await response.text();
                 contenedorResultados.innerHTML = html;
                 
-                // Aplicar estilo de visualización flex para el diseño de iconos
-                if (inputQ.value.trim() !== '') {
-                    btnLimpiar.style.display = 'inline-flex';
-                } else {
-                    btnLimpiar.style.display = 'none';
-                }
-            })
-            .catch(error => console.error('Error en la búsqueda:', error));
-        }
+                btnLimpiar.style.display = inputQ.value.trim() !== '' ? 'inline-flex' : 'none';
+                
+            } catch (error) {
+                console.error('Error en la petición AJAX:', error);
+                mostrarError();
+            }
+        };
 
-        function generarUrl() {
+        const generarUrl = () => {
             const params = new URLSearchParams({ q: inputQ.value });
             return `?${params.toString()}`;
-        }
+        };
 
         inputQ.addEventListener('input', () => {
             clearTimeout(timeout);
@@ -363,9 +461,10 @@
         });
 
         contenedorResultados.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' && e.target.closest('ul')) {
+            const enlace = e.target.closest('.paginacion-nav a');
+            if (enlace && enlace.hasAttribute('href')) {
                 e.preventDefault();
-                realizarBusqueda(e.target.getAttribute('href'));
+                realizarBusqueda(enlace.getAttribute('href'));
             }
         });
     });

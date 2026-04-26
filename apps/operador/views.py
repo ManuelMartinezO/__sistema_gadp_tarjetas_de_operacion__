@@ -1,60 +1,73 @@
+import logging
+from datetime import timedelta
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Operador
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.template.loader import get_template
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
-from datetime import timedelta
-from xhtml2pdf import pisa # Importamos la librería para el PDF
+from django.contrib import messages
+from django.db import DatabaseError
+from xhtml2pdf import pisa
+
+from .models import Operador
 from .forms import NuevoOperadorForm, FederacionForm, OrganizacionForm
-from django.db.models import Q
 from apps.afiliado.forms import NuevoAfiliadoForm
 from apps.tramite.models import Tramite
 
-def lista_operadores(request):
-    # 1. Optimizar consulta con select_related para las llaves foráneas
-    operadores_list = Operador.objects.select_related('organizacion', 'federacion').all().order_by('-fecha_registro')
-    
-    # 2. Capturar la búsqueda
+logger = logging.getLogger(__name__)
+
+def lista_operadores(request: HttpRequest) -> HttpResponse:
     q = request.GET.get('q', '').strip()
     
-    # 3. Filtrar por nombre de Organización o Federación
-    if q:
-        filtros = Q(organizacion__nombre__icontains=q) | Q(federacion__nombre__icontains=q)
-        operadores_list = operadores_list.filter(filtros)
+    try:
+        operadores_list = Operador.objects.select_related('organizacion', 'federacion').all().order_by('-fecha_registro')
         
-    # 4. Configurar Paginación
-    paginator = Paginator(operadores_list, 5) 
-    page_number = request.GET.get('page')
-    operadores = paginator.get_page(page_number)
-    
-    # 5. Instanciar los formularios vacíos
+        if q:
+            filtros = Q(organizacion__nombre__icontains=q) | Q(federacion__nombre__icontains=q)
+            operadores_list = operadores_list.filter(filtros)
+            
+        paginator = Paginator(operadores_list, 5) 
+        page_number = request.GET.get('page')
+        operadores = paginator.get_page(page_number)
+        
+    except DatabaseError as e:
+        logger.error(f"Error de base de datos en lista_operadores: {e}")
+        messages.error(request, "Ocurrió un error al cargar la lista de operadores.")
+        operadores = []
+
     form_operador = NuevoOperadorForm()
     form_organizacion = OrganizacionForm()
     form_federacion = FederacionForm()
     
-    # 6. Procesar los formularios si es una petición POST
     if request.method == 'POST':
-        if 'submit_operador' in request.POST:
-            form_operador = NuevoOperadorForm(request.POST)
-            if form_operador.is_valid():
-                form_operador.save()
-                return redirect('operador:lista_operadores')
-                
-        elif 'submit_organizacion' in request.POST:
-            form_organizacion = OrganizacionForm(request.POST)
-            if form_organizacion.is_valid():
-                form_organizacion.save()
-                return redirect('operador:lista_operadores')
-                
-        elif 'submit_federacion' in request.POST:
-            form_federacion = FederacionForm(request.POST)
-            if form_federacion.is_valid():
-                form_federacion.save()
-                return redirect('operador:lista_operadores')
-        
+        try:
+            if 'submit_operador' in request.POST:
+                form_operador = NuevoOperadorForm(request.POST)
+                if form_operador.is_valid():
+                    form_operador.save()
+                    messages.success(request, "Operador registrado exitosamente.")
+                    return redirect('operador:lista_operadores')
+                    
+            elif 'submit_organizacion' in request.POST:
+                form_organizacion = OrganizacionForm(request.POST)
+                if form_organizacion.is_valid():
+                    form_organizacion.save()
+                    messages.success(request, "Organización registrada correctamente.")
+                    return redirect('operador:lista_operadores')
+                    
+            elif 'submit_federacion' in request.POST:
+                form_federacion = FederacionForm(request.POST)
+                if form_federacion.is_valid():
+                    form_federacion.save()
+                    messages.success(request, "Federación registrada correctamente.")
+                    return redirect('operador:lista_operadores')
+                    
+        except Exception as e:
+            logger.error(f"Error procesando formulario en lista_operadores: {e}")
+            messages.error(request, "Error inesperado al intentar guardar los datos.")
+            
     contexto = {
         'operadores': operadores,
         'q': q,
@@ -63,42 +76,41 @@ def lista_operadores(request):
         'form_federacion': form_federacion,
     }
     
-    # 7. Detectar si es una petición AJAX para el buscador
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return render(request, 'operador/parcial_tabla.html', contexto)
 
     return render(request, 'operador/lista.html', contexto)
     
-def detalle_operador(request, id_operador):
-    # Optimizamos consultas trayendo también la organización y federación
+def detalle_operador(request: HttpRequest, id_operador: int) -> HttpResponse:
     operador = get_object_or_404(
         Operador.objects.select_related('organizacion', 'federacion'), 
         id=id_operador
     )
     
-    # Instanciamos formularios
     form_operador = NuevoOperadorForm(instance=operador)
     form_afiliado = NuevoAfiliadoForm()
 
     if request.method == 'POST':
-        # A) Procesar edición del Operador
-        if 'submit_operador' in request.POST:
-            form_operador = NuevoOperadorForm(request.POST, instance=operador)
-            if form_operador.is_valid():
-                form_operador.save()
-                return redirect('operador:detalle_operador', id_operador=operador.id)
-                
-        # B) Procesar creación de nuevo Afiliado
-        elif 'submit_afiliado' in request.POST:
-            form_afiliado = NuevoAfiliadoForm(request.POST)
-            if form_afiliado.is_valid():
-                # Guardamos temporalmente sin enviar a la BD
-                nuevo_afiliado = form_afiliado.save(commit=False)
-                # Le asignamos el operador actual automáticamente
-                nuevo_afiliado.operador = operador 
-                # Ahora sí, guardamos en la BD
-                nuevo_afiliado.save()
-                return redirect('operador:detalle_operador', id_operador=operador.id)
+        try:
+            if 'submit_operador' in request.POST:
+                form_operador = NuevoOperadorForm(request.POST, instance=operador)
+                if form_operador.is_valid():
+                    form_operador.save()
+                    messages.success(request, "Datos del operador actualizados.")
+                    return redirect('operador:detalle_operador', id_operador=operador.id)
+                    
+            elif 'submit_afiliado' in request.POST:
+                form_afiliado = NuevoAfiliadoForm(request.POST)
+                if form_afiliado.is_valid():
+                    nuevo_afiliado = form_afiliado.save(commit=False)
+                    nuevo_afiliado.operador = operador 
+                    nuevo_afiliado.save()
+                    messages.success(request, "Afiliado vinculado correctamente.")
+                    return redirect('operador:detalle_operador', id_operador=operador.id)
+                    
+        except Exception as e:
+            logger.error(f"Error procesando formularios en detalle_operador {id_operador}: {e}")
+            messages.error(request, "Error interno al intentar guardar los cambios.")
 
     contexto = {
         'operador': operador,
@@ -107,118 +119,88 @@ def detalle_operador(request, id_operador):
     }
     return render(request, 'operador/detalle.html', contexto)
 
-def crear_operador (request):
-    if request.method == 'POST':
-        form = OperadorForm(request.POST)
-        if form.is_valid():
-            guardado = form.save()
-            return redirect('operador:lista_operadores')
-    else:
-        form = OperadorForm()
-    contexto = {
-        'form': form
-    }
-    return render(request, 'operador/crear.html', contexto)
-
-def editar_operador (request, id_operador):
-    operador = get_object_or_404(Operador, id=id_operador)
-    if request.method == 'POST':
-        form = OperadorForm(request.POST, instance=operador)
-        if form.is_valid():
-            guardado = form.save()
-            return redirect('operador:detalle_operador', operador.id)
-    else:
-        form = OperadorForm()
-    contexto = {
-        'operador': operador,
-        'form': form,
-    }
-    return render(request, 'operador/editar.html', contexto)
-
-def descargar_reporte_operador_pdf(request, operador_id):
-    # 1. Obtener el operador
+def descargar_reporte_operador_pdf(request: HttpRequest, operador_id: int) -> HttpResponse:
     operador = get_object_or_404(Operador, id=operador_id)
 
-    # 2. Cálculos generales (usando 'afiliado_operador' y 'tarjeta_operador')
-    total_afiliados = operador.afiliado_operador.count()
-    
-    totales_tarjetas = operador.tarjeta_operador.aggregate(
-        total_cantidad=Count('id'),
-        total_monto=Sum('monto')
-    )
+    try:
+        total_afiliados = operador.afiliado_operador.count()
+        
+        totales_tarjetas = operador.tarjeta_operador.aggregate(
+            total_cantidad=Count('id'),
+            total_monto=Sum('monto')
+        )
 
-    # 3. Padrón de Afiliados
-    afiliados = operador.afiliado_operador.annotate(
-        num_tarjetas=Count('tarjeta_afiliado', distinct=True),
-        aporte_total=Sum('tarjeta_afiliado__monto'),
-        num_vehiculos=Count('vehiculo_afiliado', distinct=True)
-    ).prefetch_related(
-        'vehiculo_afiliado__tipo', 
-        'vehiculo_afiliado__marca'
-    )
+        afiliados = operador.afiliado_operador.annotate(
+            num_tarjetas=Count('tarjeta_afiliado', distinct=True),
+            aporte_total=Sum('tarjeta_afiliado__monto'),
+            num_vehiculos=Count('vehiculo_afiliado', distinct=True)
+        ).prefetch_related(
+            'vehiculo_afiliado__tipo', 
+            'vehiculo_afiliado__marca'
+        )
 
-    # 4. Distribución por tipo de trámite
-    tarjetas_por_tramite_raw = operador.tarjeta_operador.values(
-        'tramite__tipo', 
-        'tramite__estado'
-    ).annotate(
-        cantidad=Count('id')
-    ).order_by('-cantidad')
+        tarjetas_por_tramite_raw = operador.tarjeta_operador.values(
+            'tramite__tipo', 
+            'tramite__estado'
+        ).annotate(
+            cantidad=Count('id')
+        ).order_by('-cantidad')
 
-    # Mapear los choices para que el PDF muestre el texto legible, no la letra
-    TIPO_DICT = dict(Tramite.TIPO)
-    ESTADO_DICT = dict(Tramite.ESTADO)
-    
-    tarjetas_por_tramite = []
-    for t in tarjetas_por_tramite_raw:
-        tarjetas_por_tramite.append({
-            'tipo': TIPO_DICT.get(t['tramite__tipo'], 'Desconocido'),
-            'estado': ESTADO_DICT.get(t['tramite__estado'], 'Desconocido'),
-            'cantidad': t['cantidad']
-        })
+        TIPO_DICT = dict(Tramite.TIPO)
+        ESTADO_DICT = dict(Tramite.ESTADO)
+        
+        tarjetas_por_tramite = [
+            {
+                'tipo': TIPO_DICT.get(t['tramite__tipo'], 'Desconocido'),
+                'estado': ESTADO_DICT.get(t['tramite__estado'], 'Desconocido'),
+                'cantidad': t['cantidad']
+            }
+            for t in tarjetas_por_tramite_raw
+        ]
 
-    # 5. Ingresos por Mes
-    ingresos_mensuales = operador.tarjeta_operador.filter(
-        fecha_emision__isnull=False
-    ).annotate(
-        mes=TruncMonth('fecha_emision')
-    ).values('mes').annotate(
-        cantidad_tarjetas=Count('id'),
-        monto_generado=Sum('monto')
-    ).order_by('-mes')
+        ingresos_mensuales = operador.tarjeta_operador.filter(
+            fecha_emision__isnull=False
+        ).annotate(
+            mes=TruncMonth('fecha_emision')
+        ).values('mes').annotate(
+            cantidad_tarjetas=Count('id'),
+            monto_generado=Sum('monto')
+        ).order_by('-mes')
 
-    # 6. Alertas de Vencimiento
-    hoy = timezone.localdate()
-    limite = hoy + timedelta(days=30)
-    
-    tarjetas_por_vencer = operador.tarjeta_operador.filter(
-        valida_hasta__lte=limite 
-    ).select_related('afiliado', 'vehiculo').order_by('valida_hasta')
+        hoy = timezone.localdate()
+        limite = hoy + timedelta(days=30)
+        
+        tarjetas_por_vencer = operador.tarjeta_operador.filter(
+            valida_hasta__lte=limite 
+        ).select_related('afiliado', 'vehiculo').order_by('valida_hasta')
 
-    # 7. Empaquetar el contexto
-    context = {
-        'operador': operador,
-        'fecha_reporte': timezone.now(),
-        'total_afiliados': total_afiliados,
-        'totales_tarjetas': totales_tarjetas,
-        'afiliados': afiliados,
-        'tarjetas_por_tramite': tarjetas_por_tramite,
-        'ingresos_mensuales': ingresos_mensuales,
-        'tarjetas_por_vencer': tarjetas_por_vencer,
-    }
+        context = {
+            'operador': operador,
+            'fecha_reporte': timezone.now(),
+            'total_afiliados': total_afiliados,
+            'totales_tarjetas': totales_tarjetas,
+            'afiliados': afiliados,
+            'tarjetas_por_tramite': tarjetas_por_tramite,
+            'ingresos_mensuales': ingresos_mensuales,
+            'tarjetas_por_vencer': tarjetas_por_vencer,
+        }
 
-    # 8. Renderizar el Template HTML
-    template = get_template('reportes/reporte_operador.html')
-    html = template.render(context)
+        template = get_template('reportes/reporte_operador.html')
+        html = template.render(context)
 
-    # 9. Crear la respuesta HTTP como PDF
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="Reporte_{operador.organizacion.nombre}.pdf"'
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="Reporte_{operador.organizacion.nombre}.pdf"'
 
-    # 10. Generar el PDF (Usar utf-8 es crucial)
-    pisa_status = pisa.CreatePDF(html.encode('utf-8'), dest=response)
+        pisa_status = pisa.CreatePDF(html.encode('utf-8'), dest=response)
 
-    if pisa_status.err:
-        return HttpResponse('Hubo un error al generar el PDF: <pre>' + html + '</pre>')
-    
-    return response
+        if pisa_status.err:
+            logger.error(f"Error de Pisa al generar PDF de operador {operador_id}: {pisa_status.err}")
+            messages.error(request, "El motor de PDF falló al intentar renderizar el documento.")
+            return redirect('operador:detalle_operador', id_operador=operador.id)
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error crítico al generar reporte PDF para operador {operador_id}: {e}")
+        messages.error(request, "Error interno al recuperar los datos para generar el PDF.")
+        return redirect('operador:detalle_operador', id_operador=operador.id)

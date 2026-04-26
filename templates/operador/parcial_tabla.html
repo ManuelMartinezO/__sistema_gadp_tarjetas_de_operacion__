@@ -1,5 +1,4 @@
 <style>
-    /* --- VARIABLES BASE --- */
     :root {
         --color-principal: #8b0000;
         --color-hover: #6a0000;
@@ -8,7 +7,6 @@
         --bg-suave: #f8fafc;
     }
 
-    /* --- TABLA MODERNA --- */
     .tabla-contenedor {
         background: white;
         border: 1px solid var(--color-borde);
@@ -17,11 +15,13 @@
         box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         margin-bottom: 20px;
     }
+
     .tabla-moderna {
         width: 100%;
         border-collapse: collapse;
         text-align: left;
     }
+
     .tabla-moderna th {
         background-color: var(--bg-suave);
         color: #475569;
@@ -31,6 +31,7 @@
         padding: 12px 15px;
         border-bottom: 2px solid #e2e8f0;
     }
+
     .tabla-moderna td {
         padding: 12px 15px;
         border-bottom: 1px solid #e2e8f0;
@@ -38,15 +39,19 @@
         font-size: 0.95em;
         vertical-align: middle;
     }
+
     .tabla-moderna tbody tr {
         transition: background-color 0.2s;
     }
+
     .tabla-moderna tbody tr:hover {
         background-color: #f1f5f9;
     }
-    .tabla-moderna tbody tr:last-child td { border-bottom: none; }
 
-    /* --- ENLACES --- */
+    .tabla-moderna tbody tr:last-child td { 
+        border-bottom: none; 
+    }
+
     .link-custom {
         color: var(--color-principal);
         text-decoration: none;
@@ -60,12 +65,12 @@
         transition: background-color 0.2s;
         border: 1px solid transparent;
     }
+
     .link-custom:hover { 
         background-color: rgba(139, 0, 0, 0.05); 
         border-color: rgba(139, 0, 0, 0.2);
     }
 
-    /* --- PAGINACIÓN --- */
     .paginacion-container {
         display: flex;
         justify-content: space-between;
@@ -78,6 +83,7 @@
         color: #475569;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
+
     .paginacion-nav {
         display: flex;
         gap: 5px;
@@ -85,7 +91,9 @@
         padding: 0;
         list-style: none;
     }
-    .paginacion-nav a, .paginacion-nav span {
+
+    .paginacion-nav a, 
+    .paginacion-nav span {
         padding: 6px 12px;
         border-radius: 4px;
         text-decoration: none;
@@ -98,10 +106,12 @@
         justify-content: center;
         min-width: 32px;
     }
+
     .paginacion-nav a:hover {
         background-color: var(--bg-suave);
         border-color: #94a3b8;
     }
+
     .paginacion-nav span.activo {
         background-color: var(--color-principal);
         color: white;
@@ -110,14 +120,14 @@
 </style>
 
 <div class="tabla-contenedor">
-    <table class="tabla-moderna">
+    <table class="tabla-moderna" aria-label="Lista de operadores">
         <thead>
             <tr>
-                <th><i class="bi bi-hash me-1"></i> ID</th>
-                <th><i class="bi bi-diagram-3-fill me-1"></i> Organización</th>
-                <th><i class="bi bi-diagram-2-fill me-1"></i> Federación</th>
-                <th><i class="bi bi-calendar3 me-1"></i> Fecha de Registro</th>
-                <th style="text-align: center;"><i class="bi bi-gear me-1"></i> Acción</th>
+                <th scope="col"><i class="bi bi-hash me-1" aria-hidden="true"></i> ID</th>
+                <th scope="col"><i class="bi bi-diagram-3-fill me-1" aria-hidden="true"></i> Organización</th>
+                <th scope="col"><i class="bi bi-diagram-2-fill me-1" aria-hidden="true"></i> Federación</th>
+                <th scope="col"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i> Fecha de Registro</th>
+                <th scope="col" style="text-align: center;"><i class="bi bi-gear me-1" aria-hidden="true"></i> Acción</th>
             </tr>
         </thead>
         <tbody>
@@ -142,15 +152,15 @@
                 </td>
                 
                 <td style="text-align: center;">
-                    <a href="{% url 'operador:detalle_operador' operador.id %}" class="link-custom">
-                        <i class="bi bi-building-check"></i> Ver Detalle
+                    <a href="{% url 'operador:detalle_operador' operador.id %}" class="link-custom" aria-label="Ver detalle del operador {{ operador.organizacion.nombre }}">
+                        <i class="bi bi-building-check" aria-hidden="true"></i> Ver Detalle
                     </a>
                 </td>
             </tr>
             {% empty %}
             <tr>
                 <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">
-                    <i class="bi bi-buildings fs-2 d-block mb-2"></i> No se encontraron operadores con los criterios de búsqueda.
+                    <i class="bi bi-buildings fs-2 d-block mb-2" aria-hidden="true"></i> No se encontraron operadores con los criterios de búsqueda.
                 </td>
             </tr>
             {% endfor %}
@@ -159,37 +169,39 @@
 </div>
 
 <div class="paginacion-container">
-    <div>
+    <div aria-live="polite">
         Mostrando <strong style="color: var(--color-principal);">{{ operadores.start_index|default:"0" }}</strong> a <strong style="color: var(--color-principal);">{{ operadores.end_index|default:"0" }}</strong> de <strong>{{ operadores.paginator.count|default:"0" }}</strong> resultados
     </div>
     
     {% if operadores.has_other_pages %}
-        <ul class="paginacion-nav">
-            {% if operadores.has_previous %}
-                <li>
-                    <a href="?page={{ operadores.previous_page_number }}&q={{ q }}" title="Anterior">
-                        <i class="bi bi-chevron-left"></i>
-                    </a>
-                </li>
-            {% endif %}
-
-            {% for i in operadores.paginator.page_range %}
-                {% if operadores.number == i %}
-                    <li><span class="activo">{{ i }}</span></li>
-                {% elif i > operadores.number|add:'-3' and i < operadores.number|add:'3' %}
+        <nav aria-label="Navegación de páginas">
+            <ul class="paginacion-nav">
+                {% if operadores.has_previous %}
                     <li>
-                        <a href="?page={{ i }}&q={{ q }}">{{ i }}</a>
+                        <a href="?page={{ operadores.previous_page_number }}&q={{ q|urlencode }}" aria-label="Página anterior" title="Anterior">
+                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                        </a>
                     </li>
                 {% endif %}
-            {% endfor %}
 
-            {% if operadores.has_next %}
-                <li>
-                    <a href="?page={{ operadores.next_page_number }}&q={{ q }}" title="Siguiente">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-            {% endif %}
-        </ul>
+                {% for i in operadores.paginator.page_range %}
+                    {% if operadores.number == i %}
+                        <li><span class="activo" aria-current="page">{{ i }}</span></li>
+                    {% elif i > operadores.number|add:'-3' and i < operadores.number|add:'3' %}
+                        <li>
+                            <a href="?page={{ i }}&q={{ q|urlencode }}" aria-label="Ir a la página {{ i }}">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if operadores.has_next %}
+                    <li>
+                        <a href="?page={{ operadores.next_page_number }}&q={{ q|urlencode }}" aria-label="Página siguiente" title="Siguiente">
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
     {% endif %}
 </div>

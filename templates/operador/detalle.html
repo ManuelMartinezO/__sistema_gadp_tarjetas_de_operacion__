@@ -2,7 +2,6 @@
 
 {% block content %}
 <style>
-    /* --- VARIABLES Y ESTRUCTURA GENERAL --- */
     :root {
         --color-principal: #8b0000;
         --color-hover: #6a0000;
@@ -11,7 +10,6 @@
         --bg-suave: #f8fafc;
     }
 
-    /* --- ENCABEZADOS Y TEXTOS --- */
     .header-pagina {
         display: flex;
         justify-content: space-between;
@@ -22,6 +20,7 @@
         flex-wrap: wrap;
         gap: 15px;
     }
+
     .titulo-principal {
         color: var(--color-texto);
         font-weight: 800;
@@ -32,7 +31,6 @@
         font-size: 1.5rem;
     }
 
-    /* --- CONTENEDORES TIPO TARJETA --- */
     .contenedor-principal {
         display: flex;
         gap: 20px;
@@ -41,7 +39,11 @@
         margin-bottom: 30px;
         flex-wrap: wrap;
     }
-    .columna { flex: 1; min-width: 300px; }
+
+    .columna { 
+        flex: 1; 
+        min-width: 300px; 
+    }
     
     .bloque-form {
         border: 1px solid var(--color-borde);
@@ -52,6 +54,7 @@
         height: 100%;
         box-sizing: border-box;
     }
+
     .subtitulo-bloque {
         color: var(--color-principal);
         font-weight: 800;
@@ -65,6 +68,7 @@
         border-bottom: 1px solid var(--bg-suave);
         padding-bottom: 10px;
     }
+
     .titulo-seccion {
         color: var(--color-texto);
         font-weight: 800;
@@ -76,7 +80,6 @@
         padding-bottom: 10px;
     }
 
-    /* --- LISTAS DE DATOS --- */
     .lista-datos {
         list-style: none;
         padding: 0;
@@ -85,11 +88,13 @@
         flex-direction: column;
         gap: 12px;
     }
+
     .lista-datos li {
         display: flex;
         flex-direction: column;
         font-size: 0.95em;
     }
+
     .label-mini {
         font-size: 0.75rem;
         font-weight: 800;
@@ -98,13 +103,13 @@
         letter-spacing: 0.5px;
         margin-bottom: 4px;
     }
+
     .valor-dato {
         color: var(--color-texto);
         font-weight: 600;
         font-size: 1.1em;
     }
 
-    /* --- BOTONES --- */
     .btn-custom {
         padding: 8px 16px;
         border: none;
@@ -121,16 +126,41 @@
         letter-spacing: 0.5px;
         text-decoration: none;
     }
-    .btn-principal { background-color: var(--color-principal); color: white; }
-    .btn-principal:hover { background-color: var(--color-hover); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(139,0,0,0.2); color: white;}
+
+    .btn-principal { 
+        background-color: var(--color-principal); 
+        color: white; 
+    }
+
+    .btn-principal:hover { 
+        background-color: var(--color-hover); 
+        transform: translateY(-1px); 
+        box-shadow: 0 4px 6px rgba(139,0,0,0.2); 
+        color: white;
+    }
     
-    .btn-gris { background-color: #f1f5f9; color: #475569; border: 1px solid var(--color-borde); }
-    .btn-gris:hover { background-color: #e2e8f0; color: var(--color-texto); }
+    .btn-gris { 
+        background-color: #f1f5f9; 
+        color: #475569; 
+        border: 1px solid var(--color-borde); 
+    }
 
-    .link-custom { color: var(--color-principal); text-decoration: none; font-weight: 700; font-size: 0.85em; }
-    .link-custom:hover { text-decoration: underline; }
+    .btn-gris:hover { 
+        background-color: #e2e8f0; 
+        color: var(--color-texto); 
+    }
 
-    /* --- TABLA MODERNA --- */
+    .link-custom { 
+        color: var(--color-principal); 
+        text-decoration: none; 
+        font-weight: 700; 
+        font-size: 0.85em; 
+    }
+
+    .link-custom:hover { 
+        text-decoration: underline; 
+    }
+
     .tabla-contenedor {
         background: white;
         border: 1px solid var(--color-borde);
@@ -139,11 +169,13 @@
         box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         margin-bottom: 20px;
     }
+
     .tabla-moderna {
         width: 100%;
         border-collapse: collapse;
         text-align: left;
     }
+
     .tabla-moderna th {
         background-color: var(--bg-suave);
         color: #475569;
@@ -153,6 +185,7 @@
         padding: 12px 15px;
         border-bottom: 2px solid #e2e8f0;
     }
+
     .tabla-moderna td {
         padding: 12px 15px;
         border-bottom: 1px solid #e2e8f0;
@@ -160,10 +193,15 @@
         font-size: 0.95em;
         vertical-align: middle;
     }
-    .tabla-moderna tbody tr:hover { background-color: #f1f5f9; }
-    .tabla-moderna tbody tr:last-child td { border-bottom: none; }
 
-    /* --- MODALES NATIVOS (<dialog>) --- */
+    .tabla-moderna tbody tr:hover { 
+        background-color: #f1f5f9; 
+    }
+
+    .tabla-moderna tbody tr:last-child td { 
+        border-bottom: none; 
+    }
+
     dialog {
         background: white; 
         padding: 25px; 
@@ -174,65 +212,112 @@
         color: var(--color-texto);
         max-width: 90vw;
     }
+
     dialog::backdrop {
         background: rgba(15, 23, 42, 0.6); 
         backdrop-filter: blur(3px);
     }
-    dialog h3 { margin-top: 0; color: var(--color-texto); font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 20px;}
-    
-    dialog label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase; }
-    dialog input[type="text"], dialog input[type="number"], dialog select, dialog p {
-        width: 100%; padding: 8px 12px; border: 1px solid #94a3b8; border-radius: 4px;
-        background-color: var(--bg-suave); color: var(--color-texto); font-size: 0.95em;
-        margin-bottom: 12px; margin-top: 0; box-sizing: border-box; transition: border-color 0.2s;
+
+    dialog h3 { 
+        margin-top: 0; 
+        color: var(--color-texto); 
+        font-weight: 800; 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        margin-bottom: 20px;
     }
-    dialog input:focus, dialog select:focus {
-        outline: none; border-color: var(--color-principal); background-color: white;
+    
+    dialog label { 
+        display: block; 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        color: #475569; 
+        margin-bottom: 4px; 
+        text-transform: uppercase; 
+    }
+
+    dialog input[type="text"], 
+    dialog input[type="number"], 
+    dialog select, 
+    dialog p {
+        width: 100%; 
+        padding: 8px 12px; 
+        border: 1px solid #94a3b8; 
+        border-radius: 4px;
+        background-color: var(--bg-suave); 
+        color: var(--color-texto); 
+        font-size: 0.95em;
+        margin-bottom: 12px; 
+        margin-top: 0; 
+        box-sizing: border-box; 
+        transition: border-color 0.2s;
+    }
+
+    dialog input:focus, 
+    dialog select:focus {
+        outline: none; 
+        border-color: var(--color-principal); 
+        background-color: white;
         box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
     }
-    .botones-modal { display: flex; gap: 10px; margin-top: 20px; }
-    .botones-modal button { flex: 1; }
+
+    .botones-modal { 
+        display: flex; 
+        gap: 10px; 
+        margin-top: 20px; 
+    }
+
+    .botones-modal button { 
+        flex: 1; 
+    }
     
     .lista-preview-styled {
-        background: var(--bg-suave); padding: 12px 25px; border: 1px solid #cbd5e1; 
-        border-radius: 6px; margin-bottom: 20px; color: #1e293b; font-size: 0.9em; 
-        max-height: 250px; overflow-y: auto; list-style: none;
+        background: var(--bg-suave); 
+        padding: 12px 25px; 
+        border: 1px solid #cbd5e1; 
+        border-radius: 6px; 
+        margin-bottom: 20px; 
+        color: #1e293b; 
+        font-size: 0.9em; 
+        max-height: 250px; 
+        overflow-y: auto; 
+        list-style: none;
     }
 </style>
 
 <div>
     <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
         <a href="{% url 'operador:lista_operadores' %}" class="btn-custom btn-gris w-auto">
-            <i class="bi bi-arrow-left me-1"></i> Volver al Directorio
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Volver al Directorio
         </a>
         <a href="{% url 'operador:reporte_pdf' operador.id %}" target="_blank" class="btn-custom btn-gris w-auto">
-            <i class="bi bi-printer me-1"></i> Imprimir Reporte
+            <i class="bi bi-printer me-1" aria-hidden="true"></i> Imprimir Reporte
         </a>
     </div>
 
     <div class="header-pagina">
         <h2 class="titulo-principal">
-            <i class="bi bi-buildings-fill" style="color: var(--color-principal);"></i> 
+            <i class="bi bi-buildings-fill" style="color: var(--color-principal);" aria-hidden="true"></i> 
             Expediente: <span style="color: var(--color-principal);">{{ operador.organizacion.nombre|upper }} - {{ operador.federacion.nombre|upper }}</span>
         </h2>
 
         {% if user.rol == 'a' or user.rol == 'sa' %}
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button class="btn-custom btn-gris w-auto" onclick="document.getElementById('modalOperador').showModal()">
-                    <i class="bi bi-pencil-square me-1"></i> Editar Empresa
+                    <i class="bi bi-pencil-square me-1" aria-hidden="true"></i> Editar Empresa
                 </button>
                 <button class="btn-custom btn-principal w-auto" onclick="document.getElementById('modalAfiliado').showModal()">
-                    <i class="bi bi-person-plus-fill me-1"></i> Registrar Afiliado
+                    <i class="bi bi-person-plus-fill me-1" aria-hidden="true"></i> Registrar Afiliado
                 </button>
             </div>
         {% endif %}
     </div>
 
     <div class="contenedor-principal">
-        
         <div class="columna">
             <div class="bloque-form">
-                <h3 class="subtitulo-bloque"><i class="bi bi-info-circle-fill me-2"></i> Datos Generales</h3>
+                <h3 class="subtitulo-bloque"><i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i> Datos Generales</h3>
                 <ul class="lista-datos">
                     <li style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; background: var(--bg-suave); padding: 8px 12px; border-radius: 4px; border: 1px solid #e2e8f0;">
                         <span class="label-mini" style="margin: 0;">ID de Registro</span>
@@ -256,11 +341,11 @@
 
         <div class="columna">
             <div class="bloque-form">
-                <h3 class="subtitulo-bloque"><i class="bi bi-bar-chart-fill me-2"></i> Métricas</h3>
+                <h3 class="subtitulo-bloque"><i class="bi bi-bar-chart-fill me-2" aria-hidden="true"></i> Métricas</h3>
                 <ul class="lista-datos">
                     <li style="background: var(--bg-suave); padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
                         <div>
-                            <span class="label-mini d-block" style="margin-bottom: 2px;"><i class="bi bi-people-fill me-1"></i> Afiliados Totales</span>
+                            <span class="label-mini d-block" style="margin-bottom: 2px;"><i class="bi bi-people-fill me-1" aria-hidden="true"></i> Afiliados Totales</span>
                             <span style="font-size: 0.85em; color: #64748b;">Personal vinculado</span>
                         </div>
                         <span class="valor-dato" style="font-size: 1.8em; color: var(--color-principal);">{{ operador.afiliado_operador.count }}</span>
@@ -268,7 +353,7 @@
                     
                     <li style="background: var(--bg-suave); padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
                         <div>
-                            <span class="label-mini d-block" style="margin-bottom: 2px;"><i class="bi bi-card-checklist me-1"></i> Tarjetas de Operación</span>
+                            <span class="label-mini d-block" style="margin-bottom: 2px;"><i class="bi bi-card-checklist me-1" aria-hidden="true"></i> Tarjetas de Operación</span>
                             <span style="font-size: 0.85em; color: #64748b;">Trámites procesados</span>
                         </div>
                         <span class="valor-dato" style="font-size: 1.8em; color: var(--color-principal);">{{ operador.tarjeta_operador.count }}</span>
@@ -276,11 +361,10 @@
                 </ul>
             </div>
         </div>
-
     </div>
 
     <h3 class="titulo-seccion">
-        <i class="bi bi-diagram-3-fill me-2" style="color: var(--color-principal);"></i> 
+        <i class="bi bi-diagram-3-fill me-2" style="color: var(--color-principal);" aria-hidden="true"></i> 
         Afiliados Vinculados <span style="font-size: 0.8em; color: #64748b; margin-left: 8px;">({{ operador.afiliado_operador.count }})</span>
     </h3>
 
@@ -288,9 +372,9 @@
         <table class="tabla-moderna">
             <thead>
                 <tr>
-                    <th><i class="bi bi-person-lines-fill me-1"></i> Nombre Completo</th>
-                    <th><i class="bi bi-calendar3 me-1"></i> Fecha Registro</th>
-                    <th style="text-align: center;"><i class="bi bi-gear me-1"></i> Acción</th>
+                    <th><i class="bi bi-person-lines-fill me-1" aria-hidden="true"></i> Nombre Completo</th>
+                    <th><i class="bi bi-calendar3 me-1" aria-hidden="true"></i> Fecha Registro</th>
+                    <th style="text-align: center;"><i class="bi bi-gear me-1" aria-hidden="true"></i> Acción</th>
                 </tr>
             </thead>
             <tbody>
@@ -300,14 +384,14 @@
                     <td>{{ afiliado.fecha_registro|date:"d/m/Y" }}</td>
                     <td style="text-align: center;">
                         <a href="{% url 'afiliado:detalle_afiliado' afiliado.id %}" class="link-custom">
-                            <i class="bi bi-folder2-open"></i> Ver Expediente
+                            <i class="bi bi-folder2-open" aria-hidden="true"></i> Ver Expediente
                         </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="3" style="text-align: center; padding: 40px; color: #94a3b8;">
-                        <i class="bi bi-person-x fs-2 d-block mb-2"></i> Esta empresa aún no tiene personal vinculado.
+                        <i class="bi bi-person-x fs-2 d-block mb-2" aria-hidden="true"></i> Esta empresa aún no tiene personal vinculado.
                     </td>
                 </tr>
                 {% endfor %}
@@ -317,7 +401,7 @@
 </div>
 
 <dialog id="modalOperador" style="width: 450px;">
-    <h3><i class="bi bi-pencil-square" style="color: var(--color-principal);"></i> Editar Empresa</h3>
+    <h3><i class="bi bi-pencil-square" style="color: var(--color-principal);" aria-hidden="true"></i> Editar Empresa</h3>
     <form id="formOperador" method="POST" action="">
         {% csrf_token %}
         <input type="hidden" name="submit_operador" value="1">
@@ -328,27 +412,27 @@
         
         <div class="botones-modal">
             <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modalOperador').close()">Cancelar</button>
-            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacionGenerica('formOperador', 'modalOperador', 'modalConfirmacionOperador', 'listaPreviewOperador')">Continuar <i class="bi bi-arrow-right"></i></button>
+            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacionGenerica('formOperador', 'modalOperador', 'modalConfirmacionOperador', 'listaPreviewOperador')">Continuar <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
         </div>
     </form>
 </dialog>
 
 <dialog id="modalConfirmacionOperador" style="width: 420px;">
-    <h3><i class="bi bi-exclamation-triangle-fill text-warning"></i> Confirmar Cambios</h3>
+    <h3><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> Confirmar Cambios</h3>
     <p style="color: #475569; font-size: 0.9em; margin-bottom: 15px;">Revisa la información de la empresa antes de guardarla:</p>
     
     <ul id="listaPreviewOperador" class="lista-preview-styled"></ul>
     
     <div class="botones-modal">
-        <button type="button" class="btn-custom btn-gris" onclick="cerrarYVolver('modalConfirmacionOperador', 'modalOperador')"><i class="bi bi-pencil"></i> Editar</button>
-        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formOperador').submit()"><i class="bi bi-check-lg"></i> Guardar Empresa</button>
+        <button type="button" class="btn-custom btn-gris" onclick="cerrarYVolver('modalConfirmacionOperador', 'modalOperador')"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</button>
+        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formOperador').submit()"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar Empresa</button>
     </div>
 </dialog>
 
 <dialog id="modalAfiliado" style="width: 450px;">
-    <h3><i class="bi bi-person-plus-fill" style="color: var(--color-principal);"></i> Registrar Afiliado</h3>
+    <h3><i class="bi bi-person-plus-fill" style="color: var(--color-principal);" aria-hidden="true"></i> Registrar Afiliado</h3>
     <div style="background-color: #eff6ff; color: #1d4ed8; padding: 10px; border: 1px solid #bfdbfe; border-radius: 4px; font-size: 0.85em; margin-bottom: 15px;">
-        <i class="bi bi-info-circle-fill me-1"></i> Este afiliado se vinculará automáticamente a <strong>{{ operador.organizacion.nombre }}</strong>.
+        <i class="bi bi-info-circle-fill me-1" aria-hidden="true"></i> Este afiliado se vinculará automáticamente a <strong>{{ operador.organizacion.nombre }}</strong>.
     </div>
 
     <form id="formAfiliado" method="POST" action="">
@@ -361,59 +445,72 @@
         
         <div class="botones-modal">
             <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modalAfiliado').close()">Cancelar</button>
-            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacionGenerica('formAfiliado', 'modalAfiliado', 'modalConfirmacionAfiliado', 'listaPreviewAfiliado')">Continuar <i class="bi bi-arrow-right"></i></button>
+            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacionGenerica('formAfiliado', 'modalAfiliado', 'modalConfirmacionAfiliado', 'listaPreviewAfiliado')">Continuar <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
         </div>
     </form>
 </dialog>
 
 <dialog id="modalConfirmacionAfiliado" style="width: 420px;">
-    <h3><i class="bi bi-exclamation-triangle-fill text-warning"></i> Confirmar Afiliado</h3>
+    <h3><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> Confirmar Afiliado</h3>
     <p style="color: #475569; font-size: 0.9em; margin-bottom: 15px;">Revisa los datos del nuevo afiliado:</p>
     
     <ul id="listaPreviewAfiliado" class="lista-preview-styled"></ul>
     
     <div class="botones-modal">
-        <button type="button" class="btn-custom btn-gris" onclick="cerrarYVolver('modalConfirmacionAfiliado', 'modalAfiliado')"><i class="bi bi-pencil"></i> Editar</button>
-        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formAfiliado').submit()"><i class="bi bi-link-45deg"></i> Vincular Afiliado</button>
+        <button type="button" class="btn-custom btn-gris" onclick="cerrarYVolver('modalConfirmacionAfiliado', 'modalAfiliado')"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</button>
+        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formAfiliado').submit()"><i class="bi bi-link-45deg" aria-hidden="true"></i> Vincular Afiliado</button>
     </div>
 </dialog>
 
 <script>
-    // --- LÓGICA DE MODALES DE CONFIRMACIÓN (GENÉRICA) ---
-    function mostrarConfirmacionGenerica(idForm, idModalActual, idModalConfirm, idListaPreview) {
-        const formulario = document.getElementById(idForm);
-        const listaPreview = document.getElementById(idListaPreview);
-        
-        listaPreview.innerHTML = ''; 
-
-        for (let i = 0; i < formulario.elements.length; i++) {
-            let elemento = formulario.elements[i];
+    const mostrarConfirmacionGenerica = (idForm, idModalActual, idModalConfirm, idListaPreview) => {
+        try {
+            const formulario = document.getElementById(idForm);
+            const listaPreview = document.getElementById(idListaPreview);
             
-            // Filtramos inputs internos o botones
-            if (elemento.name && elemento.name !== 'csrfmiddlewaretoken' && !elemento.name.startsWith('submit_') && elemento.tagName !== 'BUTTON') {
-                let valorMostrado = elemento.value;
-                
-                // Extraer el texto real si es un selector
-                if (elemento.tagName === 'SELECT' && elemento.selectedIndex >= 0) {
-                    valorMostrado = elemento.options[elemento.selectedIndex].text;
-                }
-                
-                let li = document.createElement('li');
-                li.style.marginBottom = '6px';
-                li.style.paddingLeft = '0';
-                let nombreLimpio = elemento.name.toUpperCase().replace(/_/g, ' ');
-                li.innerHTML = `<strong>${nombreLimpio}:</strong> <span style="color: var(--color-principal); font-weight: 600;">${valorMostrado || '<em>Vacío</em>'}</span>`;
-                listaPreview.appendChild(li);
-            }
-        }
-        
-        document.getElementById(idModalActual).close();
-        document.getElementById(idModalConfirm).showModal();
-    }
+            if (!formulario || !listaPreview) throw new Error("Elementos requeridos del DOM no encontrados");
 
-    function cerrarYVolver(idModalActual, idModalAnterior) {
-        document.getElementById(idModalActual).close();
-        document.getElementById(idModalAnterior).showModal();
-    }
+            listaPreview.innerHTML = ''; 
+
+            Array.from(formulario.elements).forEach(elemento => {
+                const esElementoValido = elemento.name && 
+                                         elemento.name !== 'csrfmiddlewaretoken' && 
+                                         !elemento.name.startsWith('submit_') && 
+                                         elemento.tagName !== 'BUTTON';
+                                         
+                if (esElementoValido) {
+                    let valorMostrado = elemento.value.trim();
+                    
+                    if (elemento.tagName === 'SELECT' && elemento.selectedIndex >= 0) {
+                        valorMostrado = elemento.options[elemento.selectedIndex].text;
+                    }
+                    
+                    const li = document.createElement('li');
+                    li.style.marginBottom = '6px';
+                    li.style.paddingLeft = '0';
+                    
+                    const nombreLimpio = elemento.name.toUpperCase().replace(/_/g, ' ');
+                    const valorSeguro = valorMostrado ? valorMostrado.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '<em>Vacío</em>';
+                    
+                    li.innerHTML = `<strong>${nombreLimpio}:</strong> <span style="color: var(--color-principal); font-weight: 600;">${valorSeguro}</span>`;
+                    listaPreview.appendChild(li);
+                }
+            });
+            
+            document.getElementById(idModalActual).close();
+            document.getElementById(idModalConfirm).showModal();
+        } catch (error) {
+            console.error("Error al generar la vista previa:", error);
+        }
+    };
+
+    const cerrarYVolver = (idModalActual, idModalAnterior) => {
+        try {
+            document.getElementById(idModalActual).close();
+            document.getElementById(idModalAnterior).showModal();
+        } catch (error) {
+            console.error("Error al alternar los modales:", error);
+        }
+    };
 </script>
 {% endblock %}
