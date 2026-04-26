@@ -2,7 +2,6 @@
 
 {% block content %}
 <style>
-    /* --- VARIABLES BASE --- */
     :root {
         --color-principal: #8b0000;
         --color-hover: #6a0000;
@@ -11,7 +10,6 @@
         --bg-suave: #f8fafc;
     }
 
-    /* --- ENCABEZADOS Y TEXTOS --- */
     .header-pagina {
         display: flex;
         justify-content: space-between;
@@ -20,6 +18,7 @@
         padding-bottom: 15px;
         border-bottom: 2px solid var(--bg-suave);
     }
+
     .titulo-principal {
         color: var(--color-texto);
         font-weight: 800;
@@ -28,13 +27,13 @@
         align-items: center;
         gap: 10px;
     }
+
     .subtitulo-principal {
         color: #64748b;
         margin: 5px 0 0 0;
         font-size: 0.95rem;
     }
 
-    /* --- BOTONES --- */
     .btn-custom {
         padding: 8px 16px;
         border: none;
@@ -51,13 +50,30 @@
         letter-spacing: 0.5px;
         text-decoration: none;
     }
-    .btn-principal { background-color: var(--color-principal); color: white; }
-    .btn-principal:hover { background-color: var(--color-hover); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(139,0,0,0.2); color: white;}
-    
-    .btn-gris { background-color: #f1f5f9; color: #475569; border: 1px solid var(--color-borde); }
-    .btn-gris:hover { background-color: #e2e8f0; color: var(--color-texto); }
 
-    /* --- PANEL DE FILTROS --- */
+    .btn-principal { 
+        background-color: var(--color-principal); 
+        color: white; 
+    }
+
+    .btn-principal:hover { 
+        background-color: var(--color-hover); 
+        transform: translateY(-1px); 
+        box-shadow: 0 4px 6px rgba(139,0,0,0.2); 
+        color: white;
+    }
+    
+    .btn-gris { 
+        background-color: #f1f5f9; 
+        color: #475569; 
+        border: 1px solid var(--color-borde); 
+    }
+
+    .btn-gris:hover { 
+        background-color: #e2e8f0; 
+        color: var(--color-texto); 
+    }
+
     .panel-filtros {
         background-color: white;
         border: 1px solid var(--color-borde);
@@ -66,12 +82,14 @@
         margin-bottom: 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
+
     .grid-filtros {
         display: grid;
-        grid-template-columns: 2fr 2fr 1fr; /* Proporciones para los filtros */
+        grid-template-columns: 2fr 2fr 1fr; 
         gap: 15px;
         align-items: end;
     }
+
     .form-group label {
         display: block;
         font-size: 0.8rem;
@@ -80,7 +98,9 @@
         margin-bottom: 5px;
         text-transform: uppercase;
     }
-    .form-group input, .form-group select {
+
+    .form-group input, 
+    .form-group select {
         width: 100%;
         padding: 8px 12px;
         border: 1px solid #94a3b8;
@@ -90,14 +110,15 @@
         font-size: 0.95em;
         transition: border-color 0.2s;
     }
-    .form-group input:focus, .form-group select:focus {
+
+    .form-group input:focus, 
+    .form-group select:focus {
         outline: none;
         border-color: var(--color-principal);
         background-color: white;
         box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
     }
 
-    /* Adaptación móvil del grid de filtros */
     @media (max-width: 768px) {
         .grid-filtros {
             grid-template-columns: 1fr;
@@ -108,27 +129,21 @@
 <div>
     <div class="header-pagina">
         <div>
-            <h2 class="titulo-principal"><i class="bi bi-truck-front-fill" style="color: var(--color-principal);"></i> Parque Automotor</h2>
+            <h2 class="titulo-principal"><i class="bi bi-truck-front-fill" style="color: var(--color-principal);" aria-hidden="true"></i> Parque Automotor</h2>
             <p class="subtitulo-principal">Control y registro de unidades vehiculares afiliadas al sistema</p>
         </div>
-        
-        {% if user.rol == 'a' or user.rol == 'sa' %}
-            <a href="{% url 'vehiculo:crear_vehiculo' %}" class="btn-custom btn-principal">
-                <i class="bi bi-plus-lg"></i> Registrar Vehículo
-            </a>
-        {% endif %}
     </div>
 
     <div class="panel-filtros">
         <form id="searchForm" class="grid-filtros" onsubmit="event.preventDefault();">
             
             <div class="form-group">
-                <label for="q"><i class="bi bi-search me-1"></i> Buscar</label>
+                <label for="q"><i class="bi bi-search me-1" aria-hidden="true"></i> Buscar</label>
                 <input type="text" id="q" name="q" value="{{ q }}" placeholder="Buscar por placa, marca o modelo..." autocomplete="off">
             </div>
             
             <div class="form-group">
-                <label for="tipo"><i class="bi bi-funnel me-1"></i> Tipo de Vehículo</label>
+                <label for="tipo"><i class="bi bi-funnel me-1" aria-hidden="true"></i> Tipo de Vehículo</label>
                 <select id="tipo" name="tipo">
                     <option value="todos" {% if tipo_actual == 'todos' %}selected{% endif %}>Todos los tipos</option>
                     <option value="p" {% if tipo_actual == 'p' %}selected{% endif %}>Transporte de Pasajeros</option>
@@ -138,57 +153,66 @@
             
             <div class="form-group">
                 <a href="{% url 'vehiculo:lista_vehiculos' %}" id="btnLimpiar" class="btn-custom btn-gris w-100" style="display: {% if q or tipo_actual != 'todos' %}inline-flex{% else %}none{% endif %}; padding-top: 9px; padding-bottom: 9px;">
-                    <i class="bi bi-eraser"></i> Limpiar Búsqueda
+                    <i class="bi bi-eraser me-1" aria-hidden="true"></i> Limpiar Búsqueda
                 </a>
             </div>
             
         </form>
     </div>
 
-    <div id="resultados-tabla">
+    <div id="resultados-tabla" aria-live="polite">
         {% include 'vehiculo/parcial_tabla.html' %}
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", () => {
         const inputQ = document.getElementById('q');
         const selectTipo = document.getElementById('tipo');
         const contenedorResultados = document.getElementById('resultados-tabla');
         const btnLimpiar = document.getElementById('btnLimpiar');
         let timeout = null;
 
-        // Función principal que hace la petición al servidor sin recargar
-        function realizarBusqueda(url) {
-            fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest' // Le dice a Django que es AJAX
-                }
-            })
-            .then(response => response.text())
-            .then(html => {
-                contenedorResultados.innerHTML = html; // Reemplaza la tabla
-                
-                // Mostrar u ocultar botón de limpiar (Actualizado a inline-flex para el diseño)
-                if (inputQ.value || selectTipo.value !== 'todos') {
-                    btnLimpiar.style.display = 'inline-flex';
-                } else {
-                    btnLimpiar.style.display = 'none';
-                }
-            })
-            .catch(error => console.error('Error en la búsqueda:', error));
-        }
+        const mostrarError = () => {
+            contenedorResultados.innerHTML = `
+                <div style="padding: 15px; text-align: center; color: #8b0000; background-color: #fee2e2; border-radius: 6px; margin-top: 15px;">
+                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Ocurrió un error al cargar los datos. Por favor, revisa tu conexión e intenta de nuevo.
+                </div>
+            `;
+        };
 
-        // Construye la URL con los parámetros actuales
-        function generarUrl() {
+        const realizarBusqueda = async (url) => {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const html = await response.text();
+                contenedorResultados.innerHTML = html;
+                
+                const tieneFiltrosActivos = inputQ.value.trim() !== '' || selectTipo.value !== 'todos';
+                btnLimpiar.style.display = tieneFiltrosActivos ? 'inline-flex' : 'none';
+                
+            } catch (error) {
+                console.error('Error en la petición AJAX:', error);
+                mostrarError();
+            }
+        };
+
+        const generarUrl = () => {
             const params = new URLSearchParams({
                 q: inputQ.value,
                 tipo: selectTipo.value
             });
             return `?${params.toString()}`;
-        }
+        };
 
-        // Buscar al escribir (con un retraso de 300ms para no saturar el servidor)
         inputQ.addEventListener('input', () => {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
@@ -196,16 +220,16 @@
             }, 300);
         });
 
-        // Buscar al cambiar el select
         selectTipo.addEventListener('change', () => {
             realizarBusqueda(generarUrl());
         });
 
-        // Hacer que los botones de paginación también usen AJAX
         contenedorResultados.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' && e.target.closest('ul.paginacion-nav')) {
-                e.preventDefault(); // Evita que el enlace recargue la página
-                realizarBusqueda(e.target.getAttribute('href'));
+            const enlace = e.target.closest('.paginacion-nav a');
+            
+            if (enlace && enlace.hasAttribute('href')) {
+                e.preventDefault(); 
+                realizarBusqueda(enlace.getAttribute('href'));
             }
         });
     });
