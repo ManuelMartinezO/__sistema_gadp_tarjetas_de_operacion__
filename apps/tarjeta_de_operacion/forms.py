@@ -5,100 +5,61 @@ class BootstrapFormMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
-            # Verificamos si el widget es un Checkbox
             if isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({
-                    'class': 'form-check-input', # Clase correcta para checkbox
+                    'class': 'form-check-input',
                 })
             else:
+                widget_class = 'form-select' if isinstance(field.widget, forms.Select) else 'form-control'
                 field.widget.attrs.update({
-                    'class': 'form-control',
+                    'class': widget_class,
                     'style': 'border-radius: 10px;'
                 })
 
-class EditarTarjetaForm(forms.ModelForm):
-    class Meta:
-        model = TarjetaDeOperacion
-        fields = [
-            'tramite', 'estado', 'operador', 'afiliado', 'vehiculo', 
-            'ruta', 'licencia', 'validez', 'monto', 'fecha_emision', 'valida_hasta'
-        ]
-        widgets = {
-            'fecha_emision': forms.DateInput(attrs={'type': 'date'}),
-            'valida_hasta': forms.DateInput(attrs={'type': 'date'}),
-        }
-
-class EditarTarjetaForm(forms.ModelForm):
-    # 1. Creamos un campo de texto libre para el nombre del afiliado
+class EditarTarjetaForm(BootstrapFormMixin, forms.ModelForm):
+    # Campo de texto libre para buscar y vincular al afiliado mediante un datalist
     nombre_afiliado = forms.CharField(
         max_length=200, 
         required=True,
+        label='Afiliado Vinculado',
         widget=forms.TextInput(attrs={
-            'list': 'lista_afiliados', # Le conectamos el datalist que ya tienes
-            'autocomplete': 'off'
+            'list': 'lista_afiliados', 
+            'autocomplete': 'off',
+            'placeholder': 'Escriba para buscar el afiliado...'
         })
     )
 
     class Meta:
         model = TarjetaDeOperacion
-        # 2. Quitamos el campo 'afiliado' real y dejamos solo la ruta
-        fields = ['ruta'] 
+        # Retiramos 'afiliado' directo ya que lo manejamos desde 'nombre_afiliado' en la vista
+        fields = [
+            'tramite', 'estado', 'operador', 'vehiculo', 
+            'ruta', 'licencia', 'validez', 'monto', 
+            'fecha_emision', 'valida_hasta'
+        ]
+        labels = {
+            'tramite': 'Trámite Asociado',
+            'ruta': 'Descripción de la Ruta',
+            'validez': 'Años de Validez',
+        }
         widgets = {
-            'ruta': forms.Textarea(attrs={'rows': 2}),
+            'ruta': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Describa el recorrido aprobado...'}),
+            'fecha_emision': forms.DateInput(attrs={'type': 'date'}),
+            'valida_hasta': forms.DateInput(attrs={'type': 'date'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # 3. Si la tarjeta ya existe, rellenamos el input con el nombre del afiliado actual
+        # Precargar el nombre del afiliado actual si se está editando una tarjeta existente
         if self.instance and self.instance.pk and self.instance.afiliado:
             self.fields['nombre_afiliado'].initial = self.instance.afiliado.nombre_completo
 
-
-# class RecorridoForm(forms.ModelForm):
-#     class Meta:
-#         model = Recorrido
-#         fields = ['tarjeta_operacion', 'ruta']
-#         widgets = {
-#             'tarjeta_operacion': forms.Select(attrs={'class': 'form-select'}),
-#             'ruta': forms.Select(attrs={'class': 'form-select'}),
-#         }
-
-
-# =======================================================
-# 5. TARJETA DE OPERACIÓN (El formulario avanzado)
-# =======================================================
 class TarjetaDeOperacionForm(BootstrapFormMixin, forms.ModelForm):
+    """
+    Formulario de creación inicial para la Tarjeta de Operación.
+    Actualmente sin campos expuestos; asegúrate de definir los 'fields' requeridos 
+    cuando actives la vista de creación.
+    """
     class Meta:
         model = TarjetaDeOperacion
-        fields = [
-                #   'afiliado', 
-                # #   'vehiculo', 
-                # #   'tipo_tarjeta',
-                # #   'ruta',
-                # #   'hora_recorrido',
-                # #   'viceversa',
-                # #   'monto',
-                # #   'validez_periodo', 
-                #   'validez_tiempo'
-                  ]
-        # widgets = {
-        #     'viceversa': forms.CheckboxInput(attrs={'class': 'form-check-input'})
-        # }
-        
-    #     widgets = {
-    #         # 'tramite': forms.Select(attrs={'class': 'form-select'}),
-    #         # ID específicos para el script de AJAX
-    #         'operador': forms.Select(attrs={'class': 'form-select', 'id': 'id_operador'}),
-    #         'afiliado': forms.Select(attrs={'class': 'form-select', 'id': 'id_afiliado'}),
-    #         'vehiculo': forms.Select(attrs={'class': 'form-select'}),
-    #         'tipo_tarjeta': forms.Select(attrs={'class': 'form-select'}),
-    #         'monto': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': '0.00'}),
-    #         'validez_periodo': forms.Select(attrs={'class': 'form-select'}),
-    #         'validez_tiempo': forms.NumberInput(attrs={'class': 'form-control'}),
-    #     }
-
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     self.fields['operador'].empty_label = "Seleccione un Operador"
-    #     self.fields['afiliado'].empty_label = "Seleccione un Afiliado"
-    #     self.fields['vehiculo'].empty_label = "Seleccione un Vehículo"
+        fields = [] # TODO: Añadir campos según los requisitos de negocio al crear
