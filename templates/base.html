@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión</title>
+    <title>Sistema de Gestión | GADP</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,21 +15,16 @@
     
     <style>
         :root {
-            /* PALETA DE COLORES (Granate y Dorado) */
-            --primary: #8b0000;          /* Color Primario: Granate */
-            --primary-dark: #660000;     /* Granate más oscuro para hovers */
-            --secondary: #c5a059;        /* Color Secundario: Dorado */
-            --tertiary: #c5a059;         /* Color Terciario */
-            
-            /* FONDOS (Claros y Cenizados) */
-            --bg-body: #f4f6f8;          /* Cenizado muy claro para el fondo principal */
-            --bg-sidebar: #ffffff;       /* Blanco puro para el menú lateral */
-            --bg-surface: #ffffff;       /* Blanco para tarjetas y contenedores */
-            
-            /* TEXTOS */
-            --text-main: #334155;        /* Gris oscuro/Pizarra para lectura cómoda */
-            --text-muted: #64748b;       /* Gris medio para textos secundarios */
-            --border-color: #e2e8f0;     /* Color de bordes suaves */
+            --primary: #8b0000;          
+            --primary-dark: #660000;     
+            --secondary: #c5a059;        
+            --tertiary: #c5a059;         
+            --bg-body: #f4f6f8;          
+            --bg-sidebar: #ffffff;       
+            --bg-surface: #ffffff;       
+            --text-main: #334155;        
+            --text-muted: #64748b;       
+            --border-color: #e2e8f0;     
             --white: #ffffff;
         }
 
@@ -41,33 +36,33 @@
             min-height: 100vh;
         }
 
-        /* --- SIDEBAR INSTITUCIONAL --- */
         .sidebar {
             width: 260px; 
             background-color: var(--bg-sidebar);
-            height: 100vh; /* CAMBIO 1: De min-height a height estricto */
+            height: 100vh; 
             position: fixed;
-            overflow-y: auto; /* CAMBIO 2: Habilita el scroll vertical interno */
+            overflow-y: auto; 
             transition: all 0.3s ease;
             z-index: 1030;
             box-shadow: 4px 0 24px rgba(0,0,0,0.03);
             border-right: 1px solid var(--border-color);
         }
 
-        /* --- SCROLLBAR PREMIUM PARA EL SIDEBAR --- */
-        /* Esto hace que la barra de desplazamiento sea delgada y elegante */
         .sidebar::-webkit-scrollbar {
             width: 5px;
         }
+        
         .sidebar::-webkit-scrollbar-track {
             background: transparent;
         }
+        
         .sidebar::-webkit-scrollbar-thumb {
-            background-color: rgba(139, 0, 0, 0.15); /* Tono granate muy sutil */
+            background-color: rgba(139, 0, 0, 0.15); 
             border-radius: 10px;
         }
+        
         .sidebar::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(139, 0, 0, 0.3); /* Un poco más oscuro al pasar el mouse */
+            background-color: rgba(139, 0, 0, 0.3); 
         }
 
         .sidebar .logo-area {
@@ -94,7 +89,6 @@
             padding: 0 0.8rem; 
         }
 
-        /* Enlaces del menú por defecto */
         .nav-pills .nav-link {
             color: var(--text-main);
             border-radius: 8px;
@@ -113,28 +107,27 @@
             color: var(--text-muted);
         }
 
-        /* Efecto Hover (Usa el color Secundario/Dorado) */
         .nav-pills .nav-link:hover {
-            background-color: rgba(197, 160, 89, 0.08); /* Fondo dorado transparente */
+            background-color: rgba(197, 160, 89, 0.08); 
             color: var(--secondary);
             transform: translateX(4px); 
         }
+        
         .nav-pills .nav-link:hover i { 
             color: var(--secondary);
             transform: scale(1.1); 
         }
 
-        /* Efecto Activo (Usa el color Primario/Granate) */
         .nav-pills .nav-link.active {
             background-color: var(--primary) !important;
             color: var(--white);
             box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2); 
         }
+        
         .nav-pills .nav-link.active i {
             color: var(--white);
         }
 
-        /* Divisores de Sección */
         .section-divider {
             color: var(--text-muted);
             font-size: 0.7rem;
@@ -145,14 +138,12 @@
             opacity: 0.7;
         }
 
-        /* --- CONTENIDO PRINCIPAL --- */
         .main-wrapper {
             margin-left: 260px;
             padding: 2.5rem;
             transition: all 0.3s ease;
         }
 
-        /* --- RESPONSIVIDAD --- */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -170,47 +161,67 @@
 </head>
 <body>
 
-    <div class="sidebar d-flex flex-column">
+    <nav class="sidebar d-flex flex-column" aria-label="Menú principal">
         <div class="logo-area">
-            <img src="{% static 'img/7.png' %}" alt="Logo Sistema" class="img-fluid logo-img">
+            <img src="{% static 'img/7.png' %}" alt="Logo Sistema G.A.D. Potosí" class="img-fluid logo-img">
         </div>
 
         <ul class="nav nav-pills flex-column mb-auto mt-2 pb-4">
             
             <li class="nav-item">
-                <a href="{% url 'home' %}" class="nav-link active">
-                    <i class="bi bi-house-door me-3"></i> Inicio
+                <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-house-door me-3" aria-hidden="true"></i> Inicio
                 </a>
             </li>
             
-            
             {% if user.is_authenticated %}
                 {% if user.rol == 'sa' %}
+                    <li>
+                        <a href="{% url 'gestion:historial_list' %}" class="nav-link {% if request.resolver_match.app_name == 'gestion' %}active{% endif %}" {% if request.resolver_match.app_name == 'gestion' %}aria-current="page"{% endif %}>
+                            <i class="bi bi-clock-history me-3" aria-hidden="true"></i> Gestión
+                        </a>
+                    </li>
+                {% endif %}
+                
                 <li>
-                    <a href="{% url 'gestion:historial_list' %}" class="nav-link">
-                        <i class="bi bi-clock-history me-3"></i> Gestión
+                    <a href="{% url 'tramite:lista_tramites' %}" class="nav-link {% if request.resolver_match.app_name == 'tramite' %}active{% endif %}" {% if request.resolver_match.app_name == 'tramite' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-file-earmark-text me-3" aria-hidden="true"></i> Trámites
                     </a>
                 </li>
-
-                {% endif %}
-                <li><a href="{% url 'tramite:lista_tramites' %}" class="nav-link"><i class="bi bi-file-earmark-text me-3"></i> Trámites</a></li>
+                
                 {% if user.rol == 'a' or user.rol == 'sa' %}
-                    <li><a href="{% url 'operador:lista_operadores' %}" class="nav-link"><i class="bi bi-person-badge me-3"></i> Operadores</a></li>
-                    <li><a href="{% url 'afiliado:lista_afiliados' %}" class="nav-link"><i class="bi bi-people me-3"></i> Afiliados</a></li>
-                    <li><a href="{% url 'vehiculo:lista_vehiculos' %}" class="nav-link"><i class="bi bi-car-front me-3"></i> Vehículos</a></li>
+                    <li>
+                        <a href="{% url 'operador:lista_operadores' %}" class="nav-link {% if request.resolver_match.app_name == 'operador' %}active{% endif %}" {% if request.resolver_match.app_name == 'operador' %}aria-current="page"{% endif %}>
+                            <i class="bi bi-person-badge me-3" aria-hidden="true"></i> Operadores
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'afiliado:lista_afiliados' %}" class="nav-link {% if request.resolver_match.app_name == 'afiliado' %}active{% endif %}" {% if request.resolver_match.app_name == 'afiliado' %}aria-current="page"{% endif %}>
+                            <i class="bi bi-people me-3" aria-hidden="true"></i> Afiliados
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'vehiculo:lista_vehiculos' %}" class="nav-link {% if request.resolver_match.app_name == 'vehiculo' %}active{% endif %}" {% if request.resolver_match.app_name == 'vehiculo' %}aria-current="page"{% endif %}>
+                            <i class="bi bi-car-front me-3" aria-hidden="true"></i> Vehículos
+                        </a>
+                    </li>
                 {% endif %}
+                
                 <li class="mt-4">
                     <a href="{% url 'logout' %}" class="nav-link text-danger" style="opacity: 0.9;">
-                        <i class="bi bi-box-arrow-left me-3 text-danger"></i> Cerrar Sesión
+                        <i class="bi bi-box-arrow-left me-3 text-danger" aria-hidden="true"></i> Cerrar Sesión
                     </a>
                 </li>
             {% else %}
                 <div class="section-divider">Acceso</div>
-                <li><a href="{% url 'login' %}" class="nav-link"><i class="bi bi-box-arrow-in-right me-3"></i> Iniciar Sesión</a></li>
-                <li><a href="{% url 'gestion:crear_usuario' %}" class="nav-link"><i class="bi bi-box-arrow-in-right me-3"></i> Iniciar Sesión</a></li>
+                <li>
+                    <a href="{% url 'login' %}" class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+                        <i class="bi bi-box-arrow-in-right me-3" aria-hidden="true"></i> Iniciar Sesión
+                    </a>
+                </li>
             {% endif %}
         </ul>
-    </div>
+    </nav>
 
     <main class="main-wrapper">
         <div class="container-fluid px-0">

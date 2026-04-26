@@ -1,84 +1,68 @@
+import json
+import logging
+from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
-from .forms import UsuarioForm, PerfilForm
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.db import transaction, DatabaseError
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
+from django.utils import timezone
+from django.http import HttpRequest, HttpResponse
+
 from apps.operador.models import Operador
 from apps.afiliado.models import Afiliado
 from apps.vehiculo.models import Vehiculo
 from apps.tramite.models import Tramite
 from apps.tarjeta_de_operacion.models import TarjetaDeOperacion
-from django.db.models import Count
-from django.utils import timezone
-from datetime import timedelta
-from django.db.models.functions import TruncMonth
-import json
-from django.contrib.auth.decorators import login_required, user_passes_test
-from .permisos import es_admin, es_usuario_normal, es_superadmin
-from django.contrib.auth import login, logout
-from django.db import transaction
 from apps.usuario.models import Usuario, Perfil
-from django.contrib import messages
 from apps.usuario.forms import UsuarioCreationForm, UsuarioUpdateForm, PerfilForm
+from .permisos import es_admin, es_usuario_normal, es_superadmin
 
-# === HOME ===
-@login_required()
+logger = logging.getLogger(__name__)
+
+@login_required
 @user_passes_test(es_usuario_normal)
-def home(request):
-    total_operadores = Operador.objects.count() 
-    total_afiliados = Afiliado.objects.count()
-    total_vehiculos = Vehiculo.objects.count()
-    
-    # CORRECCIÓN: El campo correcto es 'estado' y el valor es 'p'
-    tramites_pendientes = Tramite.objects.filter(estado='p').count()
-    
-    ultimos_tramites = Tramite.objects.order_by('-fecha_registro')[:5]
-
-    # 1. Datos para el Gráfico Circular (Donut)
-    # CORRECCIÓN: Cambiamos 'tipo_tarjeta' por 'ruta' (o el campo que uses en tu modelo)
-    tarjetas_por_tipo = TarjetaDeOperacion.objects.values('ruta').annotate(total=Count('id'))
-    
-    # CORRECCIÓN: Asegúrate de que TIPO_TARJETA o RUTA_CHOICES exista en tu modelo
-    # Si tu modelo usa un choices para la ruta, cámbialo aquí. Si no, quita el dict.
-    # Ejemplo asumiendo que tienes un choices llamado RUTAS_CHOICES:
+def home(request: HttpRequest) -> HttpResponse:
     try:
-        tipos_dict = dict(TarjetaDeOperacion.RUTAS_CHOICES) # Ajusta este nombre si es diferente
-    except AttributeError:
-        tipos_dict = {} # Por si acaso no tienes un choices definido
-    
-    tipo_labels = []
-    tipo_data = []
-    for item in tarjetas_por_tipo:
-        # Buscamos en el diccionario, si no existe mostramos el valor directo de la base de datos
-        etiqueta = tipos_dict.get(item['ruta'], item['ruta'] or 'Sin asignar')
-        tipo_labels.append(etiqueta)
-        tipo_data.append(item['total'])
+        total_operadores = Operador.objects.count()
+        total_afiliados = Afiliado.objects.count()
+        total_vehiculos = Vehiculo.objects.count()
+        tramites_pendientes = Tramite.objects.filter(estado='p').count()
+        ultimos_tramites = Tramite.objects.order_by('-fecha_registro')[:5]
 
-    # 2. Datos para el Gráfico de Barras (Últimos 6 meses)
-    seis_meses_atras = timezone.now() - timedelta(days=6*30)
-    
-    emisiones = TarjetaDeOperacion.objects.filter(fecha_registro__gte=seis_meses_atras) \
-        .annotate(mes=TruncMonth('fecha_registro')) \
-        .values('mes') \
-        .annotate(total=Count('id')) \
-        .order_by('mes')
+        tarjetas_por_tipo = TarjetaDeOperacion.objects.values('ruta').annotate(total=Count('id'))
+        tipos_dict = dict(getattr(TarjetaDeOperacion, 'RUTAS_CHOICES', ()))
+        
+        tipo_labels = [tipos_dict.get(item['ruta'], item['ruta'] or 'Sin asignar') for item in tarjetas_por_tipo]
+        tipo_data = [item['total'] for item in tarjetas_por_tipo]
 
-    meses_nombres = {1: 'Ene', 2: 'Feb', 3: 'Mar', 4: 'Abr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Ago', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dic'}
-    
-    bar_labels = []
-    bar_data = []
-    for e in emisiones:
-        if e['mes']:
-            nombre_mes = f"{meses_nombres[e['mes'].month]} {e['mes'].year}"
-            bar_labels.append(nombre_mes)
-            bar_data.append(e['total'])
+        seis_meses_atras = timezone.now() - timedelta(days=6*30)
+        emisiones = TarjetaDeOperacion.objects.filter(fecha_registro__gte=seis_meses_atras) \
+            .annotate(mes=TruncMonth('fecha_registro')) \
+            .values('mes') \
+            .annotate(total=Count('id')) \
+            .order_by('mes')
 
-    # 3. Enviar todo al template
+        meses_nombres = {1: 'Ene', 2: 'Feb', 3: 'Mar', 4: 'Abr', 5: 'May', 6: 'Jun', 
+                         7: 'Jul', 8: 'Ago', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dic'}
+        
+        bar_labels = [f"{meses_nombres[e['mes'].month]} {e['mes'].year}" for e in emisiones if e.get('mes')]
+        bar_data = [e['total'] for e in emisiones if e.get('mes')]
+        
+    except DatabaseError as e:
+        logger.error(f"Error de base de datos al cargar el dashboard: {e}")
+        messages.error(request, "Ocurrió un problema al cargar los datos del dashboard.")
+        return render(request, 'home.html', {})
+
     contexto = {
         'total_operadores': total_operadores,
         'total_afiliados': total_afiliados,
         'total_vehiculos': total_vehiculos,
         'tramites_pendientes': tramites_pendientes,
         'ultimos_tramites': ultimos_tramites,
-        # Pasamos las listas convertidas a JSON para que JavaScript las entienda
         'tipo_labels': json.dumps(tipo_labels),
         'tipo_data': json.dumps(tipo_data),
         'bar_labels': json.dumps(bar_labels),
@@ -87,83 +71,56 @@ def home(request):
 
     return render(request, 'home.html', contexto)
 
-# === LOGUP ===
-
-
-# === LOGOUT ===
-def logout_view (request):
+def logout_view(request: HttpRequest) -> HttpResponse:
     logout(request)
     return redirect('login')
 
-# === LOGIN ===
-def login_view (request):
+def login_view(request: HttpRequest) -> HttpResponse:
     if request.user.is_authenticated:
         return redirect('home')
-    if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
-        if form.is_valid():
-            usuario = form.get_user()
-            login(request, usuario)
-            return redirect('home')
-    else:
-        form = AuthenticationForm()
-    contexto = {
-        'form': form,
-    }
-    return render(request, 'usuario/login.html', contexto)
-
-
-@login_required
-@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
-def usuario_list(request):
-    """Lista todos los usuarios registrados."""
-    # select_related optimiza la consulta cruzada con Perfil
-    usuarios = Usuario.objects.select_related('perfil').all().order_by('-date_joined')
-    
-    context = {
-        'usuarios': usuarios
-    }
-    return render(request, 'gestion/usuario_list.html', context)
-
-
-@login_required
-@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
-def usuario_detail(request, pk):
-    """Muestra los detalles de un usuario específico."""
-    usuario_obj = get_object_or_404(Usuario.objects.select_related('perfil'), pk=pk)
-    
-    context = {
-        'usuario_obj': usuario_obj
-    }
-    return render(request, 'gestion/usuario_detail.html', context)
-
-
-# @login_required
-# @user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
-@transaction.atomic  # CRÍTICO: Asegura que ambos formularios se guarden o ninguno
-def crear_usuario(request):
-    """Crea un Usuario y su Perfil al mismo tiempo."""
-    if request.method == 'POST':
-        usuario_form = UsuarioCreationForm(request.POST)
-        perfil_form = PerfilForm(request.POST)
         
-        if usuario_form.is_valid() and perfil_form.is_valid():
-            # 1. Guardamos el Usuario (Hashea la contraseña)
+    form = AuthenticationForm(request, data=request.POST) if request.method == 'POST' else AuthenticationForm()
+    
+    if request.method == 'POST' and form.is_valid():
+        login(request, form.get_user())
+        return redirect('home')
+
+    return render(request, 'usuario/login.html', {'form': form})
+
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
+def usuario_list(request: HttpRequest) -> HttpResponse:
+    usuarios = Usuario.objects.select_related('perfil').all().order_by('-date_joined')
+    return render(request, 'gestion/usuario_list.html', {'usuarios': usuarios})
+
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
+def usuario_detail(request: HttpRequest, pk: int) -> HttpResponse:
+    usuario_obj = get_object_or_404(Usuario.objects.select_related('perfil'), pk=pk)
+    return render(request, 'gestion/usuario_detail.html', {'usuario_obj': usuario_obj})
+
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
+@transaction.atomic
+def crear_usuario(request: HttpRequest) -> HttpResponse:
+    usuario_form = UsuarioCreationForm(request.POST or None)
+    perfil_form = PerfilForm(request.POST or None)
+    
+    if request.method == 'POST' and usuario_form.is_valid() and perfil_form.is_valid():
+        try:
             nuevo_usuario = usuario_form.save()
-            
-            # 2. Guardamos el Perfil vinculándolo al usuario creado
             perfil = perfil_form.save(commit=False)
             perfil.usuario = nuevo_usuario
             perfil.save()
             
             messages.success(request, f"Usuario {nuevo_usuario.username} provisionado correctamente.")
             return redirect('gestion:usuario_list')
-        else:
-            messages.error(request, "Por favor, corrija los errores en el formulario.")
-    else:
-        usuario_form = UsuarioCreationForm()
-        perfil_form = PerfilForm()
-        
+        except Exception as e:
+            logger.error(f"Error al intentar crear el usuario: {e}")
+            messages.error(request, "Error interno al intentar provisionar el usuario.")
+    elif request.method == 'POST':
+        messages.warning(request, "Por favor, corrija los errores en el formulario.")
+
     context = {
         'usuario_form': usuario_form,
         'perfil_form': perfil_form,
@@ -171,30 +128,27 @@ def crear_usuario(request):
     }
     return render(request, 'gestion/usuario_form.html', context)
 
-
 @login_required
 @user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 @transaction.atomic
-def editar_usuario(request, pk):
-    """Edita las credenciales de un Usuario y sus datos de Perfil."""
+def editar_usuario(request: HttpRequest, pk: int) -> HttpResponse:
     usuario = get_object_or_404(Usuario, pk=pk)
     perfil = get_object_or_404(Perfil, usuario=usuario)
     
-    if request.method == 'POST':
-        usuario_form = UsuarioUpdateForm(request.POST, instance=usuario)
-        perfil_form = PerfilForm(request.POST, instance=perfil)
-        
-        if usuario_form.is_valid() and perfil_form.is_valid():
+    usuario_form = UsuarioUpdateForm(request.POST or None, instance=usuario)
+    perfil_form = PerfilForm(request.POST or None, instance=perfil)
+    
+    if request.method == 'POST' and usuario_form.is_valid() and perfil_form.is_valid():
+        try:
             usuario_form.save()
             perfil_form.save()
-            
             messages.success(request, f"Credenciales y Perfil de {usuario.username} actualizados.")
             return redirect('gestion:usuario_list')
-        else:
-            messages.error(request, "Por favor, corrija los errores en el formulario.")
-    else:
-        usuario_form = UsuarioUpdateForm(instance=usuario)
-        perfil_form = PerfilForm(instance=perfil)
+        except Exception as e:
+            logger.error(f"Error al editar el usuario {pk}: {e}")
+            messages.error(request, "Error interno al intentar actualizar el usuario.")
+    elif request.method == 'POST':
+        messages.warning(request, "Por favor, corrija los errores en el formulario.")
         
     context = {
         'usuario_form': usuario_form,
@@ -203,21 +157,19 @@ def editar_usuario(request, pk):
     }
     return render(request, 'gestion/usuario_form.html', context)
 
-
 @login_required
 @user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
-def eliminar_usuario(request, pk):
-    """Da de baja a un usuario del sistema."""
+def eliminar_usuario(request: HttpRequest, pk: int) -> HttpResponse:
     usuario = get_object_or_404(Usuario, pk=pk)
     
     if request.method == 'POST':
-        nombre_usuario = usuario.username
-        usuario.delete() # El Perfil se elimina automáticamente por el on_delete=CASCADE
-        
-        messages.success(request, f"El usuario {nombre_usuario} ha sido dado de baja permanentemente.")
-        return redirect('gestion:usuario_list')
-        
-    context = {
-        'usuario_obj': usuario
-    }
-    return render(request, 'gestion/usuario_confirm_delete.html', context)
+        try:
+            nombre_usuario = usuario.username
+            usuario.delete()
+            messages.success(request, f"El usuario {nombre_usuario} ha sido dado de baja permanentemente.")
+            return redirect('gestion:usuario_list')
+        except Exception as e:
+            logger.error(f"Error al intentar eliminar el usuario {pk}: {e}")
+            messages.error(request, "No se pudo eliminar el usuario debido a un error interno de base de datos.")
+            
+    return render(request, 'gestion/usuario_confirm_delete.html', {'usuario_obj': usuario})

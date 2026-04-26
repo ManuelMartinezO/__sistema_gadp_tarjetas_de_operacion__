@@ -3,7 +3,6 @@
 
 {% block content %}
 <style>
-    /* --- VARIABLES BASE --- */
     :root {
         --color-principal: #8b0000;
         --color-hover: #6a0000;
@@ -12,7 +11,6 @@
         --bg-suave: #f8fafc;
     }
 
-    /* --- PANEL DE BIENVENIDA --- */
     .panel-bienvenida {
         background-color: white;
         border: 1px solid var(--color-borde);
@@ -96,7 +94,6 @@
         border: 1px dashed #94a3b8;
     }
 
-    /* --- TARJETAS DE MÉTRICAS (GRID) --- */
     .titulo-seccion {
         color: var(--color-texto);
         font-weight: 800;
@@ -141,8 +138,15 @@
         font-size: 1.8rem;
     }
 
-    .icon-gris { background-color: var(--bg-suave); color: #475569; }
-    .icon-rojo { background-color: rgba(139, 0, 0, 0.1); color: var(--color-principal); }
+    .icon-gris { 
+        background-color: var(--bg-suave); 
+        color: #475569; 
+    }
+
+    .icon-rojo { 
+        background-color: rgba(139, 0, 0, 0.1); 
+        color: var(--color-principal); 
+    }
 
     .stat-info {
         display: flex;
@@ -178,16 +182,16 @@
             
             <ul class="lista-info-usuario">
                 <li>
-                    <strong><i class="bi bi-shield-check-fill me-2" style="color: var(--color-principal);"></i> Nivel de Acceso:</strong> 
+                    <strong><i class="bi bi-shield-check-fill me-2" style="color: var(--color-principal);" aria-hidden="true"></i> Nivel de Acceso:</strong> 
                     <span class="badge-rol">{{ user.get_rol_display|default:"Administrador" }}</span>
                 </li>
                 <li>
-                    <strong><i class="bi bi-bank2 me-2" style="color: var(--color-principal);"></i> Entidad:</strong> 
+                    <strong><i class="bi bi-bank2 me-2" style="color: var(--color-principal);" aria-hidden="true"></i> Entidad:</strong> 
                     Gobierno Autónomo Departamental de Potosí
                 </li>
                 <li style="margin-top: 5px;">
-                    <strong><i class="bi bi-calendar2-week-fill me-2" style="color: var(--color-principal);"></i> Sistema:</strong> 
-                    <span>{% now "d \d\e F \d\e Y" %} - <span id="reloj-vivo" class="reloj-badge">--:--:--</span></span>
+                    <strong><i class="bi bi-calendar2-week-fill me-2" style="color: var(--color-principal);" aria-hidden="true"></i> Sistema:</strong> 
+                    <span>{% now "d \d\e F \d\e Y" %} - <span id="reloj-vivo" class="reloj-badge" aria-live="polite">--:--:--</span></span>
                 </li>
             </ul>
         </div>
@@ -197,13 +201,12 @@
     </div>
 
     <h3 class="titulo-seccion">
-        <i class="bi bi-pie-chart-fill me-2" style="color: var(--color-principal);"></i> Resumen de Operaciones
+        <i class="bi bi-pie-chart-fill me-2" style="color: var(--color-principal);" aria-hidden="true"></i> Resumen de Operaciones
     </h3>
 
     <div class="dashboard-grid">
-        
         <div class="stat-card">
-            <div class="stat-icon icon-gris">
+            <div class="stat-icon icon-gris" aria-hidden="true">
                 <i class="bi bi-diagram-3-fill"></i>
             </div>
             <div class="stat-info">
@@ -213,7 +216,7 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon icon-gris">
+            <div class="stat-icon icon-gris" aria-hidden="true">
                 <i class="bi bi-person-vcard-fill"></i>
             </div>
             <div class="stat-info">
@@ -223,7 +226,7 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon icon-gris">
+            <div class="stat-icon icon-gris" aria-hidden="true">
                 <i class="bi bi-truck-front-fill"></i>
             </div>
             <div class="stat-info">
@@ -233,7 +236,7 @@
         </div>
 
         <div class="stat-card" style="border-color: rgba(139, 0, 0, 0.3);">
-            <div class="stat-icon icon-rojo">
+            <div class="stat-icon icon-rojo" aria-hidden="true">
                 <i class="bi bi-hourglass-bottom"></i>
             </div>
             <div class="stat-info">
@@ -241,20 +244,29 @@
                 <span class="stat-valor valor-alerta">{{ tramites_pendientes }}</span>
             </div>
         </div>
-
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Reloj en tiempo real
-        function actualizarReloj() {
-            const ahora = new Date();
-            const opciones = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            document.getElementById('reloj-vivo').textContent = ahora.toLocaleTimeString('es-BO', opciones);
+    document.addEventListener("DOMContentLoaded", () => {
+        const relojElemento = document.getElementById('reloj-vivo');
+
+        const actualizarReloj = () => {
+            try {
+                if (!relojElemento) throw new Error("Elemento del reloj no encontrado");
+                
+                const ahora = new Date();
+                const opciones = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+                relojElemento.textContent = ahora.toLocaleTimeString('es-BO', opciones);
+            } catch (error) {
+                console.error("Error al actualizar el reloj:", error);
+            }
+        };
+
+        if (relojElemento) {
+            setInterval(actualizarReloj, 1000);
+            actualizarReloj();
         }
-        setInterval(actualizarReloj, 1000);
-        actualizarReloj();
     });
 </script>
 {% endblock %}
