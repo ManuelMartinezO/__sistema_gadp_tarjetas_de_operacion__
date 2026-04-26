@@ -1,24 +1,127 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    .tabla_tarjetas td { 
+        padding-bottom: 3px; 
+        padding-top: 3px; 
+    }
+    
+    .label-viva { 
+        font-weight: 700; 
+        color: #8b0000; 
+        font-size: 0.85em; 
+        width: 15%; 
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    
+    .fila_valor { 
+        text-transform: uppercase; 
+        color: #0f172a; 
+        font-size: 0.9em; 
+        font-weight: 500;
+    }
+    
+    .text-muted-custom { 
+        color: #475569 !important; 
+    }
+
+    .badge-registro {
+        background-color: #f0f9ff;
+        color: #0369a1;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 0.9em;
+        border: 1px solid #bae6fd;
+    }
+
+    .hover-soft:hover { 
+        background-color: #f8fafc !important; 
+    }
+    
+    .badge-estado { 
+        padding: 3px 8px; 
+        border-radius: 4px; 
+        font-weight: 700; 
+        font-size: 0.8em; 
+        letter-spacing: 0.5px; 
+    }
+
+    .badge-pendiente { 
+        background-color: #fffbeb; 
+        color: #b45309; 
+        border: 1px solid #fde68a; 
+    }
+
+    .badge-emitida { 
+        background-color: #f0fdf4; 
+        color: #15803d; 
+        border: 1px solid #bbf7d0; 
+    }
+
+    .badge-vencida { 
+        background-color: #fef2f2; 
+        color: #b91c1c; 
+        border: 1px solid #fecaca; 
+    }
+
+    .edicion-wrapper input, 
+    .edicion-wrapper select {
+        width: 95%;
+        padding: 2px 6px;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        border: 1px solid #94a3b8;
+        border-radius: 4px;
+        background-color: #f8fafc;
+        color: #0f172a;
+        transition: all 0.2s;
+    }
+
+    .edicion-wrapper input:focus, 
+    .edicion-wrapper select:focus {
+        outline: none;
+        border-color: #ff1900;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+    }
+
+    dialog {
+        background: white; 
+        padding: 25px; 
+        border-radius: 10px; 
+        border: none;
+        border-top: 4px solid #8b0000;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        color: #1e293b;
+        max-width: 90vw;
+    }
+
+    dialog::backdrop {
+        background: rgba(15, 23, 42, 0.6); 
+        backdrop-filter: blur(3px);
+    }
+</style>
 
 <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center mb-3" style="width: 70%;">
     <a href="{% url 'tramite:detalle_tramite' tramite.numero %}" class="btn btn-light border border-dark rounded-2 shadow-sm px-3 py-1 text-dark fw-bold">
-        <i class="bi bi-arrow-left text-dark me-1" style="stroke-width: 2px;"></i> Volver
+        <i class="bi bi-arrow-left text-dark me-1" style="stroke-width: 2px;" aria-hidden="true"></i> Volver
     </a>
     {% if tarjetas and tramite.estado == 'v' %}
         {% if user.rol == 'a' or user.rol == 'sa' %}
             <a href="{% url 'tramite:tramite_pdf' tramite.numero %}" target="_blank" class="btn btn-outline-dark rounded-2 shadow-sm px-3 py-1 ms-1 fw-bold">
-                <i class="bi bi-printer-fill text-dark me-1"></i> Imprimir Todo
+                <i class="bi bi-printer-fill text-dark me-1" aria-hidden="true"></i> Imprimir Todo
             </a>
         {% endif %}
     {% endif %}
 </div>
 
 <div style="width: 70%; border-bottom: 2px solid #0f172a; margin-bottom: 15px; padding-bottom: 6px; display: flex; align-items: center;">
-    <i class="bi bi-folder2-open text-dark me-2" style="font-size: 1.4rem;"></i>
+    <i class="bi bi-folder2-open text-dark me-2" style="font-size: 1.4rem;" aria-hidden="true"></i>
     <h4 style="margin: 0; color: #0f172a; font-weight: 700; font-size: 1.25rem; letter-spacing: 0.5px;">
-        TRAMITE: <span style="color: #8b0000;">#{{ tramite.numero }}</span>
+        TRÁMITE: <span style="color: #8b0000;">#{{ tramite.numero }}</span>
     </h4>
 </div>
 
@@ -33,26 +136,26 @@
             <td colspan="4" style="text-align: right; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">
                 
                 <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" style="margin-right: 4px;" onclick="manejarImpresion('{% url 'tarjeta:tarjeta_pdf' item.obj.id %}', '{{ item.obj.estado }}')">
-                    <i class="bi bi-printer-fill text-dark me-1"></i> Imprimir
+                    <i class="bi bi-printer-fill text-dark me-1" aria-hidden="true"></i> Imprimir
                 </button>
 
                 <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" onclick="toggleEdicion('{{ item.obj.id }}', true)">
-                    <i class="bi bi-pencil-square text-dark me-1"></i> Editar Tarjeta
+                    <i class="bi bi-pencil-square text-dark me-1" aria-hidden="true"></i> Editar Tarjeta
                 </button>
                 
                 <button type="button" class="btn btn-sm btn-dark edicion-{{ item.obj.id }} fw-bold py-1 px-2 shadow-sm" style="display: none;" onclick="confirmarEdicion('{{ item.obj.id }}')">
-                    <i class="bi bi-check-circle-fill text-white me-1"></i> Guardar Cambios
+                    <i class="bi bi-check-circle-fill text-white me-1" aria-hidden="true"></i> Guardar Cambios
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-secondary edicion-{{ item.obj.id }} fw-bold py-1 px-2" style="display: none;" onclick="toggleEdicion('{{ item.obj.id }}', false)">
-                    <i class="bi bi-x-circle-fill text-secondary me-1"></i> Cancelar
+                    <i class="bi bi-x-circle-fill text-secondary me-1" aria-hidden="true"></i> Cancelar
                 </button>
             </td>
         </tr>
 
         <tr>
-            <td class="label-viva" style="padding-top: 10px;">Nro. Tramite:</td>
+            <td class="label-viva" style="padding-top: 10px;">Nro. Trámite:</td>
             <td class="fila_valor" style="padding-top: 10px;">{{ item.obj.tramite.numero }}</td>
-            <td class="label-viva" style="padding-top: 10px;">Tecnico:</td>
+            <td class="label-viva" style="padding-top: 10px;">Técnico:</td>
             <td class="fila_valor text-muted-custom" style="padding-top: 10px;">{{ item.obj.tramite.usuario }}</td>
         </tr>
         <tr>
@@ -186,208 +289,127 @@
 </form>
 {% endfor %}
 
-<div id="modal-confirmacion-edicion" class="modal-overlay">
-    <div class="modal-content-soft">
-        <span class="cerrar-modal" onclick="cerrarModalEdicion()">&times;</span>
-        <h5 style="color: #0f172a; font-weight: 700; margin-bottom: 15px;">Vista Previa de Modificaciones</h5>
-        <p style="color: #475569; font-size: 0.9em;">Revisa los nuevos datos antes de actualizar la tarjeta:</p>
-        
-        <div id="preview-content-edicion" style="background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 15px; color: #1e293b; font-size: 0.9em;">
-        </div>
-
-        <div style="display: flex; gap: 8px;">
-            <button class="btn btn-light border w-100 text-dark fw-bold hover-soft" onclick="cerrarModalEdicion()">Cancelar</button>
-            <button class="btn btn-dark w-100 fw-bold" onclick="enviarFormularioEdicion()">Confirmar y Actualizar</button>
-        </div>
+<dialog id="modal-confirmacion-edicion" style="width: 450px;">
+    <h5 style="color: #0f172a; font-weight: 700; margin-bottom: 15px;">Vista Previa de Modificaciones</h5>
+    <p style="color: #475569; font-size: 0.9em;">Revisa los nuevos datos antes de actualizar la tarjeta:</p>
+    
+    <div id="preview-content-edicion" style="background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 15px; color: #1e293b; font-size: 0.9em;">
     </div>
-</div>
 
-<div id="modal-confirmacion-impresion" class="modal-overlay">
-    <div class="modal-content-soft">
-        <span class="cerrar-modal" onclick="cerrarModalImpresion()">&times;</span>
-        <h5 style="color: #0f172a; font-weight: 700; margin-bottom: 15px;">Confirmar Emisión</h5>
-        <p style="color: #475569; font-size: 0.9em;">¿Estás seguro de que deseas imprimir esta tarjeta por primera vez?</p>
-        
-        <div style="background-color: #fffbeb; color: #92400e; padding: 10px; border: 1px solid #fde68a; margin-bottom: 15px; border-radius: 4px; font-size: 0.85em;">
-            <strong>Atención:</strong> Al generar la impresión, el estado cambiará a <b>EMITIDA</b> y se establecerá su validez oficial.
-        </div>
-
-        <div style="display: flex; gap: 8px;">
-            <button class="btn btn-light border w-100 text-dark fw-bold hover-soft" onclick="cerrarModalImpresion()">Cancelar</button>
-            <a id="btn-confirmar-impresion" href="#" target="_blank" class="btn btn-dark w-100 fw-bold" style="text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center;" onclick="cerrarYRecargar()">
-                Confirmar e Imprimir
-            </a>
-        </div>
+    <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-light border w-100 text-dark fw-bold hover-soft" onclick="cerrarModalEdicion()">Cancelar</button>
+        <button type="button" class="btn btn-dark w-100 fw-bold" onclick="enviarFormularioEdicion()">Confirmar y Actualizar</button>
     </div>
-</div>
+</dialog>
 
-<div id="modal-alerta-vencida" class="modal-overlay">
-    <div class="modal-content-soft">
-        <span class="cerrar-modal" onclick="cerrarModalVencida()">&times;</span>
-        <h5 style="color: #991b1b; font-weight: 700; margin-bottom: 15px;">Tarjeta Vencida</h5>
-        <div style="background-color: #fef2f2; color: #991b1b; padding: 10px; border: 1px solid #fecaca; margin-bottom: 15px; border-radius: 4px; font-size: 0.85em;">
-            <strong>Error:</strong> Esta tarjeta se encuentra <b>VENCIDA</b>. No es posible generar su PDF.
-        </div>
-        <button class="btn btn-light border w-100 text-dark fw-bold hover-soft" onclick="cerrarModalVencida()">Entendido</button>
+<dialog id="modal-confirmacion-impresion" style="width: 450px;">
+    <h5 style="color: #0f172a; font-weight: 700; margin-bottom: 15px;">Confirmar Emisión</h5>
+    <p style="color: #475569; font-size: 0.9em;">¿Estás seguro de que deseas imprimir esta tarjeta por primera vez?</p>
+    
+    <div style="background-color: #fffbeb; color: #92400e; padding: 10px; border: 1px solid #fde68a; margin-bottom: 15px; border-radius: 4px; font-size: 0.85em;">
+        <strong>Atención:</strong> Al generar la impresión, el estado cambiará a <b>EMITIDA</b> y se establecerá su validez oficial.
     </div>
-</div>
 
-<style>
-    /* ESPACIADOS COMPACTOS */
-    .tabla_tarjetas td { padding-bottom: 3px; padding-top: 3px; }
-    
-    /* ETIQUETAS MÁS VIVAS */
-    .label-viva { 
-        font-weight: 700; 
-        color: #8b0000; /* Azul intenso y profesional */
-        font-size: 0.85em; 
-        width: 15%; 
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-    }
-    
-    .fila_valor { 
-        text-transform: uppercase; 
-        color: #0f172a; 
-        font-size: 0.9em; 
-        font-weight: 500;
-    }
-    
-    .text-muted-custom { color: #475569 !important; }
+    <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-light border w-100 text-dark fw-bold hover-soft" onclick="cerrarModalImpresion()">Cancelar</button>
+        <a id="btn-confirmar-impresion" href="#" target="_blank" class="btn btn-dark w-100 fw-bold" style="text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center;" onclick="cerrarYRecargar()">
+            Confirmar e Imprimir
+        </a>
+    </div>
+</dialog>
 
-    /* REGISTRO SUAVE */
-    .badge-registro {
-        background-color: #f0f9ff;
-        color: #0369a1;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-weight: 700;
-        font-size: 0.9em;
-        border: 1px solid #bae6fd;
-    }
-
-    /* BOTONES INTERNOS */
-    .hover-soft:hover { background-color: #f8fafc !important; }
-    
-    /* BADGES DE ESTADO */
-    .badge-estado { padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8em; letter-spacing: 0.5px; }
-    .badge-pendiente { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-    .badge-emitida { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-    .badge-vencida { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-
-    /* INPUTS DE EDICIÓN (Reducidos) */
-    .edicion-wrapper input, .edicion-wrapper select {
-        width: 95%;
-        padding: 2px 6px;
-        font-size: 0.9em;
-        text-transform: uppercase;
-        border: 1px solid #94a3b8;
-        border-radius: 4px;
-        background-color: #f8fafc;
-        color: #0f172a;
-        transition: all 0.2s;
-    }
-    .edicion-wrapper input:focus, .edicion-wrapper select:focus {
-        outline: none;
-        border-color: #ff1900;
-        background-color: #ffffff;
-        box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
-    }
-
-    /* MODALES MÁS COMPACTOS */
-    .modal-overlay {
-        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(2px);
-        z-index: 1000; align-items: center; justify-content: center;
-    }
-    .modal-content-soft {
-        background-color: white; padding: 20px; border-radius: 8px; width: 400px; 
-        max-width: 90%; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        border: 1px solid #cbd5e1;
-    }
-    .cerrar-modal { 
-        position: absolute; top: 12px; right: 15px; font-size: 22px; 
-        cursor: pointer; color: #64748b; transition: color 0.2s; line-height: 1;
-    }
-    .cerrar-modal:hover { color: #0f172a; }
-</style>
+<dialog id="modal-alerta-vencida" style="width: 450px;">
+    <h5 style="color: #991b1b; font-weight: 700; margin-bottom: 15px;">Tarjeta Vencida</h5>
+    <div style="background-color: #fef2f2; color: #991b1b; padding: 10px; border: 1px solid #fecaca; margin-bottom: 15px; border-radius: 4px; font-size: 0.85em;">
+        <strong>Error:</strong> Esta tarjeta se encuentra <b>VENCIDA</b>. No es posible generar su PDF.
+    </div>
+    <button type="button" class="btn btn-light border w-100 text-dark fw-bold hover-soft" onclick="cerrarModalVencida()">Entendido</button>
+</dialog>
 
 <script>
-    // --- LÓGICA DE EDICIÓN ---
-    function toggleEdicion(tarjetaId, modoEdicion) {
-        let elementosVista = document.querySelectorAll('.vista-' + tarjetaId);
-        let elementosEdicion = document.querySelectorAll('.edicion-' + tarjetaId);
+    document.addEventListener("DOMContentLoaded", () => {
+        const sanitizarTexto = (texto) => {
+            return texto ? texto.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '<em>Vacío</em>';
+        };
 
-        if (modoEdicion) {
-            elementosVista.forEach(el => el.style.display = 'none');
-            elementosEdicion.forEach(el => el.style.display = ''); 
-        } else {
-            elementosVista.forEach(el => el.style.display = '');
-            elementosEdicion.forEach(el => el.style.display = 'none');
-        }
-    }
+        window.toggleEdicion = (tarjetaId, modoEdicion) => {
+            const elementosVista = document.querySelectorAll(`.vista-${tarjetaId}`);
+            const elementosEdicion = document.querySelectorAll(`.edicion-${tarjetaId}`);
 
-    let formActual = null;
-
-    function confirmarEdicion(tarjetaId) {
-        formActual = document.getElementById('form-tarjeta-' + tarjetaId);
-        let formData = new FormData(formActual);
-        let htmlPreview = '<ul style="margin: 0; padding-left: 20px;">';
-        
-        for (let [key, value] of formData.entries()) {
-            if (key !== 'csrfmiddlewaretoken' && key !== 'tarjeta_id' && value.trim() !== '') {
-                let nombreLegible = key.toUpperCase().replace(/_/g, ' ');
-                htmlPreview += `<li style="margin-bottom: 2px;"><strong>${nombreLegible}:</strong> ${value}</li>`;
+            if (modoEdicion) {
+                elementosVista.forEach(el => el.style.display = 'none');
+                elementosEdicion.forEach(el => el.style.display = ''); 
+            } else {
+                elementosVista.forEach(el => el.style.display = '');
+                elementosEdicion.forEach(el => el.style.display = 'none');
             }
-        }
-        htmlPreview += '</ul>';
+        };
+
+        let formActual = null;
+        const modalConfirmacionEdicion = document.getElementById('modal-confirmacion-edicion');
+        const modalConfirmacionImpresion = document.getElementById('modal-confirmacion-impresion');
+        const modalAlertaVencida = document.getElementById('modal-alerta-vencida');
+
+        window.confirmarEdicion = (tarjetaId) => {
+            formActual = document.getElementById(`form-tarjeta-${tarjetaId}`);
+            const formData = new FormData(formActual);
+            const previewContent = document.getElementById('preview-content-edicion');
+            let htmlPreview = '<ul style="margin: 0; padding-left: 20px;">';
+            
+            for (let [key, value] of formData.entries()) {
+                if (key !== 'csrfmiddlewaretoken' && key !== 'tarjeta_id' && value.trim() !== '') {
+                    const nombreLegible = key.toUpperCase().replace(/_/g, ' ');
+                    htmlPreview += `<li style="margin-bottom: 2px;"><strong>${nombreLegible}:</strong> ${sanitizarTexto(value.trim())}</li>`;
+                }
+            }
+            htmlPreview += '</ul>';
+            
+            previewContent.innerHTML = htmlPreview;
+            modalConfirmacionEdicion.showModal();
+        };
+
+        window.cerrarModalEdicion = () => {
+            modalConfirmacionEdicion.close();
+            formActual = null;
+        };
+
+        window.enviarFormularioEdicion = () => {
+            if(formActual) {
+                const inputOculto = document.createElement('input');
+                inputOculto.type = 'hidden';
+                inputOculto.name = 'btn_actualizar_tarjeta';
+                inputOculto.value = '1';
+                formActual.appendChild(inputOculto);
+                formActual.submit();
+            }
+        };
+
+        window.manejarImpresion = (urlPdf, estado) => {
+            if (estado === 'v') {
+                modalAlertaVencida.showModal();
+            } else if (estado === 'e') {
+                window.open(urlPdf, '_blank');
+            } else {
+                document.getElementById('btn-confirmar-impresion').href = urlPdf;
+                modalConfirmacionImpresion.showModal();
+            }
+        };
+
+        window.cerrarModalImpresion = () => {
+            modalConfirmacionImpresion.close();
+        };
         
-        document.getElementById('preview-content-edicion').innerHTML = htmlPreview;
-        document.getElementById('modal-confirmacion-edicion').style.display = 'flex';
-    }
+        window.cerrarModalVencida = () => {
+            modalAlertaVencida.close();
+        };
 
-    function cerrarModalEdicion() {
-        document.getElementById('modal-confirmacion-edicion').style.display = 'none';
-        formActual = null;
-    }
-
-    function enviarFormularioEdicion() {
-        if(formActual) {
-            let inputOculto = document.createElement('input');
-            inputOculto.type = 'hidden';
-            inputOculto.name = 'btn_actualizar_tarjeta';
-            inputOculto.value = '1';
-            formActual.appendChild(inputOculto);
-            formActual.submit();
-        }
-    }
-
-    // --- LÓGICA DE IMPRESIÓN ---
-    function manejarImpresion(urlPdf, estado) {
-        if (estado === 'v') {
-            document.getElementById('modal-alerta-vencida').style.display = 'flex';
-        } else if (estado === 'e') {
-            window.open(urlPdf, '_blank');
-        } else {
-            document.getElementById('btn-confirmar-impresion').href = urlPdf;
-            document.getElementById('modal-confirmacion-impresion').style.display = 'flex';
-        }
-    }
-
-    function cerrarModalImpresion() {
-        document.getElementById('modal-confirmacion-impresion').style.display = 'none';
-    }
-    
-    function cerrarModalVencida() {
-        document.getElementById('modal-alerta-vencida').style.display = 'none';
-    }
-
-    function cerrarYRecargar() {
-        cerrarModalImpresion();
-        setTimeout(function() {
-            window.location.reload();
-        }, 1500);
-    }
+        window.cerrarYRecargar = () => {
+            cerrarModalImpresion();
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        };
+    });
 </script>
 
 {% endblock %}
