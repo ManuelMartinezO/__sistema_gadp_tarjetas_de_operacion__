@@ -2,7 +2,6 @@
 
 {% block content %}
 <style>
-    /* --- VARIABLES BASE --- */
     :root {
         --color-principal: #8b0000;
         --color-hover: #6a0000;
@@ -11,7 +10,6 @@
         --bg-suave: #f8fafc;
     }
 
-    /* --- ENCABEZADOS Y TEXTOS --- */
     .header-pagina {
         display: flex;
         justify-content: space-between;
@@ -20,6 +18,7 @@
         padding-bottom: 15px;
         border-bottom: 2px solid var(--bg-suave);
     }
+
     .titulo-principal {
         color: var(--color-texto);
         font-weight: 800;
@@ -28,13 +27,13 @@
         align-items: center;
         gap: 10px;
     }
+
     .subtitulo-principal {
         color: #64748b;
         margin: 5px 0 0 0;
         font-size: 0.95rem;
     }
 
-    /* --- BOTONES --- */
     .btn-custom {
         padding: 8px 16px;
         border: none;
@@ -51,13 +50,30 @@
         letter-spacing: 0.5px;
         text-decoration: none;
     }
-    .btn-principal { background-color: var(--color-principal); color: white; }
-    .btn-principal:hover { background-color: var(--color-hover); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(139,0,0,0.2); color: white;}
-    
-    .btn-gris { background-color: #f1f5f9; color: #475569; border: 1px solid var(--color-borde); }
-    .btn-gris:hover { background-color: #e2e8f0; color: var(--color-texto); }
 
-    /* --- PANEL DE FILTROS --- */
+    .btn-principal { 
+        background-color: var(--color-principal); 
+        color: white; 
+    }
+
+    .btn-principal:hover { 
+        background-color: var(--color-hover); 
+        transform: translateY(-1px); 
+        box-shadow: 0 4px 6px rgba(139,0,0,0.2); 
+        color: white;
+    }
+    
+    .btn-gris { 
+        background-color: #f1f5f9; 
+        color: #475569; 
+        border: 1px solid var(--color-borde); 
+    }
+
+    .btn-gris:hover { 
+        background-color: #e2e8f0; 
+        color: var(--color-texto); 
+    }
+
     .panel-filtros {
         background-color: white;
         border: 1px solid var(--color-borde);
@@ -66,20 +82,24 @@
         margin-bottom: 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
+
     .flex-filtros {
         display: flex;
         gap: 15px;
         align-items: flex-end;
         flex-wrap: wrap;
     }
+
     .form-group {
         display: flex;
         flex-direction: column;
     }
+
     .form-group-busqueda {
-        flex: 1; /* Permite que el buscador tome todo el espacio disponible */
+        flex: 1;
         min-width: 250px;
     }
+
     .form-group label {
         font-size: 0.8rem;
         font-weight: 700;
@@ -87,6 +107,7 @@
         margin-bottom: 5px;
         text-transform: uppercase;
     }
+
     .form-group input {
         width: 100%;
         padding: 8px 12px;
@@ -98,6 +119,7 @@
         transition: border-color 0.2s;
         box-sizing: border-box;
     }
+
     .form-group input:focus {
         outline: none;
         border-color: var(--color-principal);
@@ -107,24 +129,25 @@
 </style>
 
 <div>
+    {% if messages %}
+        <ul class="messages" style="list-style: none; padding: 0; margin-bottom: 15px;">
+            {% for message in messages %}
+                <li class="{{ message.tags }}" style="padding: 10px; margin-bottom: 5px; border-radius: 4px; background-color: #f8fafc; border-left: 4px solid var(--color-principal);">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
     <div class="header-pagina">
         <div>
             <h2 class="titulo-principal">
                 <i class="bi bi-people-fill" style="color: var(--color-principal);"></i> Registro de Afiliados
             </h2>
             <p class="subtitulo-principal">Listado de transportistas y propietarios vinculados al sistema</p>
-        </div>
-        
-        {% if user.rol == 'a' or user.rol == 'sa' %}
-            <a href="{% url 'afiliado:crear_afiliado' %}" class="btn-custom btn-principal">
-                <i class="bi bi-person-plus-fill me-1"></i> Nuevo Afiliado
-            </a>
-        {% endif %}
+        </div>  
     </div>
 
     <div class="panel-filtros">
         <form id="searchForm" class="flex-filtros" onsubmit="event.preventDefault();">
-            
             <div class="form-group form-group-busqueda">
                 <label for="q"><i class="bi bi-search me-1"></i> Búsqueda Rápida</label>
                 <input type="text" id="q" name="q" value="{{ q }}" placeholder="Buscar por nombre completo o empresa afiliada..." autocomplete="off">
@@ -135,50 +158,59 @@
                     <i class="bi bi-eraser me-1"></i> Limpiar
                 </a>
             </div>
-            
         </form>
     </div>
 
-    <div id="resultados-tabla">
+    <div id="resultados-tabla" aria-live="polite">
         {% include 'afiliado/parcial_tabla.html' %}
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", () => {
         const inputQ = document.getElementById('q');
         const contenedorResultados = document.getElementById('resultados-tabla');
         const btnLimpiar = document.getElementById('btnLimpiar');
         let timeout = null;
 
-        function realizarBusqueda(url) {
-            fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+        const mostrarError = () => {
+            contenedorResultados.innerHTML = `
+                <div style="padding: 15px; text-align: center; color: #8b0000; background-color: #fee2e2; border-radius: 6px; margin-top: 15px;">
+                    <i class="bi bi-exclamation-triangle"></i> Ocurrió un error al cargar los datos. Por favor, revisa tu conexión e intenta de nuevo.
+                </div>
+            `;
+        };
+
+        const realizarBusqueda = async (url) => {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
                 }
-            })
-            .then(response => response.text())
-            .then(html => {
+
+                const html = await response.text();
                 contenedorResultados.innerHTML = html;
                 
-                // Actualizado a inline-flex para respetar los estilos de los iconos
-                if (inputQ.value.trim() !== '') {
-                    btnLimpiar.style.display = 'inline-flex';
-                } else {
-                    btnLimpiar.style.display = 'none';
-                }
-            })
-            .catch(error => console.error('Error en la búsqueda:', error));
-        }
+                btnLimpiar.style.display = inputQ.value.trim() !== '' ? 'inline-flex' : 'none';
+                
+            } catch (error) {
+                console.error('Error en la petición AJAX:', error);
+                mostrarError();
+            }
+        };
 
-        function generarUrl() {
+        const generarUrl = () => {
             const params = new URLSearchParams({
                 q: inputQ.value
             });
             return `?${params.toString()}`;
-        }
+        };
 
-        // Buscar al escribir (retraso de 300ms)
         inputQ.addEventListener('input', () => {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
@@ -186,11 +218,12 @@
             }, 300);
         });
 
-        // Interceptar clicks de la paginación para usar AJAX
         contenedorResultados.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' && e.target.closest('ul')) {
+            const enlace = e.target.closest('.paginacion-nav a');
+            
+            if (enlace && enlace.hasAttribute('href')) {
                 e.preventDefault();
-                realizarBusqueda(e.target.getAttribute('href'));
+                realizarBusqueda(enlace.getAttribute('href'));
             }
         });
     });

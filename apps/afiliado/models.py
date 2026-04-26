@@ -1,6 +1,6 @@
 from django.db import models
 from apps.operador.models import Operador
-# Create your models here.
+
 class Afiliado(models.Model):
     operador = models.ForeignKey(
         Operador,

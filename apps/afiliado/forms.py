@@ -1,30 +1,41 @@
 from django import forms
 from .models import Afiliado
 
-class BootstrapFormMixin:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs.update({'class': 'form-control', 'style': 'border-radius: 10px;'})
-
 class NuevoAfiliadoForm(forms.ModelForm):
     class Meta:
         model = Afiliado
-        fields = [
-            'nombre_completo',
-        ]
+        fields = ['nombre_completo']
+        labels = {
+            'nombre_completo': 'Nombre Completo',
+        }
         widgets = {
-            'nombre_completo': forms.TextInput(attrs={
-                'list': 'lista_afiliados',
-                'autocomplete': 'off',
-            }),
+            'nombre_completo': forms.TextInput(
+                attrs={
+                    'list': 'lista_afiliados',
+                    'autocomplete': 'off',
+                    'placeholder': 'Ej. Juan Pérez...',
+                }
+            ),
         }
 
 class EditarAfiliadoForm(forms.ModelForm):
     class Meta:
         model = Afiliado
-        fields = [
-            'operador',
-            'nombre_completo',
-        ]
-
+        fields = ['operador', 'nombre_completo']
+        labels = {
+            'operador': 'Empresa Operadora / Organización',
+            'nombre_completo': 'Nombre Completo',
+        }
+        widgets = {
+            'operador': forms.Select(
+                attrs={
+                    'class': 'form-select',
+                }
+            ),
+            'nombre_completo': forms.TextInput(
+                attrs={
+                    'autocomplete': 'off',
+                    'placeholder': 'Ej. Juan Pérez...',
+                }
+            ),
+        }
