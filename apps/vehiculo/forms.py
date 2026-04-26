@@ -21,6 +21,21 @@ class NuevoVehiculoForm(forms.ModelForm):
             'capacidad',
         ]
 
+class EditarVehiculoForm(forms.ModelForm):
+    class Meta:
+        model = Vehiculo
+        fields = [
+            'afiliado',
+            'propietario',
+            'placa',
+            'tipo',
+            'marca',
+            'modelo',
+            'transporte',
+            'chasis',
+            'capacidad',
+        ]
+
 class MarcaVehiculoForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = MarcaVehiculo

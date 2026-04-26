@@ -6,42 +6,78 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 
 def lista_vehiculos(request):
-    # Optimizamos consultas
     vehiculos_list = Vehiculo.objects.select_related(
-        'marca', 'tipo_vehiculo', 'propietario'
+        'marca', 'tipo', 'afiliado'
     ).all().order_by('-fecha_registro')
     
-    # 1. Capturar parámetros
     q = request.GET.get('q', '').strip()
     tipo = request.GET.get('tipo', 'todos')
     
-    # 2. Filtrado por texto
     if q:
         filtros = Q(placa__icontains=q) | Q(marca__nombre__icontains=q)
         if q.isdigit():
             filtros |= Q(modelo=q)
         vehiculos_list = vehiculos_list.filter(filtros)
         
-    # 3. Filtrado por Tipo
     if tipo and tipo != 'todos':
-        vehiculos_list = vehiculos_list.filter(tipo_transporte=tipo)
+        vehiculos_list = vehiculos_list.filter(transporte=tipo)
 
-    # 4. Paginación
     paginator = Paginator(vehiculos_list, 5)
     page_number = request.GET.get('page')
     vehiculos = paginator.get_page(page_number)
         
     contexto = {
-        'vehiculos': vehiculos, # Objeto paginado
+        'vehiculos': vehiculos,
         'q': q,
         'tipo_actual': tipo,
     }
+    
+    # === NUEVO: Detectar si es una petición AJAX ===
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'vehiculo/parcial_tabla.html', contexto)
+        
     return render(request, 'vehiculo/lista.html', contexto)
 
-def detalle_vehiculo (request, placa):
-    vehiculo = get_object_or_404(Vehiculo, placa=placa)
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Vehiculo, MarcaVehiculo, TipoVehiculo
+from .forms import EditarVehiculoForm, MarcaVehiculoForm, TipoVehiculoForm 
+from apps.afiliado.forms import NuevoAfiliadoForm
+
+def detalle_vehiculo(request, placa):
+    vehiculo = get_object_or_404(
+        Vehiculo.objects.select_related('marca', 'tipo', 'afiliado'), 
+        placa=placa
+    )
+    
+    form_vehiculo = EditarVehiculoForm(instance=vehiculo)
+    form_marca = MarcaVehiculoForm()
+    form_tipo = TipoVehiculoForm()
+    
+    if request.method == 'POST':
+        
+        if 'submit_vehiculo' in request.POST:
+            form_vehiculo = EditarVehiculoForm(request.POST, instance=vehiculo)
+            if form_vehiculo.is_valid():
+                vehiculo_guardado = form_vehiculo.save()
+                return redirect('vehiculo:detalle_vehiculo', placa=vehiculo_guardado.placa)
+                
+        elif 'submit_marca' in request.POST:
+            form_marca = MarcaVehiculoForm(request.POST)
+            if form_marca.is_valid():
+                form_marca.save()
+                return redirect('vehiculo:detalle_vehiculo', placa=vehiculo.placa)
+                
+        elif 'submit_tipo' in request.POST:
+            form_tipo = TipoVehiculoForm(request.POST)
+            if form_tipo.is_valid():
+                form_tipo.save()
+                return redirect('vehiculo:detalle_vehiculo', placa=vehiculo.placa)
+
     contexto = {
         'vehiculo': vehiculo,
+        'form_vehiculo': form_vehiculo,
+        'form_marca': form_marca,
+        'form_tipo': form_tipo,
     }
     return render(request, 'vehiculo/detalle.html', contexto)
 

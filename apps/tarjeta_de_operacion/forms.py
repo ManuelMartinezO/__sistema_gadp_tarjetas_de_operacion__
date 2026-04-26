@@ -16,6 +16,17 @@ class BootstrapFormMixin:
                     'style': 'border-radius: 10px;'
                 })
 
+class EditarTarjetaForm(forms.ModelForm):
+    class Meta:
+        model = TarjetaDeOperacion
+        fields = [
+            'tramite', 'estado', 'operador', 'afiliado', 'vehiculo', 
+            'ruta', 'licencia', 'validez', 'monto', 'fecha_emision', 'valida_hasta'
+        ]
+        widgets = {
+            'fecha_emision': forms.DateInput(attrs={'type': 'date'}),
+            'valida_hasta': forms.DateInput(attrs={'type': 'date'}),
+        }
 
 class EditarTarjetaForm(forms.ModelForm):
     # 1. Creamos un campo de texto libre para el nombre del afiliado

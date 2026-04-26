@@ -1,0 +1,76 @@
+<div class="tabla-contenedor">
+    <table class="tabla-moderna">
+        <thead>
+            <tr>
+                <th><i class="bi bi-hash"></i> N° Trámite</th>
+                <th><i class="bi bi-person"></i> Usuario</th>
+                <th><i class="bi bi-tags"></i> Tipo de Solicitud</th>
+                <th><i class="bi bi-shield-check"></i> Estado Revisión</th>
+                <th><i class="bi bi-cash-stack"></i> Depósito</th>
+                <th><i class="bi bi-calendar3"></i> Fecha de Ingreso</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tramite in tramites %}
+            <tr onclick="window.location='{% url 'tramite:detalle_tramite' tramite.numero %}'" style="cursor: pointer;">
+                <td><strong style="color: var(--color-principal);">#{{ tramite.numero|stringformat:"06d" }}</strong></td>
+                <td>{{ tramite.usuario.username }}</td>
+                <td>{{ tramite.get_tipo_display }}</td>
+                <td>
+                    {% if tramite.estado == 'p' %} 
+                        <span class="badge bg-pendiente">Pendiente</span>
+                    {% elif tramite.estado == 'v' %} 
+                        <span class="badge bg-validado">Validado</span>
+                    {% else %} 
+                        <span class="badge bg-observado">Observado</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if tramite.deposito %} 
+                        <span class="badge bg-dep-ok"><i class="bi bi-check-circle-fill"></i> Confirmado</span>
+                    {% else %} 
+                        <span class="badge bg-dep-pend"><i class="bi bi-clock-fill"></i> Pendiente</span>
+                    {% endif %}
+                </td>
+                <td>{{ tramite.fecha_registro|date:"d M Y, H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i> No se encontraron trámites con los filtros actuales.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="paginacion-container">
+    <div>
+        Mostrando <strong style="color: var(--color-principal);">{{ tramites.start_index }}</strong> a <strong style="color: var(--color-principal);">{{ tramites.end_index }}</strong> de <strong>{{ tramites.paginator.count }}</strong> resultados
+    </div>
+    
+    {% if tramites.has_other_pages %}
+        <nav class="paginacion-nav">
+            {% if tramites.has_previous %}
+                <a href="?page={{ tramites.previous_page_number }}&q={{ q }}&estado={{ estado_actual }}&tipo={{ tipo_actual }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}" title="Anterior">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            {% endif %}
+
+            {% for i in tramites.paginator.page_range %}
+                {% if tramites.number == i %}
+                    <span class="activo">{{ i }}</span>
+                {% elif i > tramites.number|add:'-3' and i < tramites.number|add:'3' %}
+                    <a href="?page={{ i }}&q={{ q }}&estado={{ estado_actual }}&tipo={{ tipo_actual }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if tramites.has_next %}
+                <a href="?page={{ tramites.next_page_number }}&q={{ q }}&estado={{ estado_actual }}&tipo={{ tipo_actual }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}" title="Siguiente">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            {% endif %}
+        </nav>
+    {% endif %}
+</div>

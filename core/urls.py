@@ -28,7 +28,7 @@ urlpatterns = [
     path('', include('apps.operador.urls')),
     path('', include('apps.afiliado.urls')),
     path('', include('apps.vehiculo.urls')),
-    path('gestion', include('apps.gestion.urls')),
+    path('gestion/', include('apps.gestion.urls')),
     path('', include('apps.tarjeta_de_operacion.urls')),
 ]
 

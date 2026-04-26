@@ -20,6 +20,14 @@ class NuevoTramiteForm(BootstrapFormMixin, forms.ModelForm):
             'rutas',
         ]
 
+class EditarTramiteAdminForm(forms.ModelForm):
+    class Meta:
+        model = Tramite
+        fields = [
+            'tipo', 'estado', 'licencia', 'usuario', 'operador', 
+            'fojas', 'rutas', 'observacion'
+        ]
+
 class InformeTecnicoForm(forms.ModelForm):
     class Meta:
         model = Tramite

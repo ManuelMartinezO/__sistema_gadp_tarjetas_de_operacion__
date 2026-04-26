@@ -1,5 +1,5 @@
 from django import forms
-from .models import Operador
+from .models import Operador, Organizacion, Federacion
 
 class BootstrapFormMixin:
     def __init__(self, *args, **kwargs):
@@ -7,12 +7,17 @@ class BootstrapFormMixin:
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control', 'style': 'border-radius: 10px;'})
 
-class NuevoOperadorForm(BootstrapFormMixin, forms.ModelForm):
+class NuevoOperadorForm(forms.ModelForm):
     class Meta:
         model = Operador
+        fields = ['organizacion', 'federacion']
+
+class OrganizacionForm(forms.ModelForm):
+    class Meta:
+        model = Organizacion
         fields = ['nombre']
 
-class OperadorForm(BootstrapFormMixin, forms.ModelForm):
+class FederacionForm(forms.ModelForm):
     class Meta:
-        model = Operador
+        model = Federacion
         fields = ['nombre']

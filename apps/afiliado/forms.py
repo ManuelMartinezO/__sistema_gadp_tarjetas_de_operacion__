@@ -20,3 +20,11 @@ class NuevoAfiliadoForm(forms.ModelForm):
             }),
         }
 
+class EditarAfiliadoForm(forms.ModelForm):
+    class Meta:
+        model = Afiliado
+        fields = [
+            'operador',
+            'nombre_completo',
+        ]
+

@@ -4,305 +4,379 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Panel SuperAdmin{% endblock %} | GADP Sistema de Transporte</title>
+    <title>{% block title %}Panel Admin{% endblock %} | GADP Sistema</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            /* Paleta Empresarial Oscura */
-            --bg-dark: #0b1120;         /* Fondo principal muy profundo */
-            --bg-surface: #151e32;      /* Fondo para tarjetas y navbar */
-            --bg-surface-hover: #1e293b;
-            
-            /* Acentos Neón (Cian y Azul Eléctrico) */
-            --neon-cyan: #00f2fe;
-            --neon-blue: #4facfe;
-            --neon-glow: rgba(0, 242, 254, 0.35);
-            --neon-danger: #ff0844;
-            --neon-danger-glow: rgba(255, 8, 68, 0.35);
+            /* Paleta Light Soft - Amigable con la vista */
+            --bg-body: #f1f5f9;       /* Gris azulado muy claro para el fondo */
+            --bg-surface: #ffffff;    /* Blanco puro para tarjetas y sidebar */
+            --bg-hover: #f8fafc;      /* Gris casi blanco para hovers */
             
             /* Textos */
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-subtle: rgba(255, 255, 255, 0.08);
+            --text-main: #1e293b;     /* Slate oscuro para lectura clara */
+            --text-muted: #64748b;    /* Gris medio para info secundaria */
+            
+            /* Acentos Profesionales */
+            --accent-blue: #4f46e5;   /* Indigo moderno */
+            --border-color: #e2e8f0;  /* Gris muy suave para bordes */
+            
+            /* Dimensiones */
+            --sidebar-width: 260px;
+            --header-height: 64px;
         }
 
-        body { 
-            background-color: var(--bg-dark); 
+        body {
+            background-color: var(--bg-body);
             color: var(--text-main);
             font-family: 'Plus Jakarta Sans', sans-serif;
-            min-height: 100vh;
+            overflow: hidden; /* Evita doble scroll, el scroll va en el main */
+            display: flex;
+            height: 100vh;
+        }
+
+        /* ==========================================
+           SIDEBAR (Barra Lateral Izquierda)
+           ========================================== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 1040;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.02);
+        }
+
+        .sidebar-brand {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-color);
+            text-decoration: none;
+            gap: 12px;
+            transition: background-color 0.2s;
+        }
+        
+        .sidebar-brand:hover { background-color: var(--bg-hover); }
+        .sidebar-brand i { color: var(--accent-blue); font-size: 1.3rem;}
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0.8rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin: 1.2rem 0 0.5rem 1rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .sidebar-link:hover, .sidebar-link[aria-expanded="true"] {
+            background-color: var(--bg-hover);
+            color: var(--accent-blue);
+        }
+
+        .sidebar-link.active {
+            background-color: rgba(79, 70, 229, 0.08);
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .sidebar-link i.icon-main { font-size: 1.1rem; width: 20px; text-align: center; }
+        .sidebar-link i.chevron { margin-left: auto; font-size: 0.8rem; transition: transform 0.3s; }
+        .sidebar-link[aria-expanded="true"] i.chevron { transform: rotate(180deg); }
+
+        /* Submenús */
+        .sidebar-submenu {
+            list-style: none;
+            padding-left: 2.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .sidebar-submenu a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: block;
+            padding: 0.5rem 0;
+            transition: color 0.2s;
+        }
+        .sidebar-submenu a:hover, .sidebar-submenu a.active {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        /* ==========================================
+           CONTENIDO PRINCIPAL Y HEADER
+           ========================================== */
+        .main-wrapper {
+            flex: 1;
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
         }
-        
-        /* ==========================================
-           TOP NAVBAR (Glassmorphism & Neon)
-           ========================================== */
-        .enterprise-navbar {
-            background-color: rgba(21, 30, 50, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(0, 242, 254, 0.15); /* Borde sutil cian */
-            padding: 0;
-            position: sticky;
-            top: 0;
+
+        .top-header {
+            height: var(--header-height);
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
             z-index: 1030;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        /* Marca / Logo */
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 1rem 1.5rem;
-            color: var(--text-main);
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            font-size: 1.1rem;
-        }
-        .brand-icon {
-            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-blue) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 1.4rem;
-            filter: drop-shadow(0 0 8px var(--neon-glow));
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
         }
 
-        /* Enlaces de Navegación */
-        .navbar-nav .nav-link {
+        .btn-toggle-sidebar {
+            background: #f1f5f9;
+            border: none;
             color: var(--text-muted);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 600;
-            padding: 1.5rem 1rem !important;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s, color 0.2s;
         }
-
-        .navbar-nav .nav-link:hover, 
-        .navbar-nav .nav-link.active,
-        .navbar-nav .nav-item.show .nav-link {
-            color: var(--neon-cyan);
-            border-bottom-color: var(--neon-cyan);
-            text-shadow: 0 0 12px var(--neon-glow);
-            background-color: rgba(0, 242, 254, 0.03);
-        }
-
-        /* Dropdowns (Menús Desplegables Oscuros) */
-        .dropdown-menu-dark {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-top: 2px solid var(--neon-cyan);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            border-radius: 0 0 12px 12px;
-            padding: 0.5rem 0;
-            margin-top: 0;
-        }
-        .dropdown-menu-dark .dropdown-item {
-            color: var(--text-muted);
-            font-weight: 500;
-            font-size: 0.9rem;
-            padding: 0.7rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-        }
-        .dropdown-menu-dark .dropdown-item:hover {
-            background-color: var(--bg-surface-hover);
-            color: var(--neon-cyan);
-            transform: translateX(5px);
-        }
-
-        /* Sección del Usuario (Derecha) */
-        .user-section {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-            padding-right: 1.5rem;
-        }
-        .user-info {
-            text-align: right;
-            line-height: 1.2;
-            border-right: 1px solid var(--border-subtle);
-            padding-right: 1.2rem;
-        }
-        .user-name { font-size: 0.85rem; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px;}
-        .user-role { font-size: 0.7rem; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;}
-
-        /* Botones Neón */
-        .btn-neon-outline {
-            color: var(--neon-cyan);
-            border: 1px solid var(--neon-cyan);
-            background: transparent;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        .btn-neon-outline:hover {
-            background: var(--neon-cyan);
-            color: var(--bg-dark);
-            box-shadow: 0 0 15px var(--neon-glow);
-        }
-
-        .btn-neon-danger {
-            color: var(--neon-danger);
-            background: rgba(255, 8, 68, 0.1);
-            border: 1px solid rgba(255, 8, 68, 0.3);
-            border-radius: 8px;
-            padding: 0.5rem 0.8rem;
-            transition: all 0.3s ease;
-        }
-        .btn-neon-danger:hover {
-            background: var(--neon-danger);
-            color: #fff;
-            box-shadow: 0 0 15px var(--neon-danger-glow);
-            border-color: var(--neon-danger);
-        }
-
-        /* Alertas Oscuras */
-        .alert {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
+        .btn-toggle-sidebar:hover {
+            background: #e2e8f0;
             color: var(--text-main);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .alert-success { border-left: 4px solid #10b981; }
-        .alert-danger { border-left: 4px solid var(--neon-danger); }
-        .alert-warning { border-left: 4px solid #f59e0b; }
-        .btn-close { filter: invert(1) grayscale(100%) brightness(200%); } /* X blanca */
-
-        /* Contenedor Principal */
-        .main-content {
-            flex-grow: 1;
-            padding: 2.5rem 1.5rem;
         }
 
-        /* Toggler Móvil */
-        .navbar-toggler { border: none; color: var(--neon-cyan); }
-        .navbar-toggler:focus { box-shadow: none; outline: none; }
+        /* Botones de acción del Header */
+        .header-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .header-btn-portal { border: 1px solid var(--border-color); color: var(--text-muted); background: var(--bg-surface); }
+        .header-btn-portal:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(79, 70, 229, 0.05); }
         
+        .header-btn-logout { background-color: #fee2e2; color: #ef4444; border: none; }
+        .header-btn-logout:hover { background-color: #ef4444; color: white; transform: scale(1.05); }
+
+        /* Tarjetas Base para Vistas */
+        .card-panel {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Alertas */
+        .alert { 
+            background-color: var(--bg-surface); 
+            border: 1px solid var(--border-color); 
+            color: var(--text-main); 
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Responsive */
         @media (max-width: 991px) {
-            .navbar-nav .nav-link { padding: 1rem !important; border-bottom: none; border-left: 2px solid transparent; }
-            .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active { border-left-color: var(--neon-cyan); border-bottom-color: transparent;}
-            .user-section { padding: 1rem; border-top: 1px solid var(--border-subtle); justify-content: space-between; }
-            .user-info { border-right: none; text-align: left; padding-right: 0;}
+            .sidebar {
+                position: fixed;
+                left: calc(-1 * var(--sidebar-width));
+                height: 100vh;
+            }
+            .sidebar.show { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+            .sidebar-overlay {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(15, 23, 42, 0.3); z-index: 1035; display: none;
+                backdrop-filter: blur(2px);
+            }
+            .sidebar-overlay.show { display: block; }
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg enterprise-navbar">
-        <div class="container-fluid px-0 px-lg-3">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <a href="#" class="sidebar-brand">
+            <i class="fas fa-bus-alt"></i>
+            <span>GADP Admin</span>
+        </a>
+
+        <div class="sidebar-nav">
             
-            <a class="navbar-brand" href="#">
-                <div class="brand-icon"><i class="fas fa-layer-group"></i></div>
-                <span class="d-none d-sm-block">SUPER<span style="font-weight:400; opacity:0.8;">ADMIN</span></span>
+            <a href="{% url 'gestion:reporte_general_pdf' %}" class="btn btn-sm text-white" style="background-color: var(--accent-blue); border: none; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);" title="Descargar Reporte General">
+                <i class="fas fa-file-pdf me-2"></i> Generar Reporte PDF
             </a>
 
-            <button class="navbar-toggler me-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarEnterprise">
-                <i class="fas fa-bars fs-4"></i>
-            </button>
+            <div class="nav-label">Directorio</div>
 
-            <div class="collapse navbar-collapse" id="navbarEnterprise">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-chart-line"></i> Inicio
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-database"></i> Directorio
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" href="{% url 'gestion:usuario_list' %}"><i class="fas fa-users-cog fa-fw"></i> Gestores del Sistema</a></li>
-                            <li><hr class="dropdown-divider border-secondary opacity-25"></li>
-                            <li><a class="dropdown-item" href="{% url 'gestion:operador_list' %}"><i class="fas fa-building fa-fw"></i> Entidades Operadoras</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-id-card fa-fw"></i> Padrón de Afiliados</a></li>
-                        </ul>
-                    </li>
+            <a href="{% url 'gestion:usuario_list' %}" class="sidebar-link">
+                <i class="fas fa-users icon-main"></i>
+                <span>Usuarios</span>
+            </a>
 
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-cogs"></i> Operaciones
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-car fa-fw"></i> Parque Automotor</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-signature fa-fw"></i> Control de Trámites</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-print fa-fw"></i> Emisión de Tarjetas</a></li>
-                        </ul>
-                    </li>
+            <a href="{% url 'gestion:afiliado_list' %}" class="sidebar-link">
+                <i class="fas fa-id-card-clip icon-main"></i>
+                <span>Afiliados</span>
+            </a>
 
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'gestion:historial_list' %}">
-                            <i class="fas fa-shield-alt"></i> Logs Auditoría
-                        </a>
-                    </li>
-
+            <a href="#operadoresSubmenu" class="sidebar-link" data-bs-toggle="collapse" aria-expanded="false">
+                <i class="fas fa-building icon-main"></i>
+                <span>Operadores</span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </a>
+            <div class="collapse" id="operadoresSubmenu">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'gestion:operador_list' %}"><i class="fas fa-sitemap fa-fw me-2"></i>Operadores</a></li>
+                    <li><a href="{% url 'gestion:organizacion_list' %}"><i class="fas fa-sitemap fa-fw me-2"></i>Organizaciones</a></li>
+                    <li><a href="{% url 'gestion:federacion_list' %}"><i class="fas fa-layer-group fa-fw me-2"></i>Federaciones</a></li>
                 </ul>
-
-                <div class="user-section">
-                    <div class="user-info d-none d-lg-block">
-                        <div class="user-name">{{ request.user.username|upper|default:"ADMIN_SYS" }}</div>
-                        <div class="user-role">Acceso Nivel 1</div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <a href="/" class="btn btn-neon-outline" title="Ir al portal público">
-                            <i class="fas fa-globe"></i> <span class="d-lg-none ms-1">Portal</span>
-                        </a>
-                        <a href="{% url 'logout' %}" class="btn btn-neon-danger" title="Cerrar Sesión">
-                            <i class="fas fa-power-off"></i> <span class="d-lg-none ms-1">Salir</span>
-                        </a>
-                    </div>
-                </div>
             </div>
 
+            <div class="nav-label">Gestión Operativa</div>
+
+            <a href="#vehiculosSubmenu" class="sidebar-link" data-bs-toggle="collapse" aria-expanded="false">
+                <i class="fas fa-car icon-main"></i>
+                <span>Vehículos</span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </a>
+            <div class="collapse" id="vehiculosSubmenu">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'gestion:vehiculo_list' %}"><i class="fas fa-list fa-fw me-2"></i>Inventario General</a></li>
+                    <li><a href="{% url 'gestion:marca_list' %}"><i class="fas fa-tags fa-fw me-2"></i>Marcas</a></li>
+                    <li><a href="{% url 'gestion:tipo_list' %}"><i class="fas fa-car-side fa-fw me-2"></i>Tipos/Categorías</a></li>
+                </ul>
+            </div>
+
+            <a href="{% url 'gestion:tramite_list' %}" class="sidebar-link">
+                <i class="fas fa-file-signature icon-main"></i>
+                <span>Trámites</span>
+            </a>
+
+            <a href="{% url 'gestion:tarjeta_list' %}" class="sidebar-link">
+                <i class="fas fa-address-card icon-main"></i>
+                <span>Tarjetas Operativas</span>
+            </a>
+
+            <div class="nav-label">Sistema</div>
+
+            <a href="{% url 'gestion:historial_list' %}" class="sidebar-link">
+                <i class="fas fa-shield-halved icon-main"></i>
+                <span>Auditoría (Logs)</span>
+            </a>
         </div>
-    </nav>
+    </aside>
 
-    <main class="main-content container-xxl">
+    <div class="main-wrapper">
         
-        {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {% if message.tags == 'success' %}<i class="fas fa-check-circle me-2 text-success"></i>
-                        {% elif message.tags == 'danger' %}<i class="fas fa-exclamation-triangle me-2 text-danger"></i>
-                        {% else %}<i class="fas fa-info-circle me-2 text-info"></i>{% endif %}
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
+        <header class="top-header">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn-toggle-sidebar d-lg-none" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h5 class="mb-0 text-muted d-none d-md-block fs-6 fw-medium">
+                    {% block header_title %}Panel de Control{% endblock %}
+                </h5>
             </div>
-        {% endif %}
 
-        {% block content %}
-        {% endblock %}
-        
-    </main>
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end d-none d-sm-block me-2">
+                    <div class="fw-bold fs-6 text-dark">{{ request.user.username|default:"Administrador" }}</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">SuperAdmin</div>
+                </div>
+                <a href="/" class="header-btn header-btn-portal" title="Ir al Portal Público">
+                    <i class="fas fa-globe"></i>
+                </a>
+                <a href="{% url 'logout' %}" class="header-btn header-btn-logout" title="Cerrar Sesión">
+                    <i class="fas fa-power-off"></i>
+                </a>
+            </div>
+        </header>
+
+        <main class="content-area">
+            
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-dismissible fade show d-flex align-items-center" role="alert">
+                            {% if message.tags == 'success' %}<i class="fas fa-check-circle me-3 text-success fs-5"></i>
+                            {% elif message.tags == 'danger' %}<i class="fas fa-circle-exclamation me-3 text-danger fs-5"></i>
+                            {% else %}<i class="fas fa-info-circle me-3 text-info fs-5"></i>{% endif %}
+                            <div>{{ message }}</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}
+            <div class="card-panel">
+                <h4 class="mb-1 fw-bold">Bienvenido al Sistema</h4>
+                <p class="text-muted mb-0">Selecciona una opción del menú lateral para comenzar a gestionar los datos.</p>
+            </div>
+            {% endblock %}
+
+        </main>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+            }
+
+            if(toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
+            if(overlay) overlay.addEventListener('click', toggleSidebar);
+        });
+    </script>
+
     {% block extra_js %}
     {% endblock %}
 

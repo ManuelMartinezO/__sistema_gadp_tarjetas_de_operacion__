@@ -1,239 +1,198 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="afiliados-container pb-5 animate-up">
+<style>
+    /* --- VARIABLES BASE --- */
+    :root {
+        --color-principal: #8b0000;
+        --color-hover: #6a0000;
+        --color-texto: #1e293b;
+        --color-borde: #cbd5e1;
+        --bg-suave: #f8fafc;
+    }
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-        <div class="mb-3 mb-md-0">
-            <h2 class="fw-bold mb-1 text-slate-900"><i class="bi bi-people me-2 text-indigo"></i>Registro de Afiliados</h2>
-            <p class="text-slate-500 mb-0 fs-7">Listado de transportistas y propietarios vinculados al sistema</p>
+    /* --- ENCABEZADOS Y TEXTOS --- */
+    .header-pagina {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--bg-suave);
+    }
+    .titulo-principal {
+        color: var(--color-texto);
+        font-weight: 800;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .subtitulo-principal {
+        color: #64748b;
+        margin: 5px 0 0 0;
+        font-size: 0.95rem;
+    }
+
+    /* --- BOTONES --- */
+    .btn-custom {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.9em;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-decoration: none;
+    }
+    .btn-principal { background-color: var(--color-principal); color: white; }
+    .btn-principal:hover { background-color: var(--color-hover); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(139,0,0,0.2); color: white;}
+    
+    .btn-gris { background-color: #f1f5f9; color: #475569; border: 1px solid var(--color-borde); }
+    .btn-gris:hover { background-color: #e2e8f0; color: var(--color-texto); }
+
+    /* --- PANEL DE FILTROS --- */
+    .panel-filtros {
+        background-color: white;
+        border: 1px solid var(--color-borde);
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .flex-filtros {
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .form-group-busqueda {
+        flex: 1; /* Permite que el buscador tome todo el espacio disponible */
+        min-width: 250px;
+    }
+    .form-group label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--color-principal);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #94a3b8;
+        border-radius: 4px;
+        background-color: var(--bg-suave);
+        color: var(--color-texto);
+        font-size: 0.95em;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+    }
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--color-principal);
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+    }
+</style>
+
+<div>
+    <div class="header-pagina">
+        <div>
+            <h2 class="titulo-principal">
+                <i class="bi bi-people-fill" style="color: var(--color-principal);"></i> Registro de Afiliados
+            </h2>
+            <p class="subtitulo-principal">Listado de transportistas y propietarios vinculados al sistema</p>
         </div>
         
         {% if user.rol == 'a' or user.rol == 'sa' %}
-            <a href="{% url 'afiliado:crear_afiliado' %}" class="btn btn-indigo shadow-sm d-flex align-items-center justify-content-center">
-                <i class="bi bi-person-plus-fill me-2"></i> Nuevo Afiliado
+            <a href="{% url 'afiliado:crear_afiliado' %}" class="btn-custom btn-principal">
+                <i class="bi bi-person-plus-fill me-1"></i> Nuevo Afiliado
             </a>
         {% endif %}
     </div>
 
-    <div class="search-card mb-4 animate-up delay-1">
-        <form method="GET" id="searchForm" class="m-0">
-            <div class="input-group input-group-custom">
-                <span class="input-group-text bg-transparent border-end-0 text-slate-400 ps-4">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" class="form-control border-start-0 ps-2 py-3" id="q" name="q" 
-                       value="{{ q }}" placeholder="Buscar por nombre, apellido o empresa operadora..." autocomplete="off">
-                {% if q %}
-                    <a href="{% url 'afiliado:lista_afiliados' %}" class="input-group-text bg-transparent border-start-0 text-slate-400 pe-4 hover-indigo text-decoration-none" title="Limpiar búsqueda">
-                        <i class="bi bi-x-circle-fill"></i>
-                    </a>
-                {% endif %}
+    <div class="panel-filtros">
+        <form id="searchForm" class="flex-filtros" onsubmit="event.preventDefault();">
+            
+            <div class="form-group form-group-busqueda">
+                <label for="q"><i class="bi bi-search me-1"></i> Búsqueda Rápida</label>
+                <input type="text" id="q" name="q" value="{{ q }}" placeholder="Buscar por nombre completo o empresa afiliada..." autocomplete="off">
             </div>
+            
+            <div class="form-group">
+                <a href="{% url 'afiliado:lista_afiliados' %}" id="btnLimpiar" class="btn-custom btn-gris" style="display: {% if q %}inline-flex{% else %}none{% endif %}; padding-top: 9px; padding-bottom: 9px;">
+                    <i class="bi bi-eraser me-1"></i> Limpiar
+                </a>
+            </div>
+            
         </form>
     </div>
 
-    <div class="table-card animate-up delay-2">
-        <div class="table-responsive">
-            <table class="table custom-table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-4">ID</th>
-                        <th>Nombre Completo</th>
-                        <th>Empresa / Operador</th>
-                        <th>Fecha Registro</th>
-                        <th class="text-end pe-4">Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for afiliado in afiliados %}
-                    <tr class="table-row-hover" onclick="window.location='{% url 'afiliado:detalle_afiliado' afiliado.id %}'">
-                        
-                        <td class="ps-4">
-                            <span class="fw-bold text-slate-500 fs-7">#{{ afiliado.id|stringformat:"04d" }}</span>
-                        </td>
-                        
-                        <td>
-                            <div class="d-flex align-items-center py-2">
-                                <div class="avatar-soft me-3">
-                                    <span class="fw-bold">{{ afiliado.nombre|make_list|first|upper }}</span>
-                                </div>
-                                <span class="fw-bold text-slate-800">{{ afiliado.nombre }} {{ afiliado.apellido }}</span>
-                            </div>
-                        </td>
-                        
-                        <td>
-                            <div class="d-inline-flex align-items-center bg-slate-50 border border-slate-100 rounded-pill px-3 py-1 fs-7">
-                                <i class="bi bi-buildings text-slate-400 me-2"></i>
-                                <span class="fw-medium text-slate-700">{{ afiliado.operador.nombre }}</span>
-                            </div>
-                        </td>
-                        
-                        <td>
-                            <div class="text-slate-500 fs-7">
-                                <i class="bi bi-calendar3 me-1 opacity-75"></i> {{ afiliado.fecha_registro|date:"d M Y" }}
-                            </div>
-                        </td>
-                        
-                        <td class="text-end pe-4">
-                            <a href="{% url 'afiliado:detalle_afiliado' afiliado.id %}" class="btn btn-sm btn-light-action rounded-pill px-3">
-                                Ver Ficha <i class="bi bi-arrow-right ms-1"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5">
-                            <div class="empty-state">
-                                <div class="empty-icon-wrapper mb-3">
-                                    <i class="bi bi-people text-indigo fs-1"></i>
-                                </div>
-                                <h5 class="fw-bold text-slate-700">No hay afiliados registrados</h5>
-                                <p class="text-slate-500 mb-0">No se encontraron registros con los criterios de búsqueda actuales.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <div class="px-4 py-3 border-top bg-light-subtle d-flex align-items-center justify-content-between">
-                <div class="text-slate-500 fs-7">
-                    Mostrando {{ afiliados.start_index }} a {{ afiliados.end_index }} de {{ afiliados.paginator.count }} registros
-                </div>
-                
-                {% if afiliados.has_other_pages %}
-                <nav>
-                    <ul class="pagination pagination-sm m-0">
-                        {% if afiliados.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link border-0 rounded-3 me-1 text-slate-600" href="?page={{ afiliados.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">
-                                    <i class="bi bi-chevron-left"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        {% for i in afiliados.paginator.page_range %}
-                            {% if afiliados.number == i %}
-                                <li class="page-item active">
-                                    <span class="page-link border-0 rounded-3 me-1 bg-indigo shadow-sm">{{ i }}</span>
-                                </li>
-                            {% elif i > afiliados.number|add:'-3' and i < afiliados.number|add:'3' %}
-                                <li class="page-item">
-                                    <a class="page-link border-0 rounded-3 me-1 text-slate-600" href="?page={{ i }}{% if q %}&q={{ q }}{% endif %}">{{ i }}</a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if afiliados.has_next %}
-                            <li class="page-item">
-                                <a class="page-link border-0 rounded-3 text-slate-600" href="?page={{ afiliados.next_page_number }}{% if q %}&q={{ q }}{% endif %}">
-                                    <i class="bi bi-chevron-right"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
-            </div>
-        </div>
+    <div id="resultados-tabla">
+        {% include 'afiliado/parcial_tabla.html' %}
     </div>
 </div>
 
-<style>
-    /* VARIABLES LOCALES (Consistencia Slate & Indigo) */
-    .afiliados-container {
-        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #a5b4fc;
-        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-500: #64748b; --slate-400: #94a3b8; --slate-100: #f1f5f9; --slate-50: #f8fafc;
-    }
-
-    .text-indigo { color: var(--indigo); }
-    .text-slate-900 { color: var(--slate-900); }
-    .text-slate-800 { color: var(--slate-800); }
-    .text-slate-700 { color: var(--slate-700); }
-    .text-slate-500 { color: var(--slate-500); }
-    .text-slate-400 { color: var(--slate-400); }
-    
-    .fs-7 { font-size: 0.85rem; }
-    .fs-8 { font-size: 0.75rem; }
-
-    /* BOTONES */
-    .btn-indigo { background-color: var(--indigo); color: white; border: none; border-radius: 10px; padding: 0.6rem 1.2rem; font-weight: 600; transition: all 0.2s; }
-    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
-
-    .btn-light-action { background-color: #fff; border: 1px solid #e2e8f0; color: var(--slate-700); font-weight: 600; font-size: 0.8rem; transition: all 0.2s; }
-    .table-row-hover:hover .btn-light-action { background-color: var(--indigo); color: white; border-color: var(--indigo); }
-
-    /* BARRA DE BÚSQUEDA */
-    .search-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
-    .input-group-custom .form-control { border: none; background: transparent; color: var(--slate-700); }
-    .input-group-custom .form-control:focus { box-shadow: none; }
-    .input-group-custom .input-group-text { border: none; background: transparent; }
-    .hover-indigo:hover { color: var(--indigo) !important; cursor: pointer; }
-
-    /* TABLA Y FILAS */
-    .table-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
-    .custom-table { border-collapse: separate; border-spacing: 0; }
-    .custom-table thead { background-color: #f8fafc; }
-    .custom-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); font-weight: 600; border-bottom: 1px solid #e2e8f0; padding: 1.2rem 0.5rem; }
-    .custom-table td { border-bottom: 1px solid var(--slate-50); vertical-align: middle; }
-    
-    .table-row-hover { cursor: pointer; transition: all 0.2s ease; }
-    .table-row-hover:hover td { background-color: #fbfbff; }
-    .table-row-hover:hover td:first-child { box-shadow: inset 4px 0 0 var(--indigo); }
-
-    /* AVATARES */
-    .avatar-soft { width: 42px; height: 42px; border-radius: 12px; background-color: rgba(99, 102, 241, 0.1); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-
-    /* EMPTY STATE */
-    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
-    .empty-icon-wrapper { width: 80px; height: 80px; background-color: rgba(99, 102, 241, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-
-    /* ANIMACIONES */
-    .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
-    .delay-1 { animation-delay: 0.1s; }
-    .delay-2 { animation-delay: 0.2s; }
-    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-    .pagination .page-link {
-        color: var(--slate-600);
-        background-color: transparent;
-        font-weight: 600;
-    }
-    
-    .pagination .page-item.active .page-link {
-        background-color: var(--indigo) !important;
-        color: white !important;
-    }
-    
-    .pagination .page-link:hover:not(.active) {
-        background-color: var(--slate-100);
-        color: var(--indigo);
-    }
-
-    .bg-light-subtle { background-color: #fcfcfd; }
-</style>
-
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const form = document.getElementById('searchForm');
-        const searchInput = document.getElementById('q');
-        
+        const inputQ = document.getElementById('q');
+        const contenedorResultados = document.getElementById('resultados-tabla');
+        const btnLimpiar = document.getElementById('btnLimpiar');
         let timeout = null;
-        
-        // Debounce search
-        searchInput.addEventListener('input', () => {
+
+        function realizarBusqueda(url) {
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                contenedorResultados.innerHTML = html;
+                
+                // Actualizado a inline-flex para respetar los estilos de los iconos
+                if (inputQ.value.trim() !== '') {
+                    btnLimpiar.style.display = 'inline-flex';
+                } else {
+                    btnLimpiar.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error en la búsqueda:', error));
+        }
+
+        function generarUrl() {
+            const params = new URLSearchParams({
+                q: inputQ.value
+            });
+            return `?${params.toString()}`;
+        }
+
+        // Buscar al escribir (retraso de 300ms)
+        inputQ.addEventListener('input', () => {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
-                form.submit();
-            }, 500); 
+                realizarBusqueda(generarUrl());
+            }, 300);
         });
-        
-        // Mantener cursor al recargar
-        if (searchInput.value) {
-            const tempValue = searchInput.value;
-            searchInput.value = '';
-            searchInput.focus();
-            searchInput.value = tempValue;
-        }
+
+        // Interceptar clicks de la paginación para usar AJAX
+        contenedorResultados.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && e.target.closest('ul')) {
+                e.preventDefault();
+                realizarBusqueda(e.target.getAttribute('href'));
+            }
+        });
     });
 </script>
 {% endblock %}

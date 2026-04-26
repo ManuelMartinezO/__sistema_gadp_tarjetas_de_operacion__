@@ -1,0 +1,272 @@
+{% extends 'gestion/base_admin.html' %}
+
+{% block title %}Tarjetas de Operación{% endblock %}
+{% block header_title %}Operaciones / Tarjetas de Operación{% endblock %}
+
+{% block content %}
+<style>
+    /* REFINAMIENTO DE INPUTS PARA MODO CLARO */
+    .django-form-light input, 
+    .django-form-light select, 
+    .django-form-light textarea,
+    #searchInput { 
+        background-color: var(--bg-surface) !important; 
+        color: var(--text-main) !important; 
+        border: 1px solid var(--border-color) !important; 
+        width: 100%; 
+        padding: 0.5rem 0.75rem; 
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+    .django-form-light input:focus, 
+    .django-form-light select:focus, 
+    .django-form-light textarea:focus,
+    #searchInput:focus { 
+        border-color: var(--accent-blue) !important; 
+        outline: none; 
+        box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.1) !important; 
+    }
+    .django-form-light label { 
+        font-size: 0.75rem; 
+        color: var(--text-main); 
+        margin-bottom: 0.3rem; 
+        font-weight: 700; 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="card-panel shadow-sm">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h5 class="mb-1 fw-bold" style="color: var(--text-main);">
+                <i class="fas fa-address-card me-2" style="color: var(--accent-blue);"></i> Tarjetas de Operación
+            </h5>
+            <p class="text-muted small mb-0">Gestión de licencias y autorizaciones vehiculares.</p>
+        </div>
+        <form id="formBuscador" class="d-flex" style="max-width: 400px; width: 100%;">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="fas fa-search" id="iconoBusqueda"></i>
+                </span>
+                <input type="text" id="searchInput" name="q" value="{{ q }}" class="form-control border-start-0 ps-0" placeholder="Trámite, Placa, Afiliado, Licencia..." autocomplete="off">
+            </div>
+        </form>
+    </div>
+
+    <div id="tablaContainer" class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th class="text-muted text-uppercase fw-bold py-3 ps-4" style="font-size: 0.7rem; width: 10%;">ID / Trámite</th>
+                    <th class="text-muted text-uppercase fw-bold py-3" style="font-size: 0.7rem; width: 25%;">Afiliado y Vehículo</th>
+                    <th class="text-muted text-uppercase fw-bold py-3" style="font-size: 0.7rem; width: 30%;">Detalles y Licencia</th>
+                    <th class="text-muted text-uppercase fw-bold py-3" style="font-size: 0.7rem; width: 20%;">Fechas y Estado</th>
+                    <th class="text-muted text-uppercase fw-bold py-3 text-center pe-4" style="font-size: 0.7rem; width: 15%;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody style="background-color: var(--bg-surface);">
+                {% for t in registros %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td class="ps-4">
+                        <span class="fw-bold text-dark" style="font-size: 1.05rem;">#{{ t.id }}</span><br>
+                        <small class="fw-semibold" style="color: var(--accent-blue); font-family: monospace;">T: {{ t.tramite.numero }}</small>
+                    </td>
+                    
+                    <td>
+                        <span class="text-dark fw-semibold"><i class="fas fa-user-tie text-muted me-1 opacity-50"></i>{{ t.afiliado.nombre_completo }}</span><br>
+                        <span class="badge bg-light text-dark border mt-1 font-monospace" style="font-size: 0.75rem;"><i class="fas fa-car-side me-1 text-muted"></i>{{ t.vehiculo.placa }}</span>
+                    </td>
+
+                    <td>
+                        <div class="mb-1">
+                            <span class="text-dark fw-bold" style="font-size: 0.85rem;">{{ t.licencia }}</span> 
+                            <span class="text-success fw-semibold ms-2" style="font-size: 0.8rem;">Bs. {{ t.monto }}</span>
+                        </div>
+                        <small class="text-muted d-block text-truncate fw-medium" style="max-width: 250px;" title="{{ t.ruta }}"><i class="fas fa-route me-1 opacity-50"></i>{{ t.ruta }}</small>
+                        <small class="text-muted"><i class="fas fa-hourglass-half me-1 opacity-50"></i>Validez: {{ t.validez }} año(s)</small>
+                    </td>
+
+                    <td>
+                        <div class="mb-1">
+                            {% if t.estado == 'p' %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">Pendiente</span>
+                            {% elif t.estado == 'e' %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Emitida</span>
+                            {% elif t.estado == 'v' %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">Vencida</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Emi: {{ t.fecha_emision|date:"d M Y"|default:"---" }}</small>
+                        <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Ven: {{ t.valida_hasta|date:"d M Y"|default:"---" }}</small>
+                    </td>
+
+                    <td class="text-center pe-4">
+                        <div class="d-inline-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-light border" onclick="abrirModalEdicion('{{ t.id }}', '{{ t.estado }}', '{{ t.tramite.id }}', '{{ t.operador.id }}', '{{ t.afiliado.id }}', '{{ t.vehiculo.id }}', '{{ t.ruta|escapejs }}', '{{ t.licencia|escapejs }}', '{{ t.validez }}', '{{ t.monto|escapejs }}', '{{ t.fecha_emision|date:"Y-m-d" }}', '{{ t.valida_hasta|date:"Y-m-d" }}')" title="Editar Tarjeta">
+                                <i class="fas fa-pen text-primary"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light border" onclick="abrirModalEliminacion('{{ t.id }}', '{{ t.tramite.numero }}')" title="Eliminar Tarjeta">
+                                <i class="fas fa-trash text-danger"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="fas fa-address-card fs-1 mb-3 opacity-25"></i><br>
+                        No se encontraron tarjetas registradas.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="paginacionContainer">
+        {% if registros.has_other_pages %}
+        <nav class="mt-4 d-flex justify-content-end">
+            <ul class="pagination pagination-sm gap-1 mb-0">
+                {% if registros.has_previous %}
+                    <li class="page-item"><a class="page-link border-0 rounded" href="?page={{ registros.previous_page_number }}{% if q %}&q={{ q }}{% endif %}" style="color: var(--accent-blue); background: var(--bg-body);"><i class="fas fa-chevron-left"></i></a></li>
+                {% endif %}
+                {% for i in registros.paginator.page_range %}
+                    {% if registros.number == i %}
+                        <li class="page-item active"><span class="page-link rounded fw-bold" style="background-color: var(--accent-blue); border: none;">{{ i }}</span></li>
+                    {% elif i > registros.number|add:'-3' and i < registros.number|add:'3' %}
+                        <li class="page-item"><a class="page-link border-0 rounded text-muted" href="?page={{ i }}{% if q %}&q={{ q }}{% endif %}">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if registros.has_next %}
+                    <li class="page-item"><a class="page-link border-0 rounded" href="?page={{ registros.next_page_number }}{% if q %}&q={{ q }}{% endif %}" style="color: var(--accent-blue); background: var(--bg-body);"><i class="fas fa-chevron-right"></i></a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="modalEdicion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom">
+                <h6 class="modal-title fw-bold text-dark"><i class="fas fa-pen text-primary me-2"></i>Editar Tarjeta de Operación</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body django-form-light p-4">
+                <form id="formEdicion" method="POST" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="submit_editar" value="1">
+                    <input type="hidden" name="registro_id" id="edit_registro_id">
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3"><label>Estado:</label>{{ form_generico.estado }}</div>
+                        <div class="col-md-4 mb-3"><label>Trámite Asociado:</label>{{ form_generico.tramite }}</div>
+                        <div class="col-md-4 mb-3"><label>Operador:</label>{{ form_generico.operador }}</div>
+                        
+                        <div class="col-md-6 mb-3"><label>Afiliado:</label>{{ form_generico.afiliado }}</div>
+                        <div class="col-md-6 mb-3"><label>Vehículo (Placa):</label>{{ form_generico.vehiculo }}</div>
+                        
+                        <div class="col-md-4 mb-3"><label>Licencia:</label>{{ form_generico.licencia }}</div>
+                        <div class="col-md-4 mb-3"><label>Validez (Años):</label>{{ form_generico.validez }}</div>
+                        <div class="col-md-4 mb-3"><label>Monto (Bs.):</label>{{ form_generico.monto }}</div>
+                        
+                        <div class="col-md-6 mb-3"><label>Fecha Emisión:</label>{{ form_generico.fecha_emision }}</div>
+                        <div class="col-md-6 mb-3"><label>Válida Hasta:</label>{{ form_generico.valida_hasta }}</div>
+                        
+                        <div class="col-md-12 mb-3"><label>Ruta:</label>{{ form_generico.ruta }}</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top">
+                <button type="button" class="btn btn-white border fw-bold text-muted" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary fw-bold" style="background-color: var(--accent-blue); border: none;" onclick="document.getElementById('formEdicion').submit()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEliminacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-circle text-danger fs-1 opacity-75"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-2">¿Eliminar Tarjeta?</h6>
+                <p class="text-muted small mb-4">Se eliminará de forma permanente la Tarjeta asociada al Trámite N° <strong id="texto_eliminar" class="text-danger font-monospace"></strong>.</p>
+                
+                <form method="POST" action="" class="d-flex flex-column gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="submit_eliminar" value="1">
+                    <input type="hidden" name="registro_id" id="del_registro_id">
+                    <button type="submit" class="btn btn-danger fw-bold">ELIMINAR DEFINITIVAMENTE</button>
+                    <button type="button" class="btn btn-light border text-muted fw-bold" data-bs-dismiss="modal">CANCELAR</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Buscador en tiempo real
+    const searchInput = document.getElementById('searchInput');
+    let debounceTimer;
+    document.getElementById('formBuscador').addEventListener('submit', e => e.preventDefault());
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        document.getElementById('iconoBusqueda').className = 'fas fa-spinner fa-spin text-primary';
+        debounceTimer = setTimeout(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('q', this.value);
+            url.searchParams.set('page', 1);
+
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.text())
+            .then(html => {
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                document.getElementById('tablaContainer').innerHTML = doc.getElementById('tablaContainer').innerHTML;
+                document.getElementById('paginacionContainer').innerHTML = doc.getElementById('paginacionContainer').innerHTML || '';
+                window.history.pushState({}, '', url);
+                document.getElementById('iconoBusqueda').className = 'fas fa-search';
+            });
+        }, 350); 
+    });
+
+    let modalEdicionObj, modalEliminacionObj;
+    document.addEventListener("DOMContentLoaded", () => {
+        modalEdicionObj = new bootstrap.Modal(document.getElementById('modalEdicion'));
+        modalEliminacionObj = new bootstrap.Modal(document.getElementById('modalEliminacion'));
+    });
+
+    // Cargar datos en el Modal (Se mantiene la lógica para los decimales y foreign keys)
+    function abrirModalEdicion(id, estado, tramite, operador, afiliado, vehiculo, ruta, licencia, validez, monto, f_emision, f_valida) {
+        document.getElementById('edit_registro_id').value = id;
+        
+        document.getElementById('id_estado').value = estado;
+        document.getElementById('id_tramite').value = tramite;
+        document.getElementById('id_operador').value = operador;
+        document.getElementById('id_afiliado').value = afiliado;
+        document.getElementById('id_vehiculo').value = vehiculo;
+        document.getElementById('id_ruta').value = ruta;
+        document.getElementById('id_licencia').value = licencia;
+        document.getElementById('id_validez').value = validez;
+        document.getElementById('id_monto').value = monto.replace(',', '.'); // Fix para los decimales en input number
+        document.getElementById('id_fecha_emision').value = f_emision;
+        document.getElementById('id_valida_hasta').value = f_valida;
+        
+        modalEdicionObj.show();
+    }
+
+    function abrirModalEliminacion(id, tramite_num) {
+        document.getElementById('del_registro_id').value = id;
+        document.getElementById('texto_eliminar').textContent = tramite_num;
+        modalEliminacionObj.show();
+    }
+</script>
+{% endblock %}

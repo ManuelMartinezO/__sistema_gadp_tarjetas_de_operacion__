@@ -22,25 +22,37 @@ from apps.usuario.forms import UsuarioCreationForm, UsuarioUpdateForm, PerfilFor
 # === HOME ===
 @login_required()
 @user_passes_test(es_usuario_normal)
-def home (request):
+def home(request):
     total_operadores = Operador.objects.count() 
     total_afiliados = Afiliado.objects.count()
     total_vehiculos = Vehiculo.objects.count()
-    tramites_pendientes = Tramite.objects.filter(estado_tramite='pendiente').count()
+    
+    # CORRECCIÓN: El campo correcto es 'estado' y el valor es 'p'
+    tramites_pendientes = Tramite.objects.filter(estado='p').count()
+    
     ultimos_tramites = Tramite.objects.order_by('-fecha_registro')[:5]
 
-    tarjetas_por_tipo = TarjetaDeOperacion.objects.values('tipo_tarjeta').annotate(total=Count('id'))
+    # 1. Datos para el Gráfico Circular (Donut)
+    # CORRECCIÓN: Cambiamos 'tipo_tarjeta' por 'ruta' (o el campo que uses en tu modelo)
+    tarjetas_por_tipo = TarjetaDeOperacion.objects.values('ruta').annotate(total=Count('id'))
     
-    # Diccionario para traducir '001' a 'InterProvincial', etc.
-    tipos_dict = dict(TarjetaDeOperacion.TIPO_TARJETA) 
+    # CORRECCIÓN: Asegúrate de que TIPO_TARJETA o RUTA_CHOICES exista en tu modelo
+    # Si tu modelo usa un choices para la ruta, cámbialo aquí. Si no, quita el dict.
+    # Ejemplo asumiendo que tienes un choices llamado RUTAS_CHOICES:
+    try:
+        tipos_dict = dict(TarjetaDeOperacion.RUTAS_CHOICES) # Ajusta este nombre si es diferente
+    except AttributeError:
+        tipos_dict = {} # Por si acaso no tienes un choices definido
     
     tipo_labels = []
     tipo_data = []
     for item in tarjetas_por_tipo:
-        tipo_labels.append(tipos_dict.get(item['tipo_tarjeta'], 'Otros'))
+        # Buscamos en el diccionario, si no existe mostramos el valor directo de la base de datos
+        etiqueta = tipos_dict.get(item['ruta'], item['ruta'] or 'Sin asignar')
+        tipo_labels.append(etiqueta)
         tipo_data.append(item['total'])
 
-    # 3. Datos para el Gráfico de Barras (Últimos 6 meses)
+    # 2. Datos para el Gráfico de Barras (Últimos 6 meses)
     seis_meses_atras = timezone.now() - timedelta(days=6*30)
     
     emisiones = TarjetaDeOperacion.objects.filter(fecha_registro__gte=seis_meses_atras) \
@@ -59,7 +71,7 @@ def home (request):
             bar_labels.append(nombre_mes)
             bar_data.append(e['total'])
 
-    # 4. Enviar todo al template
+    # 3. Enviar todo al template
     contexto = {
         'total_operadores': total_operadores,
         'total_afiliados': total_afiliados,

@@ -25,7 +25,7 @@ from apps.tarjeta_de_operacion.forms import EditarTarjetaForm
 
 def vista_completa_tramite(request, numero):
     tramite = get_object_or_404(Tramite, numero=numero)
-    tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite)
+    tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
     depositos = Deposito.objects.filter(tramite=tramite)
     if request.method == 'POST':
         if 'btn_inf_tecnico' in request.POST:
@@ -114,27 +114,20 @@ def vista_completa_tramite(request, numero):
 @user_passes_test(es_usuario_normal)
 def lista_tramites(request):
     # ==========================================
-    # 1. MANEJO DE CREACIÓN VÍA AJAX (POST)
+    # 1. MANEJO DE CREACIÓN VÍA AJAX (POST) - INTACTO
     # ==========================================
     if request.method == 'POST':
-        # Pasamos request.FILES por si algún día agregas subida de documentos
         form = NuevoTramiteForm(request.POST, request.FILES) 
         if form.is_valid():
             nuevo_tramite = form.save()
-            return JsonResponse({
-                'success': True,
-                'mensaje': 'Trámite creado correctamente.',
-                # Si tu modelo tiene un campo autogenerado, puedes devolverlo:
-                # 'numero_tramite': nuevo_tramite.numero_tramite 
-            })
+            return JsonResponse({'success': True, 'mensaje': 'Trámite creado.'})
         else:
-            # Devuelve los errores exactos del formulario para mostrarlos si es necesario
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
     # ==========================================
-    # 2. MANEJO DE LA LISTA Y FILTROS (GET)
+    # 2. MANEJO DE LA LISTA Y FILTROS (GET) - INTACTO
     # ==========================================
-    form = NuevoTramiteForm() # Instancia vacía para el modal
+    form = NuevoTramiteForm() 
     tramites = Tramite.objects.all().order_by('-fecha_registro')
 
     q = request.GET.get('q', '').strip()
@@ -143,42 +136,46 @@ def lista_tramites(request):
     fecha_fin = request.GET.get('fecha_fin', '')
     tipo = request.GET.get('tipo', 'todos')
 
-    # Filtrar por coincidencia de texto (Input)
     if q:
         filtros = Q(usuario__username__icontains=q)
         if q.isdigit():
-            filtros |= Q(numero_tramite__icontains=q)
+            filtros |= Q(numero__icontains=q)
         tramites = tramites.filter(filtros)
 
-    # Filtrar por Estado
     if estado and estado != 'todos':
-        tramites = tramites.filter(estado_tramite=estado)
+        tramites = tramites.filter(estado=estado)
 
-    # Filtro por Tipo
     if tipo and tipo != 'todos':
-        tramites = tramites.filter(tipo_tramite=tipo)
+        tramites = tramites.filter(tipo=tipo)
 
-    # Filtrar por Rango de Fechas
     if fecha_inicio:
         tramites = tramites.filter(fecha_registro__date__gte=parse_date(fecha_inicio))
     if fecha_fin:
         tramites = tramites.filter(fecha_registro__date__lte=parse_date(fecha_fin))
 
-    # Paginación
     paginator = Paginator(tramites, 5)
     page_number = request.GET.get('page')
     tramites_paginados = paginator.get_page(page_number)
 
     contexto = {
-        'tramites': tramites_paginados, # Usamos la variable paginada
+        'tramites': tramites_paginados, 
         'q': q,
         'estado_actual': estado,
         'tipo_actual': tipo,
         'fecha_inicio': fecha_inicio,
         'fecha_fin': fecha_fin,
-        'form': form, # <-- IMPORTANTE: Pasamos el formulario al template
+        'form': form, 
     }
+    
+    # ==========================================
+    # 3. INTERCEPTAR AJAX PARA FILTROS (NUEVO)
+    # ==========================================
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'GET':
+        return render(request, 'tramite/parcial_tabla.html', contexto)
+
     return render(request, 'tramite/lista.html', contexto)
+
+
 # def lista_tramites(request):
 #     form = NuevoTramiteForm()
 #     tramites = Tramite.objects.all().order_by('-fecha_registro')

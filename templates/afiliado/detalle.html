@@ -1,236 +1,362 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="afiliado-detalle-container pb-5 animate-up">
+<style>
+    /* --- VARIABLES Y ESTRUCTURA GENERAL --- */
+    :root {
+        --color-principal: #8b0000;
+        --color-hover: #6a0000;
+        --color-texto: #1e293b;
+        --color-borde: #cbd5e1;
+        --bg-suave: #f8fafc;
+    }
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-4">
-        <div class="mb-3 mb-md-0">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2 fs-7 fw-medium">
-                    <li class="breadcrumb-item"><a href="{% url 'afiliado:lista_afiliados' %}" class="text-indigo text-decoration-none"><i class="bi bi-people me-1"></i>Afiliados</a></li>
-                    <li class="breadcrumb-item text-slate-500 active" aria-current="page">Ficha de Afiliado</li>
-                </ol>
-            </nav>
-            <h2 class="fw-bold text-slate-900 mb-0 d-flex align-items-center">
-                Expediente Personal
-            </h2>
-        </div>
-        
-        <div class="mt-2 mt-md-0">
-            <a href="{% url 'afiliado:lista_afiliados' %}" class="btn btn-light-action rounded-pill px-4">
-                <i class="bi bi-arrow-left me-2"></i> Volver al Directorio
-            </a>
+    /* --- ENCABEZADOS Y TEXTOS --- */
+    .header-pagina {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--bg-suave);
+    }
+    .titulo-principal {
+        color: var(--color-texto);
+        font-weight: 800;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* --- CONTENEDORES TIPO TARJETA --- */
+    .contenedor-principal {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        margin-top: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+    .columna { flex: 1; min-width: 300px; }
+    
+    .bloque-form {
+        border: 1px solid var(--color-borde);
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .subtitulo-bloque {
+        color: var(--color-principal);
+        font-weight: 800;
+        font-size: 0.95rem;
+        margin-top: 0;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--bg-suave);
+        padding-bottom: 10px;
+    }
+    .titulo-seccion {
+        color: var(--color-texto);
+        font-weight: 800;
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        border-bottom: 2px solid var(--bg-suave);
+        padding-bottom: 10px;
+    }
+
+    /* --- LISTAS DE DATOS --- */
+    .lista-datos {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .lista-datos li {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.95em;
+    }
+    .label-mini {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .valor-dato {
+        color: var(--color-texto);
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+
+    /* --- BOTONES --- */
+    .btn-custom {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.9em;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-decoration: none;
+    }
+    .btn-principal { background-color: var(--color-principal); color: white; }
+    .btn-principal:hover { background-color: var(--color-hover); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(139,0,0,0.2); color: white;}
+    
+    .btn-gris { background-color: #f1f5f9; color: #475569; border: 1px solid var(--color-borde); }
+    .btn-gris:hover { background-color: #e2e8f0; color: var(--color-texto); }
+
+    .link-custom { color: var(--color-principal); text-decoration: none; font-weight: 700; font-size: 0.85em; }
+    .link-custom:hover { text-decoration: underline; }
+
+    /* --- TABLA MODERNA --- */
+    .tabla-contenedor {
+        background: white;
+        border: 1px solid var(--color-borde);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        margin-bottom: 20px;
+    }
+    .tabla-moderna {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    .tabla-moderna th {
+        background-color: var(--bg-suave);
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        padding: 12px 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .tabla-moderna td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e2e8f0;
+        color: var(--color-texto);
+        font-size: 0.95em;
+        vertical-align: middle;
+    }
+    .tabla-moderna tbody tr:hover { background-color: #f1f5f9; }
+    .tabla-moderna tbody tr:last-child td { border-bottom: none; }
+
+    .badge-transporte {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        display: inline-block;
+        background-color: var(--bg-suave);
+        color: #475569;
+        border: 1px solid var(--color-borde);
+    }
+
+    /* --- MODALES NATIVOS (<dialog>) --- */
+    dialog {
+        background: white; 
+        padding: 25px; 
+        border-radius: 10px; 
+        border: none;
+        border-top: 4px solid var(--color-principal);
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        color: var(--color-texto);
+        max-width: 90vw;
+    }
+    dialog::backdrop {
+        background: rgba(15, 23, 42, 0.6); 
+        backdrop-filter: blur(3px);
+    }
+    dialog h3 { margin-top: 0; color: var(--color-texto); font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 20px;}
+    
+    dialog label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase; }
+    dialog input[type="text"], dialog input[type="number"], dialog select, dialog p {
+        width: 100%; padding: 8px 12px; border: 1px solid #94a3b8; border-radius: 4px;
+        background-color: var(--bg-suave); color: var(--color-texto); font-size: 0.95em;
+        margin-bottom: 12px; margin-top: 0; box-sizing: border-box; transition: border-color 0.2s;
+    }
+    dialog input:focus, dialog select:focus {
+        outline: none; border-color: var(--color-principal); background-color: white;
+        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+    }
+    .botones-modal { display: flex; gap: 10px; margin-top: 20px; }
+    .botones-modal button { flex: 1; }
+</style>
+
+<div>
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'afiliado:lista_afiliados' %}" class="btn-custom btn-gris d-inline-flex w-auto mb-3">
+            <i class="bi bi-arrow-left me-1"></i> Volver al Directorio
+        </a>
+    </div>
+
+    <div class="header-pagina">
+        <h2 class="titulo-principal">
+            <i class="bi bi-person-vcard-fill" style="color: var(--color-principal);"></i> 
+            Expediente: <span style="color: var(--color-principal);">{{ afiliado.nombre_completo|upper }}</span>
+        </h2>
+
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            <button class="btn-custom btn-principal w-auto" onclick="document.getElementById('modalEdicion').showModal()">
+                <i class="bi bi-pencil-square me-1"></i> Editar Datos
+            </button>
+        {% endif %}
+    </div>
+
+    <div class="contenedor-principal">
+        <div class="columna">
+            <div class="bloque-form">
+                <h3 class="subtitulo-bloque"><i class="bi bi-info-circle-fill me-2"></i> Datos de Registro</h3>
+                <ul class="lista-datos">
+                    <li style="display: flex; flex-direction: row; gap: 30px;">
+                        <div>
+                            <span class="label-mini">ID del Afiliado</span>
+                            <span class="valor-dato" style="color: var(--color-principal);">#{{ afiliado.id|stringformat:"04d" }}</span>
+                        </div>
+                        <div>
+                            <span class="label-mini">Fecha de Alta</span>
+                            <span class="valor-dato">{{ afiliado.fecha_registro|date:"d M Y" }}</span>
+                        </div>
+                    </li>
+                    <li style="background: var(--bg-suave); padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-top: 5px;">
+                        <span class="label-mini"><i class="bi bi-building me-1"></i> Empresa Operadora</span>
+                        <span class="valor-dato">{{ afiliado.operador|default:"SIN OPERADOR ASIGNADO"|upper }}</span>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
-    <div class="card detail-card border-0 shadow-sm mb-4 status-indicator is-indigo">
-        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-            
-            <div class="d-flex align-items-center mb-3 mb-md-0">
-                <div class="avatar-xl bg-indigo-50 text-indigo me-4 shadow-sm border border-white">
-                    <span class="fw-bold">{{ afiliado.nombre|make_list|first|upper }}</span>
-                </div>
-                <div>
-                    <h3 class="fw-bolder text-slate-900 mb-1">{{ afiliado.nombre }} {{ afiliado.apellido }}</h3>
-                    <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
-                        <span class="badge bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1 rounded-pill fw-medium fs-8">
-                            ID: #{{ afiliado.id|stringformat:"04d" }}
+    <h3 class="titulo-seccion">
+        <i class="bi bi-car-front-fill me-2 text-primary" style="color: var(--color-principal) !important;"></i> 
+        Parque Automotor Registrado <span style="font-size: 0.8em; color: #64748b; margin-left: 8px;">({{ afiliado.vehiculo_set.count }} Vehículos)</span>
+    </h3>
+    
+    <div class="tabla-contenedor">
+        <table class="tabla-moderna">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-123 me-1"></i> Placa</th>
+                    <th><i class="bi bi-tag-fill me-1"></i> Marca / Modelo</th>
+                    <th><i class="bi bi-diagram-3 me-1"></i> Capacidad</th>
+                    <th style="text-align: center;"><i class="bi bi-gear me-1"></i> Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehiculo in afiliado.vehiculo_afiliado.all %}
+                <tr>
+                    <td><strong style="color: var(--color-principal); font-size: 1.05em; letter-spacing: 0.5px;">{{ vehiculo.placa|upper }}</strong></td>
+                    <td>
+                        <div style="font-weight: 600;">{{ vehiculo.marca }}</div>
+                        <div style="color: #64748b; font-size: 0.85em;">Mod: {{ vehiculo.modelo }}</div>
+                    </td>
+                    <td>
+                        <span class="badge-transporte">
+                            {{ vehiculo.capacidad }} 
+                            {% if vehiculo.transporte == 'p' %}pasajeros{% else %}toneladas{% endif %}
                         </span>
-                        <span class="badge badge-soft-success px-3 py-1 rounded-pill fw-medium fs-8 border border-success-subtle">
-                            <i class="bi bi-check-circle-fill me-1"></i> Afiliado Activo
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            {% if user.rol == 'a' or user.rol == 'sa' %}
-            <div>
-                <a href="{% url 'afiliado:editar_afiliado' afiliado.id %}" class="btn btn-outline-indigo rounded-pill px-4 fw-medium">
-                    <i class="bi bi-pencil-square me-2"></i>Editar Datos
-                </a>
-            </div>
-            {% endif %}
-
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-lg-4">
-            <div class="card detail-card border-0 shadow-sm h-100">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-8 mb-4 border-bottom pb-3">
-                        <i class="bi bi-card-list text-slate-400 me-2"></i>Datos de Registro
-                    </h6>
-                    
-                    <div class="mb-4">
-                        <label class="text-slate-400 text-uppercase tracking-wider fs-8 fw-bold d-block mb-2">Empresa Operadora</label>
-                        <div class="d-flex align-items-center bg-slate-50 p-3 rounded-3 border border-slate-100">
-                            <div class="icon-box-sm bg-white text-slate-600 rounded-2 shadow-sm me-3">
-                                <i class="bi bi-buildings-fill"></i>
-                            </div>
-                            <span class="fw-bold text-slate-700">{{ afiliado.operador.nombre }}</span>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="text-slate-400 text-uppercase tracking-wider fs-8 fw-bold d-block mb-2">Fecha de Alta</label>
-                        <div class="d-flex align-items-center text-slate-700 fw-medium">
-                            <i class="bi bi-calendar-event text-indigo-light me-2 fs-5"></i>
-                            {{ afiliado.fecha_registro|date:"d \d\e F \d\e Y" }}
-                        </div>
-                    </div>
-
-                    <div class="mt-5 p-3 bg-indigo-50 border border-indigo-100 rounded-3">
-                        <div class="d-flex align-items-start">
-                            <i class="bi bi-info-circle-fill text-indigo mt-1 me-2"></i>
-                            <p class="text-slate-600 fs-8 mb-0 lh-sm">
-                                Este afiliado está habilitado para realizar trámites de tarjetas de operación exclusivamente a través de la empresa vinculada arriba.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-8">
-            <div class="card detail-card border-0 shadow-sm h-100">
-                <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-3 d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold text-slate-800 text-uppercase tracking-wider fs-7 mb-0 d-flex align-items-center">
-                        <i class="bi bi-car-front-fill text-indigo me-2"></i> Parque Automotor
-                    </h6>
-                    <span class="badge bg-slate-800 text-white rounded-pill px-3">{{ afiliado.vehiculo_set.count }} Vehículos</span>
-                </div>
-                
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table custom-table align-middle mb-0">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="ps-4">Placa</th>
-                                    <th>Marca / Modelo</th>
-                                    <th class="text-center">Capacidad</th>
-                                    <th class="text-end pe-4">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for vehiculo in afiliado.vehiculo_set.all %}
-                                <tr class="table-row-hover" onclick="window.location='{% url 'vehiculo:detalle_vehiculo' vehiculo.placa %}'">
-                                    <td class="ps-4">
-                                        <span class="badge bg-slate-800 text-white px-3 py-2 fs-7 font-monospace rounded-3 shadow-sm tracking-wider">
-                                            {{ vehiculo.placa }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold text-slate-800">{{ vehiculo.marca }}</div>
-                                        <div class="text-slate-500 fs-8 text-uppercase">Mod: {{ vehiculo.modelo }}</div>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="text-slate-600 fw-medium fs-7"><i class="bi bi-people-fill text-slate-400 me-1"></i> {{ vehiculo.capacidad }} pas.</span>
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <a href="{% url 'vehiculo:detalle_vehiculo' vehiculo.placa %}" class="btn btn-sm btn-icon btn-light rounded-circle" title="Ver Expediente Vehículo">
-                                            <i class="bi bi-chevron-right text-slate-600"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center py-5">
-                                        <div class="empty-state">
-                                            <div class="empty-icon-wrapper bg-slate-50 mb-3">
-                                                <i class="bi bi-car-front text-slate-300 fs-1"></i>
-                                            </div>
-                                            <h6 class="fw-bold text-slate-600 mb-1">Sin Vehículos</h6>
-                                            <p class="text-slate-400 small mb-0">Este afiliado no tiene unidades de transporte registradas.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+                    </td>
+                    <td style="text-align: center;">
+                        <a href="{% url 'vehiculo:detalle_vehiculo' vehiculo.placa %}" class="link-custom">
+                            <i class="bi bi-folder2-open"></i> Ver Expediente
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8;">
+                        <i class="bi bi-cone-striped fs-2 d-block mb-2"></i> Este afiliado no tiene unidades de transporte registradas.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
-<style>
-    /* VARIABLES LOCALES (Consistencia) */
-    .afiliado-detalle-container {
-        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #e0e7ff;
-        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-600: #475569; --slate-500: #64748b; --slate-400: #94a3b8; --slate-300: #cbd5e1; --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+<dialog id="modalEdicion" style="width: 450px;">
+    <h3><i class="bi bi-pencil-square" style="color: var(--color-principal);"></i> Editar Afiliado</h3>
+    <form id="formAfiliado" method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="submit_afiliado" value="1">
+        
+        <div style="margin-bottom: 10px;">
+            {{ form_afiliado.as_p }}
+        </div>
+        
+        <div class="botones-modal">
+            <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modalEdicion').close()">Cancelar</button>
+            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacion()">Continuar <i class="bi bi-arrow-right"></i></button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="modalConfirmacion" style="width: 420px;">
+    <h3><i class="bi bi-exclamation-triangle-fill text-warning"></i> Confirmar Cambios</h3>
+    <p style="color: #475569; font-size: 0.9em; margin-bottom: 15px;">Por favor, revisa la información antes de guardarla:</p>
+    
+    <ul id="listaVistaPrevia" style="background: var(--bg-suave); padding: 12px 25px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 20px; color: #1e293b; font-size: 0.9em; max-height: 250px; overflow-y: auto; list-style: none;"></ul>
+    
+    <div class="botones-modal">
+        <button type="button" class="btn-custom btn-gris" onclick="volverAEdicion()"><i class="bi bi-pencil"></i> Volver a Editar</button>
+        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formAfiliado').submit()"><i class="bi bi-check-lg"></i> Confirmar</button>
+    </div>
+</dialog>
+
+<script>
+    // Lógica JS intacta con el formateo visual consistente aplicado a la lista de preview
+    function mostrarConfirmacion() {
+        const formulario = document.getElementById('formAfiliado');
+        const listaPreview = document.getElementById('listaVistaPrevia');
+        
+        listaPreview.innerHTML = ''; 
+
+        for (let i = 0; i < formulario.elements.length; i++) {
+            let elemento = formulario.elements[i];
+            
+            // Ignoramos inputs de seguridad y botones
+            if (elemento.name && elemento.name !== 'csrfmiddlewaretoken' && elemento.name !== 'submit_afiliado' && elemento.tagName !== 'BUTTON') {
+                let valorMostrado = elemento.value;
+                
+                if (elemento.tagName === 'SELECT' && elemento.selectedIndex >= 0) {
+                    valorMostrado = elemento.options[elemento.selectedIndex].text;
+                }
+                
+                let li = document.createElement('li');
+                li.style.marginBottom = '6px';
+                li.style.paddingLeft = '0';
+                let nombreLimpio = elemento.name.toUpperCase().replace(/_/g, ' ');
+                li.innerHTML = `<strong>${nombreLimpio}:</strong> <span style="color: var(--color-principal); font-weight: 600;">${valorMostrado || '<em>Vacío</em>'}</span>`;
+                listaPreview.appendChild(li);
+            }
+        }
+        
+        document.getElementById('modalEdicion').close();
+        document.getElementById('modalConfirmacion').showModal();
     }
 
-    .text-indigo { color: var(--indigo); }
-    .text-indigo-light { color: #818cf8; }
-    .bg-indigo-50 { background-color: var(--indigo-light); }
-    
-    .text-slate-900 { color: var(--slate-900); }
-    .text-slate-800 { color: var(--slate-800); }
-    .text-slate-700 { color: var(--slate-700); }
-    .text-slate-600 { color: var(--slate-600); }
-    .text-slate-500 { color: var(--slate-500); }
-    .text-slate-400 { color: var(--slate-400); }
-    
-    .bg-slate-800 { background-color: var(--slate-800); }
-    .bg-slate-100 { background-color: var(--slate-100); }
-    .bg-slate-50 { background-color: var(--slate-50); }
-    
-    .border-slate-200 { border-color: var(--slate-200) !important; }
-    .border-slate-100 { border-color: var(--slate-100) !important; }
-    .border-indigo-100 { border-color: #c7d2fe !important; }
-
-    .fs-7 { font-size: 0.85rem; }
-    .fs-8 { font-size: 0.75rem; }
-    .tracking-wider { letter-spacing: 1px; }
-
-    /* TARJETAS PRINCIPALES */
-    .detail-card { border-radius: 16px; background-color: #fff; overflow: hidden; }
-    
-    /* INDICADORES DE ESTADO (Borde superior) */
-    .status-indicator { position: relative; }
-    .status-indicator::before {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    function volverAEdicion() {
+        document.getElementById('modalConfirmacion').close();
+        document.getElementById('modalEdicion').showModal();
     }
-    .status-indicator.is-indigo::before { background-color: var(--indigo); }
-
-    /* BADGES */
-    .badge-soft-success { background-color: #ecfdf5; color: #047857; }
-
-    /* AVATARES E ICONOS */
-    .avatar-xl { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; }
-    .icon-box-sm { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
-
-    /* FUENTE MONOESPACIADA PARA PLACAS */
-    .font-monospace { font-family: 'Courier New', Courier, monospace; }
-
-    /* BOTONES */
-    .btn-outline-indigo { border: 1px solid var(--indigo); color: var(--indigo); background: transparent; transition: 0.2s; }
-    .btn-outline-indigo:hover { background: var(--indigo); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
-
-    .btn-light-action { background-color: #fff; border: 1px solid var(--slate-200); color: var(--slate-700); font-weight: 600; transition: all 0.2s; }
-    .btn-light-action:hover { background-color: var(--slate-50); color: var(--indigo); border-color: var(--slate-300); }
-    
-    .btn-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; background-color: var(--slate-50); border: 1px solid var(--slate-100); transition: 0.2s;}
-    .table-row-hover:hover .btn-icon { background-color: var(--indigo); color: white; border-color: var(--indigo); }
-    .table-row-hover:hover .btn-icon i { color: white !important; }
-
-    /* TABLA Y FILAS CLICKEABLES */
-    .custom-table { border-collapse: separate; border-spacing: 0; }
-    .custom-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); font-weight: 600; border-bottom: 1px solid var(--slate-200); padding: 1rem 0.5rem; }
-    .custom-table td { border-bottom: 1px solid var(--slate-50); vertical-align: middle; padding: 0.8rem 0.5rem; }
-    
-    .table-row-hover { transition: all 0.2s ease; cursor: pointer; }
-    .table-row-hover:hover td { background-color: #fbfbff; }
-
-    /* EMPTY STATE */
-    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
-    .empty-icon-wrapper { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-
-    /* ANIMACIONES */
-    .animate-up { opacity: 0; transform: translateY(15px); animation: fadeInUp 0.5s ease forwards; }
-    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-</style>
+</script>
 {% endblock %}

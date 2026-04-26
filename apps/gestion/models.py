@@ -2,6 +2,24 @@
 from django.db import models
 from django.conf import settings
 
+from auditlog.registry import auditlog
+
+from apps.operador.models import Operador
+from apps.vehiculo.models import Vehiculo
+from apps.afiliado.models import Afiliado
+from apps.tarjeta_de_operacion.models import TarjetaDeOperacion
+from apps.tramite.models import Tramite, Deposito
+from apps.usuario.models import Usuario, Perfil
+
+auditlog.register(Deposito)
+auditlog.register(Operador)
+auditlog.register(Vehiculo)
+auditlog.register(Afiliado)
+auditlog.register(TarjetaDeOperacion)
+auditlog.register(Tramite)
+auditlog.register(Usuario)
+auditlog.register(Perfil)
+
 class HistorialAccion(models.Model):
     # Tipos de acciones predefinidas
     ACCIONES = (

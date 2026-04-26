@@ -1,298 +1,213 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="vehiculos-container pb-5 animate-up">
+<style>
+    /* --- VARIABLES BASE --- */
+    :root {
+        --color-principal: #8b0000;
+        --color-hover: #6a0000;
+        --color-texto: #1e293b;
+        --color-borde: #cbd5e1;
+        --bg-suave: #f8fafc;
+    }
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-        <div class="mb-3 mb-md-0">
-            <h2 class="fw-bold mb-1 text-slate-900"><i class="bi bi-car-front-fill me-2 text-indigo"></i>Parque Automotor</h2>
-            <p class="text-slate-500 mb-0 fs-7">Control y registro de unidades vehiculares afiliadas al sistema</p>
+    /* --- ENCABEZADOS Y TEXTOS --- */
+    .header-pagina {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--bg-suave);
+    }
+    .titulo-principal {
+        color: var(--color-texto);
+        font-weight: 800;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .subtitulo-principal {
+        color: #64748b;
+        margin: 5px 0 0 0;
+        font-size: 0.95rem;
+    }
+
+    /* --- BOTONES --- */
+    .btn-custom {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.9em;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-decoration: none;
+    }
+    .btn-principal { background-color: var(--color-principal); color: white; }
+    .btn-principal:hover { background-color: var(--color-hover); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(139,0,0,0.2); color: white;}
+    
+    .btn-gris { background-color: #f1f5f9; color: #475569; border: 1px solid var(--color-borde); }
+    .btn-gris:hover { background-color: #e2e8f0; color: var(--color-texto); }
+
+    /* --- PANEL DE FILTROS --- */
+    .panel-filtros {
+        background-color: white;
+        border: 1px solid var(--color-borde);
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .grid-filtros {
+        display: grid;
+        grid-template-columns: 2fr 2fr 1fr; /* Proporciones para los filtros */
+        gap: 15px;
+        align-items: end;
+    }
+    .form-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--color-principal);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #94a3b8;
+        border-radius: 4px;
+        background-color: var(--bg-suave);
+        color: var(--color-texto);
+        font-size: 0.95em;
+        transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+        outline: none;
+        border-color: var(--color-principal);
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+    }
+
+    /* Adaptación móvil del grid de filtros */
+    @media (max-width: 768px) {
+        .grid-filtros {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div>
+    <div class="header-pagina">
+        <div>
+            <h2 class="titulo-principal"><i class="bi bi-truck-front-fill" style="color: var(--color-principal);"></i> Parque Automotor</h2>
+            <p class="subtitulo-principal">Control y registro de unidades vehiculares afiliadas al sistema</p>
         </div>
         
         {% if user.rol == 'a' or user.rol == 'sa' %}
-            <a href="{% url 'vehiculo:crear_vehiculo' %}" class="btn btn-indigo shadow-sm d-flex align-items-center justify-content-center">
-                <i class="bi bi-plus-circle me-2"></i> Registrar Vehículo
+            <a href="{% url 'vehiculo:crear_vehiculo' %}" class="btn-custom btn-principal">
+                <i class="bi bi-plus-lg"></i> Registrar Vehículo
             </a>
         {% endif %}
     </div>
 
-    <div class="search-card mb-4 animate-up delay-1">
-        <form method="GET" id="searchForm" class="m-0 p-1">
-            <div class="row g-3">
-                
-                <div class="col-md-8">
-                    <div class="input-group input-group-custom">
-                        <span class="input-group-text bg-transparent border-end-0 text-slate-400 ps-4">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text" class="form-control border-start-0 ps-2 py-3" id="q" name="q" 
-                               value="{{ q }}" placeholder="Buscar por placa, marca o modelo..." autocomplete="off">
-                        {% if q %}
-                            <a href="{% url 'vehiculo:lista_vehiculos' %}" class="input-group-text bg-transparent border-start-0 text-slate-400 pe-4 hover-indigo text-decoration-none" title="Limpiar búsqueda">
-                                <i class="bi bi-x-circle-fill"></i>
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="input-group input-group-custom">
-                        <span class="input-group-text bg-transparent border-end-0 text-slate-400 ps-4">
-                            <i class="bi bi-funnel"></i>
-                        </span>
-                        <select class="form-select border-start-0 ps-2 py-3 fw-medium text-slate-600 cursor-pointer" id="tipo" name="tipo">
-                            <option value="todos" {% if tipo_actual == 'todos' %}selected{% endif %}>Todos los tipos</option>
-                            <option value="pasajeros" {% if tipo_actual == 'pasajeros' %}selected{% endif %}>Transporte de Pasajeros</option>
-                            <option value="carga" {% if tipo_actual == 'carga' %}selected{% endif %}>Transporte de Carga</option>
-                        </select>
-                    </div>
-                </div>
-                
+    <div class="panel-filtros">
+        <form id="searchForm" class="grid-filtros" onsubmit="event.preventDefault();">
+            
+            <div class="form-group">
+                <label for="q"><i class="bi bi-search me-1"></i> Buscar</label>
+                <input type="text" id="q" name="q" value="{{ q }}" placeholder="Buscar por placa, marca o modelo..." autocomplete="off">
             </div>
+            
+            <div class="form-group">
+                <label for="tipo"><i class="bi bi-funnel me-1"></i> Tipo de Vehículo</label>
+                <select id="tipo" name="tipo">
+                    <option value="todos" {% if tipo_actual == 'todos' %}selected{% endif %}>Todos los tipos</option>
+                    <option value="p" {% if tipo_actual == 'p' %}selected{% endif %}>Transporte de Pasajeros</option>
+                    <option value="c" {% if tipo_actual == 'c' %}selected{% endif %}>Transporte de Carga</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <a href="{% url 'vehiculo:lista_vehiculos' %}" id="btnLimpiar" class="btn-custom btn-gris w-100" style="display: {% if q or tipo_actual != 'todos' %}inline-flex{% else %}none{% endif %}; padding-top: 9px; padding-bottom: 9px;">
+                    <i class="bi bi-eraser"></i> Limpiar Búsqueda
+                </a>
+            </div>
+            
         </form>
     </div>
 
-    <div class="table-card animate-up delay-2">
-        <div class="table-responsive">
-            <table class="table custom-table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-4">Placa de Control</th>
-                        <th>Marca y Modelo</th>
-                        <th>Propietario / Afiliado</th>
-                        <th class="text-center">Tipo / Capacidad</th>
-                        <th class="text-end pe-4">Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for vehiculo in vehiculos %}
-                    <tr class="table-row-hover" onclick="window.location='{% url 'vehiculo:detalle_vehiculo' vehiculo.placa %}'">
-                        
-                        <td class="ps-4">
-                            <div class="placa-badge shadow-sm">
-                                <span class="placa-text">{{ vehiculo.placa }}</span>
-                                <div class="placa-footer">BOLIVIA</div>
-                            </div>
-                        </td>
-                        
-                        <td>
-                            <div class="fw-bold text-slate-800">{{ vehiculo.marca }}</div>
-                            <div class="text-slate-500 fs-8 text-uppercase tracking-wider">Mod: {{ vehiculo.modelo }}</div>
-                        </td>
-                        
-                        <td>
-                            <div class="d-flex align-items-center py-1">
-                                <div class="avatar-sm me-3">
-                                    <span class="fw-bold">{{ vehiculo.propietario.nombre|make_list|first|upper }}</span>
-                                </div>
-                                <span class="fw-medium text-slate-700">{{ vehiculo.propietario }}</span>
-                            </div>
-                        </td>
-                        
-                        <td class="text-center">
-                            <div class="d-flex flex-column align-items-center justify-content-center">
-                                {% if vehiculo.tipo_transporte == 'pasajeros' %}
-                                    <span class="badge badge-pasajeros rounded-pill px-3 py-1 mb-1 shadow-sm">
-                                        <i class="bi bi-people-fill me-1"></i> Pasajeros
-                                    </span>
-                                    <span class="text-slate-500 fs-8 fw-medium">{{ vehiculo.capacidad }} pasajeros</span>
-                                {% else %}
-                                    <span class="badge badge-carga rounded-pill px-3 py-1 mb-1 shadow-sm">
-                                        <i class="bi bi-box-seam-fill me-1"></i> Carga
-                                    </span>
-                                    <span class="text-slate-500 fs-8 fw-medium">{{ vehiculo.capacidad }} toneladas</span>
-                                {% endif %}
-                            </div>
-                        </td>
-                        
-                        <td class="text-end pe-4">
-                            <a href="{% url 'vehiculo:detalle_vehiculo' vehiculo.placa %}" class="btn btn-sm btn-icon btn-light rounded-circle" title="Ver Expediente">
-                                <i class="bi bi-chevron-right text-slate-600"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5">
-                            <div class="empty-state">
-                                <div class="empty-icon-wrapper mb-3">
-                                    <i class="bi bi-car-front text-indigo fs-1"></i>
-                                </div>
-                                <h5 class="fw-bold text-slate-700">No hay vehículos registrados</h5>
-                                <p class="text-slate-500 mb-0">No se encontraron unidades que coincidan con los filtros actuales.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="px-4 py-3 border-top bg-light-subtle d-flex align-items-center justify-content-between">
-            <div class="text-slate-500 fs-7">
-                Mostrando {{ vehiculos.start_index }} a {{ vehiculos.end_index }} de {{ vehiculos.paginator.count }} vehículos
-            </div>
-            
-            {% if vehiculos.has_other_pages %}
-            <nav>
-                <ul class="pagination pagination-sm m-0">
-                    {% if vehiculos.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link border-0 rounded-3 me-1 text-slate-600" 
-                               href="?page={{ vehiculos.previous_page_number }}&q={{ q }}&tipo={{ tipo_actual }}">
-                                <i class="bi bi-chevron-left"></i>
-                            </a>
-                        </li>
-                    {% endif %}
-
-                    {% for i in vehiculos.paginator.page_range %}
-                        {% if vehiculos.number == i %}
-                            <li class="page-item active">
-                                <span class="page-link border-0 rounded-3 me-1 bg-indigo shadow-sm">{{ i }}</span>
-                            </li>
-                        {% elif i > vehiculos.number|add:'-3' and i < vehiculos.number|add:'3' %}
-                            <li class="page-item">
-                                <a class="page-link border-0 rounded-3 me-1 text-slate-600" 
-                                   href="?page={{ i }}&q={{ q }}&tipo={{ tipo_actual }}">{{ i }}</a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if vehiculos.has_next %}
-                        <li class="page-item">
-                            <a class="page-link border-0 rounded-3 text-slate-600" 
-                               href="?page={{ vehiculos.next_page_number }}&q={{ q }}&tipo={{ tipo_actual }}">
-                                <i class="bi bi-chevron-right"></i>
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% endif %}
-        </div>
+    <div id="resultados-tabla">
+        {% include 'vehiculo/parcial_tabla.html' %}
     </div>
 </div>
 
-<style>
-    /* VARIABLES LOCALES (Consistencia Slate & Indigo) */
-    .vehiculos-container {
-        --indigo: #8b0000; --indigo-dark: #8b0000ee; --indigo-light: #a5b4fc;
-        --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-500: #64748b; --slate-400: #94a3b8; --slate-100: #f1f5f9; --slate-50: #f8fafc;
-    }
-
-    .text-indigo { color: var(--indigo); }
-    .text-slate-900 { color: var(--slate-900); }
-    .text-slate-800 { color: var(--slate-800); }
-    .text-slate-700 { color: var(--slate-700); }
-    .text-slate-600 { color: #475569; }
-    .text-slate-500 { color: var(--slate-500); }
-    .text-slate-400 { color: var(--slate-400); }
-    
-    .fs-7 { font-size: 0.85rem; }
-    .fs-8 { font-size: 0.75rem; }
-    .tracking-wider { letter-spacing: 1px; }
-
-    /* BOTONES */
-    .btn-indigo { background-color: var(--indigo); color: white; border: none; border-radius: 10px; padding: 0.6rem 1.2rem; font-weight: 600; transition: all 0.2s; }
-    .btn-indigo:hover { background-color: var(--indigo-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
-
-    /* BARRA DE BÚSQUEDA Y FILTROS */
-    .search-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; padding: 0.5rem; }
-    
-    .input-group-custom { border: 1px solid transparent; border-radius: 12px; transition: all 0.2s ease; }
-    .input-group-custom .form-control, .input-group-custom .form-select { border: none; background: transparent; color: var(--slate-700); }
-    .input-group-custom .form-control:focus, .input-group-custom .form-select:focus { box-shadow: none; outline: none; }
-    .input-group-custom .input-group-text { border: none; background: transparent; }
-    
-    /* Efecto Focus en el Buscador */
-    .input-group-custom:focus-within { background-color: #fff; border-color: var(--indigo); box-shadow: 0 0 0 3px #e0e7ff; }
-    .input-group-custom:focus-within .input-group-text i { color: var(--indigo); }
-    
-    .hover-indigo:hover { color: var(--indigo) !important; cursor: pointer; }
-    .cursor-pointer { cursor: pointer; }
-
-    /* TABLA Y FILAS */
-    .table-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
-    .custom-table { border-collapse: separate; border-spacing: 0; }
-    .custom-table thead { background-color: #f8fafc; }
-    .custom-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); font-weight: 600; border-bottom: 1px solid #e2e8f0; padding: 1.2rem 0.5rem; }
-    .custom-table td { border-bottom: 1px solid var(--slate-50); vertical-align: middle; padding: 1rem 0.5rem;}
-    
-    .table-row-hover { cursor: pointer; transition: all 0.2s ease; }
-    .table-row-hover:hover td { background-color: #fbfbff; }
-    .table-row-hover:hover td:first-child { box-shadow: inset 4px 0 0 var(--indigo); }
-
-    /* DISEÑO PLACA MATRÍCULA */
-    .placa-badge { display: inline-flex; flex-direction: column; background-color: #f8fafc; border: 2px solid #cbd5e1; border-radius: 6px; overflow: hidden; min-width: 100px; }
-    .placa-text { font-family: 'Courier New', Courier, monospace; font-weight: 800; font-size: 1.1rem; color: #1e293b; padding: 4px 10px; letter-spacing: 2px; background-color: #fff; text-align: center;}
-    .placa-footer { background-color: #1e293b; color: #fff; font-size: 0.5rem; font-weight: 700; text-transform: uppercase; width: 100%; text-align: center; padding: 2px 0; letter-spacing: 1px; }
-
-    /* AVATARES E ICONOS */
-    .avatar-sm { width: 38px; height: 38px; border-radius: 10px; background-color: rgba(99, 102, 241, 0.1); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
-    
-    .btn-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; padding: 0; background-color: var(--slate-50); border: 1px solid #e2e8f0; transition: 0.2s;}
-    .table-row-hover:hover .btn-icon { background-color: var(--indigo); color: white; border-color: var(--indigo); }
-    .table-row-hover:hover .btn-icon i { color: white !important; }
-
-    /* BADGES DE TIPO DE TRANSPORTE */
-    .badge-pasajeros { background-color: #8b000010; color: #8b0000; border: 1px solid #8b0000ee; }
-    .badge-carga { background-color: #ffedd5; color: #b45309; border: 1px solid #fed7aa; }
-
-    /* EMPTY STATE */
-    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
-    .empty-icon-wrapper { width: 80px; height: 80px; background-color: rgba(99, 102, 241, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-
-    /* ANIMACIONES */
-    .animate-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
-    .delay-1 { animation-delay: 0.1s; }
-    .delay-2 { animation-delay: 0.2s; }
-    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-    .pagination .page-link {
-        color: var(--slate-600);
-        background-color: transparent;
-        font-weight: 600;
-        transition: all 0.2s;
-    }
-    
-    .pagination .page-item.active .page-link {
-        background-color: var(--indigo) !important;
-        color: white !important;
-    }
-    
-    .pagination .page-link:hover:not(.active) {
-        background-color: var(--slate-100);
-        color: var(--indigo);
-    }
-    
-    .bg-light-subtle { background-color: #fcfcfd; }
-</style>
-
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const form = document.getElementById('searchForm');
-        const searchInput = document.getElementById('q');
+        const inputQ = document.getElementById('q');
         const selectTipo = document.getElementById('tipo');
-        
-        // Auto-submit cuando cambia el select de tipo
-        selectTipo.addEventListener('change', () => {
-            form.submit();
-        });
-
-        // Debounce search
+        const contenedorResultados = document.getElementById('resultados-tabla');
+        const btnLimpiar = document.getElementById('btnLimpiar');
         let timeout = null;
-        searchInput.addEventListener('input', () => {
+
+        // Función principal que hace la petición al servidor sin recargar
+        function realizarBusqueda(url) {
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest' // Le dice a Django que es AJAX
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                contenedorResultados.innerHTML = html; // Reemplaza la tabla
+                
+                // Mostrar u ocultar botón de limpiar (Actualizado a inline-flex para el diseño)
+                if (inputQ.value || selectTipo.value !== 'todos') {
+                    btnLimpiar.style.display = 'inline-flex';
+                } else {
+                    btnLimpiar.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error en la búsqueda:', error));
+        }
+
+        // Construye la URL con los parámetros actuales
+        function generarUrl() {
+            const params = new URLSearchParams({
+                q: inputQ.value,
+                tipo: selectTipo.value
+            });
+            return `?${params.toString()}`;
+        }
+
+        // Buscar al escribir (con un retraso de 300ms para no saturar el servidor)
+        inputQ.addEventListener('input', () => {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
-                form.submit();
-            }, 500); 
+                realizarBusqueda(generarUrl());
+            }, 300);
         });
-        
-        // Mantener cursor al recargar
-        if (searchInput.value) {
-            const tempValue = searchInput.value;
-            searchInput.value = '';
-            searchInput.focus();
-            searchInput.value = tempValue;
-        }
+
+        // Buscar al cambiar el select
+        selectTipo.addEventListener('change', () => {
+            realizarBusqueda(generarUrl());
+        });
+
+        // Hacer que los botones de paginación también usen AJAX
+        contenedorResultados.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && e.target.closest('ul.paginacion-nav')) {
+                e.preventDefault(); // Evita que el enlace recargue la página
+                realizarBusqueda(e.target.getAttribute('href'));
+            }
+        });
     });
 </script>
 {% endblock %}

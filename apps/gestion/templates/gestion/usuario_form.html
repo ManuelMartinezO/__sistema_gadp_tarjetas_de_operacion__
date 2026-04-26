@@ -5,62 +5,61 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-0 animate-fade-in force-light-text">
+<div class="container-fluid px-0 animate-fade-in">
     
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
         <div>
-            <h2 class="h3 mb-1 fw-bolder text-white d-flex align-items-center tracking-wider">
-                <i class="{% if accion == 'Editar' %}fas fa-user-edit{% else %}fas fa-user-plus{% endif %} text-dorado me-3 fs-2"></i> 
+            <h2 class="h3 mb-1 fw-bold" style="color: var(--text-main);">
+                <i class="{% if accion == 'Editar' %}fas fa-user-edit{% else %}fas fa-user-plus{% endif %} me-3" style="color: var(--accent-blue);"></i> 
                 {% if accion == 'Editar' %}Actualizar Cuenta{% else %}Alta de Usuario{% endif %}
             </h2>
             <p class="text-muted mb-0 fs-7">
                 {% if accion == 'Editar' %}
-                    Modificación de credenciales de acceso y actualización de perfil en el sistema.
+                    Modificación de credenciales de acceso y actualización de perfil en el sistema institucional.
                 {% else %}
-                    Provisión de nuevas credenciales y asignación de perfil en el sistema.
+                    Provisión de nuevas credenciales y asignación de perfil para el personal del sistema.
                 {% endif %}
             </p>
         </div>
         <div>
-            <a href="{% url 'gestion:usuario_list' %}" class="btn btn-outline-dorado d-flex align-items-center gap-2">
+            <a href="{% url 'gestion:usuario_list' %}" class="btn btn-back-light d-flex align-items-center gap-2 shadow-sm">
                 <i class="fas fa-arrow-left"></i> Volver al Directorio
             </a>
         </div>
     </div>
 
-    <form method="POST" class="needs-validation custom-form-dark">
+    <form method="POST" class="needs-validation custom-form-light">
         {% csrf_token %}
         
         <div class="row g-4 mb-4">
             
             <div class="col-lg-4 col-md-5">
-                <div class="enterprise-card h-100">
-                    <div class="p-3 border-bottom border-subtle bg-surface-header">
-                        <h6 class="mb-0 text-dorado fw-bold tracking-wider text-uppercase fs-8">
-                            <i class="fas fa-shield-alt me-2"></i>Datos de Cuenta
+                <div class="card-panel h-100 p-0 border-0 shadow-sm overflow-hidden">
+                    <div class="p-3 border-bottom bg-light">
+                        <h6 class="mb-0 fw-bold text-uppercase fs-8" style="color: var(--accent-blue); letter-spacing: 0.5px;">
+                            <i class="fas fa-shield-alt me-2"></i>Seguridad de Cuenta
                         </h6>
                     </div>
-                    <div class="p-4">
+                    <div class="p-4 bg-white">
                         {% for field in usuario_form %}
                             <div class="mb-4">
-                                <label class="form-label text-muted fs-8 fw-bold text-uppercase tracking-wider mb-2">
+                                <label class="form-label text-dark fs-8 fw-bold text-uppercase mb-2">
                                     {{ field.label }}
                                 </label>
                                 
                                 {{ field }}
                                 
                                 {% if field.help_text %}
-                                    <div class="form-text text-muted mt-2 fs-8 opacity-75">
-                                        {% if field.name == 'password' and not 'ul' in field.help_text %}
-                                            <i class="fas fa-info-circle me-1"></i>{{ field.help_text }}
-                                        {% elif field.name != 'password' %}
-                                            <i class="fas fa-info-circle me-1"></i>{{ field.help_text }}
-                                        {% endif %}
+                                    <div class="form-text text-muted mt-2 fs-8">
+                                        <i class="fas fa-info-circle me-1 opacity-50"></i>
+                                        {{ field.help_text|striptags }}
                                     </div>
                                 {% endif %}
                                 
                                 {% for error in field.errors %}
-                                    <div class="text-neon-danger fs-8 mt-1 fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</div>
+                                    <div class="text-danger fs-8 mt-1 fw-semibold animate-shake">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>{{ error }}
+                                    </div>
                                 {% endfor %}
                             </div>
                         {% endfor %}
@@ -69,24 +68,26 @@
             </div>
 
             <div class="col-lg-8 col-md-7">
-                <div class="enterprise-card h-100">
-                    <div class="p-3 border-bottom border-subtle bg-surface-header">
-                        <h6 class="mb-0 text-granate fw-bold tracking-wider text-uppercase fs-8">
-                            <i class="fas fa-id-card-clip me-2"></i>Información del Perfil
+                <div class="card-panel h-100 p-0 border-0 shadow-sm overflow-hidden">
+                    <div class="p-3 border-bottom bg-light">
+                        <h6 class="mb-0 fw-bold text-uppercase fs-8" style="color: var(--text-main); letter-spacing: 0.5px;">
+                            <i class="fas fa-id-card-clip me-2" style="color: var(--accent-blue);"></i>Información Personal
                         </h6>
                     </div>
-                    <div class="p-4">
+                    <div class="p-4 bg-white">
                         <div class="row g-4">
                             {% for field in perfil_form %}
                                 <div class="col-md-6">
-                                    <label class="form-label text-muted fs-8 fw-bold text-uppercase tracking-wider mb-2">
+                                    <label class="form-label text-dark fs-8 fw-bold text-uppercase mb-2">
                                         {{ field.label }}
                                     </label>
                                     
                                     {{ field }}
                                     
                                     {% for error in field.errors %}
-                                        <div class="text-neon-danger fs-8 mt-1 fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</div>
+                                        <div class="text-danger fs-8 mt-1 fw-semibold animate-shake">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ error }}
+                                        </div>
                                     {% endfor %}
                                 </div>
                             {% endfor %}
@@ -97,16 +98,16 @@
             
         </div>
 
-        <div class="enterprise-card p-4 text-center">
-            <button type="submit" class="btn btn-dorado-solid px-5 py-2 fs-6 fw-bold tracking-wider shadow-lg d-inline-flex align-items-center justify-content-center">
+        <div class="card-panel p-4 text-center border-0 shadow-sm mb-5 bg-white">
+            <button type="submit" class="btn btn-indigo-modern px-5 py-2 fs-6 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center">
                 {% if accion == 'Editar' %}
-                    <i class="fas fa-save me-2"></i> GUARDAR CAMBIOS
+                    <i class="fas fa-save me-2"></i> ACTUALIZAR REGISTRO
                 {% else %}
-                    <i class="fas fa-user-check me-2"></i> PROVISIONAR USUARIO
+                    <i class="fas fa-user-check me-2"></i> CONFIRMAR ALTA
                 {% endif %}
             </button>
             <p class="text-muted fs-8 mt-3 mb-0">
-                Al {% if accion == 'Editar' %}actualizar{% else %}crear{% endif %} el usuario, el sistema registrará la acción en los Logs de Auditoría.
+                Al guardar, se generará una entrada de auditoría vinculada a su cuenta de administrador.
             </p>
         </div>
     </form>
@@ -114,142 +115,102 @@
 </div>
 
 <style>
-    /* VARIABLES COMPLEMENTARIAS */
-    :root {
-        --granate: #8b0000;
-        --granate-light: #ff4d4d;
-        --dorado: #c5a059;
-        --dorado-light: #d4b475;
-        --bg-surface: #1e293b;      
-        --bg-dark: #0f172a;         
-        --border-subtle: rgba(255, 255, 255, 0.08);
-        --text-main: #f8fafc;
-        --text-muted: #94a3b8;
-        --neon-danger: #ff0844;
-    }
-
-    /* FIX TEXTO CLARO GLOBAL */
-    .force-light-text { color: var(--text-main); }
-    .force-light-text .text-muted { color: var(--text-muted) !important; }
-
-    /* UTILIDADES GLOBALES */
-    .fs-7 { font-size: 0.85rem; }
+    /* VARIABLES REFINADAS */
+    .fs-7 { font-size: 0.875rem; }
     .fs-8 { font-size: 0.75rem; }
-    .tracking-wider { letter-spacing: 1px; }
-    
-    .text-granate { color: var(--granate-light) !important; }
-    .text-dorado { color: var(--dorado-light) !important; }
-    .text-neon-danger { color: var(--neon-danger) !important; }
 
     .animate-fade-in {
-        animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: fadeIn 0.4s ease-out forwards;
     }
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(8px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* CONTENEDORES */
-    .enterprise-card {
-        background-color: var(--bg-surface);
-        border: 1px solid var(--border-subtle);
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        overflow: hidden;
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
     }
-    .bg-surface-header {
-        background-color: rgba(0, 0, 0, 0.15);
-    }
+    .animate-shake { animation: shake 0.3s ease-in-out; }
 
     /* BOTONES */
-    .btn-outline-dorado {
-        color: var(--dorado-light);
-        border: 1px solid var(--dorado-light);
-        background: transparent;
+    .btn-back-light {
+        background-color: var(--bg-surface);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
         font-size: 0.8rem;
         font-weight: 600;
-        letter-spacing: 0.5px;
         padding: 0.5rem 1rem;
         border-radius: 8px;
-        transition: all 0.3s ease;
+        transition: all 0.2s;
     }
-    .btn-outline-dorado:hover {
-        background: var(--dorado);
-        color: var(--bg-dark);
+    .btn-back-light:hover {
+        background-color: white;
+        color: var(--accent-blue);
+        border-color: var(--accent-blue);
     }
 
-    .btn-dorado-solid {
-        background-color: var(--dorado);
-        color: var(--bg-dark);
+    .btn-indigo-modern {
+        background-color: var(--accent-blue);
+        color: white;
         border: none;
         border-radius: 8px;
-        transition: all 0.3s ease;
+        transition: all 0.2s;
     }
-    .btn-dorado-solid:hover {
-        background-color: var(--dorado-light);
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(197, 160, 89, 0.3) !important;
+    .btn-indigo-modern:hover {
+        background-color: #4338ca;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2) !important;
+        color: white;
     }
 
-    /* ==========================================
-       INTERCEPCIÓN DE FORMULARIOS DJANGO (DARK MODE)
-       ========================================== */
-    .custom-form-dark input[type="text"], 
-    .custom-form-dark input[type="password"], 
-    .custom-form-dark input[type="email"], 
-    .custom-form-dark input[type="number"], 
-    .custom-form-dark select,
-    .custom-form-dark textarea {
+    /* ESTILOS DE FORMULARIO DJANGO */
+    .custom-form-light input, 
+    .custom-form-light select,
+    .custom-form-light textarea {
         width: 100%;
-        background-color: rgba(0, 0, 0, 0.2);
-        border: 1px solid var(--border-subtle);
-        color: var(--text-main);
+        background-color: #ffffff;
+        border: 1px solid #d1d5db;
+        color: #1f2937;
         border-radius: 8px;
-        padding: 0.6rem 1rem;
-        font-size: 0.85rem;
-        transition: all 0.3s;
+        padding: 0.65rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
     }
 
-    .custom-form-dark input:focus, 
-    .custom-form-dark select:focus,
-    .custom-form-dark textarea:focus {
+    .custom-form-light input:focus, 
+    .custom-form-light select:focus,
+    .custom-form-light textarea:focus {
         outline: none;
-        background-color: rgba(0, 0, 0, 0.4);
-        border-color: var(--dorado-light);
-        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        background-color: #fff;
     }
 
-    /* Checkboxes/Radios si Django genera alguno */
-    .custom-form-dark input[type="checkbox"], 
-    .custom-form-dark input[type="radio"] {
-        accent-color: var(--dorado);
-        width: 1.2rem;
-        height: 1.2rem;
-        cursor: pointer;
+    /* Mejora para los textos de ayuda (Passwords) */
+    .custom-form-light .helptext ul {
+        list-style: none;
+        padding-left: 0;
+        margin-top: 0.5rem;
+        color: #6b7280;
     }
-
-    /* Ocultar el texto de ayuda masivo de Django para las contraseñas */
-    .custom-form-dark .helptext ul {
-        padding-left: 1rem;
-        margin-bottom: 0;
+    
+    .custom-form-light .helptext li {
         font-size: 0.75rem;
-        opacity: 0.8;
+        position: relative;
+        padding-left: 1.2rem;
+        margin-bottom: 0.2rem;
     }
 
-    /* Autocomplete de navegadores (Quitar el fondo blanco/amarillo) */
-    .custom-form-dark input:-webkit-autofill,
-    .custom-form-dark input:-webkit-autofill:hover, 
-    .custom-form-dark input:-webkit-autofill:focus, 
-    .custom-form-dark input:-webkit-autofill:active{
-        -webkit-box-shadow: 0 0 0 30px var(--bg-surface) inset !important;
-        -webkit-text-fill-color: var(--text-main) !important;
-        transition: background-color 5000s ease-in-out 0s;
-    }
-
-    /* Opciones de los selects nativos */
-    .custom-form-dark select option {
-        background-color: var(--bg-surface);
-        color: var(--text-main);
+    .custom-form-light .helptext li::before {
+        content: "\f00c";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        left: 0;
+        font-size: 0.65rem;
+        color: #10b981;
     }
 </style>
-{% endblock %}
+{% endblock %}  

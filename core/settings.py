@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'apps.operador',
     'apps.vehiculo',
     'apps.gestion',
+
+    'auditlog',
 ]
 
 MIDDLEWARE = [
@@ -56,6 +58,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'auditlog.middleware.AuditlogMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
@@ -150,3 +153,6 @@ LOGOUT_REDIRECT_URL = 'login'    # A dónde enviar tras cerrar sesión
 MEDIA_URL = '/media/'
 # Carpeta física en tu proyecto donde se guardarán
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# settings.py
+# (Solo si estás detrás de un proxy/servidor web en producción)
+AUDITLOG_USE_X_FORWARDED_FOR = True

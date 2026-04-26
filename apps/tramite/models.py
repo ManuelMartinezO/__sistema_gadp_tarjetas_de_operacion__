@@ -107,5 +107,5 @@ class Deposito(models.Model):
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Deposito: {self.numero_deposito} - Monto: {self.monto_deposito}"
+        return f"Deposito: {self.numero} - Monto: {self.monto}"
     

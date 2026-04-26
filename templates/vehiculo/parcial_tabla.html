@@ -1,0 +1,230 @@
+<style>
+    /* --- VARIABLES BASE --- */
+    :root {
+        --color-principal: #8b0000;
+        --color-hover: #6a0000;
+        --color-texto: #1e293b;
+        --color-borde: #cbd5e1;
+        --bg-suave: #f8fafc;
+    }
+
+    /* --- TABLA MODERNA --- */
+    .tabla-contenedor {
+        background: white;
+        border: 1px solid var(--color-borde);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        margin-bottom: 20px;
+    }
+    .tabla-moderna {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    .tabla-moderna th {
+        background-color: var(--bg-suave);
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        padding: 12px 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .tabla-moderna td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e2e8f0;
+        color: var(--color-texto);
+        font-size: 0.95em;
+        vertical-align: middle;
+    }
+    .tabla-moderna tbody tr {
+        transition: background-color 0.2s;
+    }
+    .tabla-moderna tbody tr:hover {
+        background-color: #f1f5f9;
+    }
+    .tabla-moderna tbody tr:last-child td { border-bottom: none; }
+
+    /* --- ENLACES Y BADGES --- */
+    .link-custom {
+        color: var(--color-principal);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.9em;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+        border: 1px solid transparent;
+    }
+    .link-custom:hover { 
+        background-color: rgba(139, 0, 0, 0.05); 
+        border-color: rgba(139, 0, 0, 0.2);
+    }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+    /* Colores específicos para transporte */
+    .bg-pasajeros { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .bg-carga { background-color: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+
+    /* --- PAGINACIÓN --- */
+    .paginacion-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 15px;
+        border: 1px solid var(--color-borde);
+        border-radius: 8px;
+        font-size: 0.9em;
+        color: #475569;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .paginacion-nav {
+        display: flex;
+        gap: 5px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .paginacion-nav a, .paginacion-nav span {
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        border: 1px solid var(--color-borde);
+        color: var(--color-texto);
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+    }
+    .paginacion-nav a:hover {
+        background-color: var(--bg-suave);
+        border-color: #94a3b8;
+    }
+    .paginacion-nav span.activo {
+        background-color: var(--color-principal);
+        color: white;
+        border-color: var(--color-principal);
+    }
+    
+    /* Auxiliares de texto */
+    .text-muted-small { color: #64748b; font-size: 0.85em; }
+    .label-mini { font-weight: 800; color: #94a3b8; font-size: 0.75rem; letter-spacing: 0.5px; }
+</style>
+
+<div class="tabla-contenedor">
+    <table class="tabla-moderna">
+        <thead>
+            <tr>
+                <th><i class="bi bi-123 me-1"></i> Placa</th>
+                <th><i class="bi bi-car-front me-1"></i> Marca y Modelo</th>
+                <th><i class="bi bi-person-badge me-1"></i> Propietario / Afiliado</th>
+                <th><i class="bi bi-diagram-3 me-1"></i> Tipo / Capacidad</th>
+                <th style="text-align: center;"><i class="bi bi-gear me-1"></i> Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vehiculo in vehiculos %}
+            <tr>
+                <td>
+                    <strong style="color: var(--color-principal); font-size: 1.05em; letter-spacing: 0.5px;">
+                        {{ vehiculo.placa|upper }}
+                    </strong>
+                </td>
+                
+                <td>
+                    <div style="font-weight: 600;">{{ vehiculo.marca.nombre }}</div>
+                    <div class="text-muted-small">Mod: {{ vehiculo.modelo }}</div>
+                </td>
+                
+                <td>
+                    <div style="margin-bottom: 4px;">
+                        <span class="label-mini">PROP:</span> 
+                        <span style="font-weight: 500;">{{ vehiculo.propietario|default:"No registrado" }}</span>
+                    </div>
+                    <div>
+                        <span class="label-mini">AFIL:</span> 
+                        <span style="font-weight: 500;">{{ vehiculo.afiliado.nombre_completo }}</span>
+                    </div>
+                </td>
+                
+                <td>
+                    {% if vehiculo.transporte == 'p' %}
+                        <span class="badge bg-pasajeros"><i class="bi bi-people-fill me-1"></i> Pasajeros</span>
+                        <div class="text-muted-small" style="margin-top: 4px; font-weight: 500;">
+                            {{ vehiculo.capacidad }} personas
+                        </div>
+                    {% else %}
+                        <span class="badge bg-carga"><i class="bi bi-box-seam-fill me-1"></i> Carga</span>
+                        <div class="text-muted-small" style="margin-top: 4px; font-weight: 500;">
+                            {{ vehiculo.capacidad }} toneladas
+                        </div>
+                    {% endif %}
+                </td>
+                
+                <td style="text-align: center;">
+                    <a href="{% url 'vehiculo:detalle_vehiculo' vehiculo.placa %}" class="link-custom">
+                        <i class="bi bi-eye"></i> Ver Detalle
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">
+                    <i class="bi bi-car-front fs-2 d-block mb-2"></i> No hay vehículos registrados
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="paginacion-container">
+    <div>
+        Mostrando <strong style="color: var(--color-principal);">{{ vehiculos.start_index|default:"0" }}</strong> a <strong style="color: var(--color-principal);">{{ vehiculos.end_index|default:"0" }}</strong> de <strong>{{ vehiculos.paginator.count|default:"0" }}</strong> vehículos
+    </div>
+    
+    {% if vehiculos.has_other_pages %}
+        <ul class="paginacion-nav">
+            {% if vehiculos.has_previous %}
+                <li>
+                    <a href="?page={{ vehiculos.previous_page_number }}&q={{ q }}&tipo={{ tipo_actual }}" title="Anterior">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for i in vehiculos.paginator.page_range %}
+                {% if vehiculos.number == i %}
+                    <li><span class="activo">{{ i }}</span></li>
+                {% elif i > vehiculos.number|add:'-3' and i < vehiculos.number|add:'3' %}
+                    <li>
+                        <a href="?page={{ i }}&q={{ q }}&tipo={{ tipo_actual }}">{{ i }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if vehiculos.has_next %}
+                <li>
+                    <a href="?page={{ vehiculos.next_page_number }}&q={{ q }}&tipo={{ tipo_actual }}" title="Siguiente">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    {% endif %}
+</div>
