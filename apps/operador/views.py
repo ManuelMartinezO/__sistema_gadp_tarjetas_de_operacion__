@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.contrib import messages
 from django.db import DatabaseError
 from xhtml2pdf import pisa
+from django.contrib.auth.decorators import login_required, user_passes_test
+from apps.usuario.permisos import es_admin, es_superadmin, es_usuario_normal
 
 from .models import Operador
 from .forms import NuevoOperadorForm, FederacionForm, OrganizacionForm
@@ -18,6 +20,8 @@ from apps.tramite.models import Tramite
 
 logger = logging.getLogger(__name__)
 
+@login_required
+@user_passes_test(es_admin, login_url='/', redirect_field_name=None)
 def lista_operadores(request: HttpRequest) -> HttpResponse:
     q = request.GET.get('q', '').strip()
     
@@ -81,6 +85,8 @@ def lista_operadores(request: HttpRequest) -> HttpResponse:
 
     return render(request, 'operador/lista.html', contexto)
     
+@login_required
+@user_passes_test(es_admin, login_url='/', redirect_field_name=None)
 def detalle_operador(request: HttpRequest, id_operador: int) -> HttpResponse:
     operador = get_object_or_404(
         Operador.objects.select_related('organizacion', 'federacion'), 
@@ -119,6 +125,8 @@ def detalle_operador(request: HttpRequest, id_operador: int) -> HttpResponse:
     }
     return render(request, 'operador/detalle.html', contexto)
 
+@login_required
+@user_passes_test(es_admin, login_url='/', redirect_field_name=None)
 def descargar_reporte_operador_pdf(request: HttpRequest, operador_id: int) -> HttpResponse:
     operador = get_object_or_404(Operador, id=operador_id)
 

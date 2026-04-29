@@ -72,6 +72,16 @@ class Tramite(models.Model):
     # === FECHA AUTO/FORM ===
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
+    # === BANCO ===
+    banco = models.CharField(max_length=100, blank=True, null=True, default='BANCO UNION')
+    cuenta = models.CharField(max_length=50, blank=True, null=True, default='1-6024553')
+
+    # === FIRMA ===
+    encargado_firma_1 = models.CharField(max_length=100, blank=True, null=True, default='Abog. Heber Rodriguez Flores')
+    area_firma_1 = models.CharField(max_length=100, blank=True, null=True, default='SECRETARIO DEPARTAMENTAL DE JURÍDICA')
+    encargado_firma_2 = models.CharField(max_length=100, blank=True, null=True, default='Oscar Mendoza Mamani')
+    area_firma_2 = models.CharField(max_length=100, blank=True, null=True, default='SECRETARIO DEPARTAMENTAL DE COORDINACIÓN GENERAL')
+
     # === FUNCIONES EXTRAS ===
     # ==== INICIAR EL DOCUMENTO DESDE EL NUMERO 2000 ====
     def save(self, *args, **kwargs):

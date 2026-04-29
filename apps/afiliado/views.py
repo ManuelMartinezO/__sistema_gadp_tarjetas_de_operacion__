@@ -14,7 +14,7 @@ from .forms import EditarAfiliadoForm
 logger = logging.getLogger(__name__)
 
 @login_required
-@user_passes_test(es_admin)
+@user_passes_test(es_admin, login_url='/', redirect_field_name=None)
 def lista_afiliados(request: HttpRequest) -> HttpResponse:
     q = request.GET.get('q', '').strip()
     
@@ -51,7 +51,7 @@ def lista_afiliados(request: HttpRequest) -> HttpResponse:
     return render(request, 'afiliado/lista.html', contexto)
 
 @login_required
-@user_passes_test(es_admin)
+@user_passes_test(es_admin, login_url='/', redirect_field_name=None)
 def detalle_afiliado(request: HttpRequest, id_afiliado: int) -> HttpResponse:
     afiliado = get_object_or_404(Afiliado.objects.select_related('operador'), id=id_afiliado)
     form_afiliado = EditarAfiliadoForm(instance=afiliado)

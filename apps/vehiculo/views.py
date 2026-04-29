@@ -6,11 +6,16 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.db import DatabaseError
 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from apps.usuario.permisos import es_usuario_normal, es_admin, es_superadmin
+
 from .models import Vehiculo
 from .forms import TipoVehiculoForm, MarcaVehiculoForm, EditarVehiculoForm
 
 logger = logging.getLogger(__name__)
 
+@login_required
+@user_passes_test(es_admin, login_url='/', redirect_field_name=None)
 def lista_vehiculos(request: HttpRequest) -> HttpResponse:
     q = request.GET.get('q', '').strip()
     tipo = request.GET.get('tipo', 'todos')
@@ -49,6 +54,8 @@ def lista_vehiculos(request: HttpRequest) -> HttpResponse:
         
     return render(request, 'vehiculo/lista.html', contexto)
 
+@login_required
+@user_passes_test(es_admin, login_url='/', redirect_field_name=None)
 def detalle_vehiculo(request: HttpRequest, placa: str) -> HttpResponse:
     vehiculo = get_object_or_404(
         Vehiculo.objects.select_related('marca', 'tipo', 'afiliado'), 

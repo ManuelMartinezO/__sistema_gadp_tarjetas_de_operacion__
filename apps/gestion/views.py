@@ -45,6 +45,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def historial_list_view(request: HttpRequest) -> HttpResponse:
     date_start = request.GET.get('date_start', '').strip()
     date_end = request.GET.get('date_end', '').strip()
@@ -102,6 +104,8 @@ def historial_list_view(request: HttpRequest) -> HttpResponse:
 
     return render(request, 'gestion/historial_list.html', context)
 
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def logup_view(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         usuario_form = UsuarioForm(request.POST, prefix='usaurio')
@@ -207,6 +211,8 @@ def eliminar_operador(request: HttpRequest, pk: int) -> HttpResponse:
 # ==========================================
 # VISTA: AFILIADOS
 # ==========================================
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def gestion_admin_afiliados(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         afiliado_id = request.POST.get('afiliado_id')
@@ -261,6 +267,8 @@ def gestion_admin_afiliados(request: HttpRequest) -> HttpResponse:
 # ==========================================
 # VISTA: ORGANIZACIONES
 # ==========================================
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def gestion_organizaciones(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         org_id = request.POST.get('registro_id')
@@ -314,6 +322,8 @@ def gestion_organizaciones(request: HttpRequest) -> HttpResponse:
 # ==========================================
 # VISTA: FEDERACIONES
 # ==========================================
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def gestion_federaciones(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         fed_id = request.POST.get('registro_id')
@@ -367,6 +377,8 @@ def gestion_federaciones(request: HttpRequest) -> HttpResponse:
 # ==========================================
 # VISTA: OPERADORES
 # ==========================================
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def gestion_operadores(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         op_id = request.POST.get('registro_id')
@@ -422,6 +434,8 @@ def gestion_operadores(request: HttpRequest) -> HttpResponse:
 # ==========================================
 # VISTA: MARCAS DE VEHÍCULOS
 # ==========================================
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def gestion_marcas(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         registro_id = request.POST.get('registro_id')
@@ -475,6 +489,8 @@ def gestion_marcas(request: HttpRequest) -> HttpResponse:
 # ==========================================
 # VISTA: TIPOS DE VEHÍCULOS
 # ==========================================
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def gestion_tipos(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         registro_id = request.POST.get('registro_id')
@@ -526,6 +542,8 @@ def gestion_tipos(request: HttpRequest) -> HttpResponse:
 # ==========================================
 # VISTA: VEHÍCULOS
 # ==========================================
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def gestion_vehiculos(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         registro_id = request.POST.get('registro_id')
@@ -577,6 +595,8 @@ def gestion_vehiculos(request: HttpRequest) -> HttpResponse:
 # ==========================================
 # VISTA: TRÁMITES
 # ==========================================
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def gestion_tramites(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         try:
@@ -646,6 +666,8 @@ def gestion_tramites(request: HttpRequest) -> HttpResponse:
 # ==========================================
 # VISTA: TARJETAS DE OPERACIÓN
 # ==========================================
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def gestion_tarjetas(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         try:
@@ -701,6 +723,8 @@ def gestion_tarjetas(request: HttpRequest) -> HttpResponse:
 # ==========================================
 # REPORTES Y EXPORTACIÓN
 # ==========================================
+@login_required
+@user_passes_test(es_superadmin, login_url='/', redirect_field_name=None)
 def generar_reporte_pdf(request: HttpRequest) -> HttpResponse:
     try:
         # Diccionario para agrupar todo por mes ("YYYY-MM")

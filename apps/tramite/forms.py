@@ -35,7 +35,7 @@ class NuevoTramiteForm(BootstrapFormMixin, forms.ModelForm):
 class EditarTramiteAdminForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Tramite
-        fields = ['tipo', 'estado', 'licencia', 'usuario', 'operador', 'fojas', 'rutas', 'observacion']
+        fields = ['tipo', 'estado', 'licencia', 'usuario', 'operador', 'fojas', 'rutas', 'observacion', 'banco', 'cuenta', 'encargado_firma_1', 'area_firma_1', 'encargado_firma_2', 'area_firma_2']
         labels = {
             'tipo': 'Tipo de Trámite',
             'estado': 'Estado del Trámite',

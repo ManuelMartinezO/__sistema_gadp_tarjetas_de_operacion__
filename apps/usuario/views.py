@@ -24,7 +24,7 @@ from .permisos import es_admin, es_usuario_normal, es_superadmin
 logger = logging.getLogger(__name__)
 
 @login_required
-@user_passes_test(es_usuario_normal)
+@user_passes_test(es_usuario_normal, login_url='/', redirect_field_name=None)
 def home(request: HttpRequest) -> HttpResponse:
     try:
         total_operadores = Operador.objects.count()
@@ -74,6 +74,7 @@ def home(request: HttpRequest) -> HttpResponse:
 def logout_view(request: HttpRequest) -> HttpResponse:
     logout(request)
     return redirect('login')
+
 
 def login_view(request: HttpRequest) -> HttpResponse:
     if request.user.is_authenticated:

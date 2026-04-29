@@ -27,6 +27,8 @@ from apps.usuario.permisos import es_admin, es_superadmin, es_usuario_normal
 
 logger = logging.getLogger(__name__)
 
+@login_required
+@user_passes_test(es_usuario_normal, login_url='/', redirect_field_name=None)
 def vista_completa_tramite(request: HttpRequest, numero: str) -> HttpResponse:
     tramite = get_object_or_404(Tramite, numero=numero)
     tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
@@ -132,7 +134,7 @@ def vista_completa_tramite(request: HttpRequest, numero: str) -> HttpResponse:
     return render(request, 'tramite/vista_completa.html', contexto)
 
 @login_required
-@user_passes_test(es_usuario_normal)
+@user_passes_test(es_usuario_normal, login_url='/', redirect_field_name=None)
 def lista_tramites(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = NuevoTramiteForm(request.POST, request.FILES) 
@@ -197,6 +199,8 @@ def lista_tramites(request: HttpRequest) -> HttpResponse:
 
     return render(request, 'tramite/lista.html', contexto)
 
+@login_required
+@user_passes_test(es_usuario_normal, login_url='/', redirect_field_name=None)
 def vista(request: HttpRequest, numero: str) -> HttpResponse:
     tramite = get_object_or_404(Tramite, numero=numero)
     tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
@@ -261,7 +265,7 @@ def vista(request: HttpRequest, numero: str) -> HttpResponse:
     return render(request, 'tramite/vista_tarjetas.html', contexto)
 
 @login_required
-@user_passes_test(es_usuario_normal)
+@user_passes_test(es_usuario_normal, login_url='/', redirect_field_name=None)
 def detalle_tramite(request: HttpRequest, numero: str) -> HttpResponse:
     tramite = get_object_or_404(Tramite, numero=numero)
     tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')
@@ -318,7 +322,7 @@ def detalle_tramite(request: HttpRequest, numero: str) -> HttpResponse:
     return render(request, 'tramite/detalle.html', contexto)
 
 @login_required
-@user_passes_test(es_admin)
+@user_passes_test(es_admin, login_url='/', redirect_field_name=None)
 def generar_pdf_tramite(request: HttpRequest, numero: str) -> HttpResponse:
     tramite = get_object_or_404(Tramite, numero=numero)
     tarjetas = TarjetaDeOperacion.objects.filter(tramite=tramite).order_by('-fecha_registro')

@@ -14,12 +14,17 @@ from django.contrib import messages
 from django.db import transaction, DatabaseError
 from xhtml2pdf import pisa
 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from apps.usuario.permisos import es_admin, es_superadmin, es_usuario_normal
+
 from .models import TarjetaDeOperacion
 from .forms import TarjetaDeOperacionForm
 from apps.tramite.models import Tramite
 
 logger = logging.getLogger(__name__)
 
+@login_required
+@user_passes_test(es_admin, login_url='/', redirect_field_name=None)
 def lista_tarjetas(request: HttpRequest) -> HttpResponse:
     q = request.GET.get('q', '').strip()
     ruta_q = request.GET.get('ruta', '').strip()
@@ -77,6 +82,8 @@ def lista_tarjetas(request: HttpRequest) -> HttpResponse:
 
     return render(request, 'tarjeta/lista.html', contexto)
 
+@login_required
+@user_passes_test(es_admin, login_url='/', redirect_field_name=None)
 @transaction.atomic
 def generar_pdf_tarjeta(request: HttpRequest, id_tarjeta: int) -> HttpResponse:
     tarjeta = get_object_or_404(TarjetaDeOperacion, id=id_tarjeta)
