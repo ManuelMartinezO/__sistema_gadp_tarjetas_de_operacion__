@@ -1,5 +1,9 @@
-Django == 5.1.7
+Django==5.1.7
+django-auditlog==3.4.1
 psycopg2==2.9.9
 xhtml2pdf==0.2.17
-reportlab ==4.4.0
+pyHanko==0.34.1
+pypdf==6.9.2
 qrcode==7.4.2
+reportlab==4.4.0
+requests==2.33.0
