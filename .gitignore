@@ -1,3 +1,6 @@
 env
-db.sqlite3
 
+
+media/informes_legales/*
+media/informes_tecnicos/*
+media/resolucion_administrativa/*
