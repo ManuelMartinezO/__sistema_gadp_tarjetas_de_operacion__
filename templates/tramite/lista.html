@@ -1,0 +1,522 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --color-principal: #8b0000;
+        --color-hover: #6a0000;
+        --color-texto: #1e293b;
+        --color-borde: #cbd5e1;
+        --bg-suave: #f8fafc;
+    }
+
+    .header-pagina {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--bg-suave);
+    }
+
+    .titulo-principal {
+        color: var(--color-texto);
+        font-weight: 800;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .subtitulo-principal {
+        color: #64748b;
+        margin: 5px 0 0 0;
+        font-size: 0.95rem;
+    }
+
+    .btn-custom {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.9em;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-decoration: none;
+    }
+
+    .btn-principal { background-color: var(--color-principal); color: white; }
+    .btn-principal:hover { background-color: var(--color-hover); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(139,0,0,0.2); color: white;}
+    
+    .btn-gris { background-color: #f1f5f9; color: #475569; border: 1px solid var(--color-borde); }
+    .btn-gris:hover { background-color: #e2e8f0; color: var(--color-texto); }
+
+    .panel-filtros {
+        background-color: white;
+        border: 1px solid var(--color-borde);
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .grid-filtros {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        align-items: end;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--color-principal);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+
+    .form-group input, 
+    .form-group select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #94a3b8;
+        border-radius: 4px;
+        background-color: var(--bg-suave);
+        color: var(--color-texto);
+        font-size: 0.9em;
+        transition: border-color 0.2s;
+    }
+
+    .form-group input:focus, 
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--color-principal);
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+    }
+
+    .tabla-contenedor {
+        background: white;
+        border: 1px solid var(--color-borde);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        margin-bottom: 20px;
+    }
+
+    .tabla-moderna {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .tabla-moderna th {
+        background-color: var(--bg-suave);
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        padding: 12px 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .tabla-moderna td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e2e8f0;
+        color: var(--color-texto);
+        font-size: 0.95em;
+        vertical-align: middle;
+    }
+
+    .tabla-moderna tbody tr { transition: background-color 0.2s; }
+    .tabla-moderna tbody tr:hover { background-color: #f1f5f9; }
+    .tabla-moderna tbody tr:last-child td { border-bottom: none; }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .bg-pendiente { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .bg-validado { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .bg-observado { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .bg-dep-ok { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .bg-dep-pend { background-color: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+
+    .paginacion-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 15px;
+        border: 1px solid var(--color-borde);
+        border-radius: 8px;
+        font-size: 0.9em;
+        color: #475569;
+    }
+
+    .paginacion-nav {
+        display: flex;
+        gap: 5px;
+    }
+
+    .paginacion-nav a, 
+    .paginacion-nav span {
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        border: 1px solid var(--color-borde);
+        color: var(--color-texto);
+        transition: all 0.2s;
+    }
+
+    .paginacion-nav a:hover {
+        background-color: var(--bg-suave);
+        border-color: #94a3b8;
+    }
+
+    .paginacion-nav span.activo {
+        background-color: var(--color-principal);
+        color: white;
+        border-color: var(--color-principal);
+    }
+
+    dialog {
+        background: white; 
+        padding: 25px; 
+        border-radius: 10px; 
+        border: none;
+        border-top: 4px solid var(--color-principal);
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        color: var(--color-texto);
+        max-width: 90vw;
+    }
+
+    dialog::backdrop {
+        background: rgba(15, 23, 42, 0.6); 
+        backdrop-filter: blur(3px);
+    }
+
+    dialog h3 { 
+        margin-top: 0; 
+        color: var(--color-texto); 
+        font-weight: 800; 
+        margin-bottom: 15px; 
+        display: flex; 
+        align-items: center; 
+        gap: 8px;
+    }
+
+    .botones-modal { 
+        display: flex; 
+        gap: 10px; 
+        margin-top: 20px; 
+    }
+
+    .botones-modal button { 
+        flex: 1; 
+    }
+    
+    #formAJAX p { margin-bottom: 10px; }
+    #formAJAX label { 
+        display: block; 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        color: #475569; 
+        margin-bottom: 4px; 
+    }
+    
+    #formAJAX input, 
+    #formAJAX select, 
+    #formAJAX textarea {
+        width: 100%; 
+        padding: 8px 10px; 
+        border: 1px solid #94a3b8; 
+        border-radius: 4px;
+        background-color: var(--bg-suave); 
+        font-size: 0.9em; 
+        color: var(--color-texto);
+        box-sizing: border-box;
+    }
+
+    #formAJAX input:focus, 
+    #formAJAX select:focus, 
+    #formAJAX textarea:focus {
+        outline: none; 
+        border-color: var(--color-principal); 
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+    }
+
+    .lista-preview-styled {
+        background: var(--bg-suave); 
+        padding: 15px 15px 15px 30px; 
+        border-radius: 6px; 
+        border: 1px solid var(--color-borde); 
+        margin-bottom: 20px; 
+        color: var(--color-texto); 
+        font-size: 0.9em; 
+        line-height: 1.6;
+    }
+</style>
+
+<div class="header-pagina">
+    <div>
+        <h2 class="titulo-principal">
+            <i class="bi bi-briefcase-fill" style="color: var(--color-principal);" aria-hidden="true"></i> Gestión de Trámites
+        </h2>
+        <p class="subtitulo-principal">Listado general de solicitudes y expedientes registrados en el sistema</p>
+    </div>
+    
+    {% if user.rol == 'a' or user.rol == 'sa' %}
+        <button id="btnAbrirFormulario" class="btn-custom btn-principal">
+            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Nuevo Trámite
+        </button>
+    {% endif %}
+</div>
+
+<div class="panel-filtros">
+    <form id="filterForm" class="grid-filtros" onsubmit="event.preventDefault();">
+        <div class="form-group">
+            <label for="q"><i class="bi bi-search" aria-hidden="true"></i> Buscar</label>
+            <input type="text" id="q" name="q" value="{{ q }}" placeholder="N° o Usuario..." autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label for="tipo"><i class="bi bi-funnel" aria-hidden="true"></i> Tipo</label>
+            <select id="tipo" name="tipo">
+                <option value="todos" {% if tipo_actual == 'todos' %}selected{% endif %}>Todos los tipos</option>
+                <option value="o" {% if tipo_actual == 'o' %}selected{% endif %}>Otorgación</option>
+                <option value="r" {% if tipo_actual == 'r' %}selected{% endif %}>Renovación</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="estado"><i class="bi bi-clipboard-check" aria-hidden="true"></i> Estado</label>
+            <select id="estado" name="estado">
+                <option value="todos" {% if estado_actual == 'todos' %}selected{% endif %}>Cualquier estado</option>
+                <option value="p" {% if estado_actual == 'p' %}selected{% endif %}>Pendiente</option>
+                <option value="v" {% if estado_actual == 'v' %}selected{% endif %}>Validado</option>
+                <option value="o" {% if estado_actual == 'o' %}selected{% endif %}>Observado</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="fecha_inicio"><i class="bi bi-calendar-event" aria-hidden="true"></i> Desde</label>
+            <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+        </div>
+
+        <div class="form-group">
+            <label for="fecha_fin"><i class="bi bi-calendar-event" aria-hidden="true"></i> Hasta</label>
+            <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+        </div>
+
+        <div class="form-group">
+            <button type="button" id="btnLimpiarFiltros" class="btn-custom btn-gris w-100 text-center" style="padding: 9px 0;">
+                <i class="bi bi-eraser" aria-hidden="true"></i> Limpiar
+            </button>
+        </div>
+    </form>
+</div>
+
+<div id="resultados-tabla" aria-live="polite">
+    {% include 'tramite/parcial_tabla.html' %}
+</div>
+
+<dialog id="modalFormulario" style="width: 500px;">
+    <h3><i class="bi bi-file-earmark-plus" style="color: var(--color-principal);" aria-hidden="true"></i> Nuevo Registro</h3>
+    <form id="formAJAX" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <div class="botones-modal">
+            <button type="button" class="btn-custom btn-gris" id="btnCerrarForm">Cancelar</button>
+            <button type="button" class="btn-custom btn-principal" id="btnRevisarDatos">Continuar <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="modalConfirmacion" style="width: 500px;">
+    <h3><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> Confirmar Datos</h3>
+    <p style="color: #475569; font-size: 0.95rem; margin-bottom: 15px;">Por favor, revisa la información ingresada antes de registrar el trámite:</p>
+    
+    <ul id="listaVistaPrevia" class="lista-preview-styled"></ul>
+    
+    <div class="botones-modal">
+        <button type="button" class="btn-custom btn-gris" id="btnVolverForm"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</button>
+        <button type="button" class="btn-custom btn-principal" id="btnGuardarDefinitivo"><i class="bi bi-check-lg" aria-hidden="true"></i> Sí, Guardar</button>
+    </div>
+</dialog>
+
+<dialog id="modalExito" style="width: 400px; text-align: center; border-top-color: #15803d;">
+    <i class="bi bi-check-circle-fill" style="font-size: 3.5rem; color: #15803d; display: block; margin-bottom: 15px;" aria-hidden="true"></i>
+    <h3 style="color: #15803d;">¡Trámite Creado!</h3>
+    <p style="color: #475569; margin-bottom: 25px;">El expediente ha sido registrado exitosamente en el sistema.</p>
+    <button type="button" class="btn-custom btn-principal" id="btnCerrarExito" style="width: 100%;">Entendido</button>
+</dialog>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const filterForm = document.getElementById('filterForm');
+        const searchInput = document.getElementById('q');
+        const selectAndDates = filterForm.querySelectorAll('select, input[type="date"]');
+        const contenedorResultados = document.getElementById('resultados-tabla');
+        const btnLimpiarFiltros = document.getElementById('btnLimpiarFiltros');
+        let timeout = null;
+
+        const cargarResultados = async (url) => {
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+                
+                const html = await response.text();
+                contenedorResultados.innerHTML = html;
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                contenedorResultados.innerHTML = `
+                    <div style="padding: 15px; text-align: center; color: #8b0000; background-color: #fee2e2; border-radius: 6px;">
+                        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Ocurrió un error al cargar los trámites.
+                    </div>
+                `;
+            }
+        };
+
+        const actualizarFiltros = () => {
+            const params = new URLSearchParams(new FormData(filterForm));
+            cargarResultados(`?${params.toString()}`);
+        };
+
+        selectAndDates.forEach(element => {
+            element.addEventListener('change', actualizarFiltros);
+        });
+
+        searchInput.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(actualizarFiltros, 400); 
+        });
+
+        contenedorResultados.addEventListener('click', (e) => {
+            const link = e.target.closest('.paginacion-nav a');
+            if (link && link.hasAttribute('href')) {
+                e.preventDefault(); 
+                cargarResultados(link.getAttribute('href'));
+            }
+        });
+
+        btnLimpiarFiltros.addEventListener('click', () => {
+            filterForm.reset();
+            actualizarFiltros();
+        });
+
+        const btnAbrirFormulario = document.getElementById('btnAbrirFormulario');
+        const modalForm = document.getElementById('modalFormulario');
+        const modalConf = document.getElementById('modalConfirmacion');
+        const modalExito = document.getElementById('modalExito');
+        const formAJAX = document.getElementById('formAJAX');
+
+        if(btnAbrirFormulario) {
+            btnAbrirFormulario.addEventListener('click', () => modalForm.showModal());
+        }
+
+        document.getElementById('btnCerrarForm').addEventListener('click', () => {
+            modalForm.close();
+            formAJAX.reset(); 
+        });
+
+        document.getElementById('btnRevisarDatos').addEventListener('click', () => {
+            if (!formAJAX.checkValidity()) {
+                formAJAX.reportValidity();
+                return;
+            }
+
+            const listaPreview = document.getElementById('listaVistaPrevia');
+            listaPreview.innerHTML = ''; 
+
+            Array.from(formAJAX.elements).forEach(elemento => {
+                const esElementoValido = elemento.name && 
+                                         elemento.name !== 'csrfmiddlewaretoken' && 
+                                         elemento.tagName !== 'BUTTON';
+                                         
+                if (esElementoValido) {
+                    let valorMostrado = elemento.value.trim();
+                    
+                    if (elemento.tagName === 'SELECT' && elemento.selectedIndex >= 0) {
+                        valorMostrado = elemento.options[elemento.selectedIndex].text;
+                    }
+                    
+                    const nombreCampo = elemento.name.replace(/_/g, ' ').toUpperCase();
+                    const valorSeguro = valorMostrado ? valorMostrado.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '<em>No especificado</em>';
+                    
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${nombreCampo}:</strong> ${valorSeguro}`;
+                    listaPreview.appendChild(li);
+                }
+            });
+
+            modalForm.close();
+            modalConf.showModal();
+        });
+
+        document.getElementById('btnVolverForm').addEventListener('click', () => {
+            modalConf.close();
+            modalForm.showModal();
+        });
+
+        document.getElementById('btnCerrarExito').addEventListener('click', () => {
+            modalExito.close();
+            window.location.reload(); 
+        });
+
+        document.getElementById('btnGuardarDefinitivo').addEventListener('click', async (e) => {
+            const btnConfirmar = e.currentTarget;
+            btnConfirmar.innerHTML = `<i class="bi bi-hourglass-split" aria-hidden="true"></i> Guardando...`;
+            btnConfirmar.disabled = true;
+
+            const datos = new FormData(formAJAX);
+
+            try {
+                const respuesta = await fetch(window.location.href, {
+                    method: 'POST',
+                    body: datos,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const data = await respuesta.json();
+
+                if (data.success) { 
+                    modalConf.close();
+                    modalExito.showModal();
+                    formAJAX.reset();
+                } else {
+                    alert("Error al guardar: Revisa los datos o los campos obligatorios.");
+                    console.warn("Errores de validación:", data.errors);
+                    modalConf.close();
+                    modalForm.showModal();
+                }
+            } catch (error) {
+                console.error('Error de red o servidor:', error);
+                alert("Ocurrió un error al comunicarse con el servidor.");
+            } finally {
+                btnConfirmar.innerHTML = `<i class="bi bi-check-lg" aria-hidden="true"></i> Sí, Guardar`;
+                btnConfirmar.disabled = false;
+            }
+        });
+    });
+</script>
+{% endblock %}

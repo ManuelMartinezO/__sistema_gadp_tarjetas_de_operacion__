@@ -1,0 +1,603 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --color-principal: #8b0000;
+        --color-hover: #6a0000;
+        --color-texto: #1e293b;
+        --color-borde: #cbd5e1;
+        --bg-suave: #f8fafc;
+    }
+
+    .contenedor-principal {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        margin-top: 15px;
+    }
+    
+    .columna-izquierda { flex: 2; }
+    .columna-derecha { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+    
+    .bloque-form {
+        border: 1px solid var(--color-borde);
+        padding: 18px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .titulo-bloque {
+        color: var(--color-texto);
+        font-weight: 800;
+        font-size: 1.15rem;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        letter-spacing: 0.5px;
+    }
+    
+    .titulo-bloque i { 
+        color: var(--color-principal); 
+    }
+    
+    .subtitulo-bloque {
+        color: var(--color-principal);
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-top: 15px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    input[type="text"], 
+    input[type="number"], 
+    input[type="file"], 
+    select, 
+    textarea {
+        width: 100%;
+        padding: 8px 12px;
+        box-sizing: border-box;
+        margin-top: 2px;
+        margin-bottom: 12px;
+        border: 1px solid #94a3b8;
+        border-radius: 6px;
+        background-color: var(--bg-suave);
+        color: var(--color-texto);
+        font-size: 0.95em;
+        transition: all 0.2s;
+    }
+
+    input[type="text"]:focus, 
+    input[type="number"]:focus, 
+    select:focus, 
+    textarea:focus {
+        outline: none;
+        border-color: var(--color-principal);
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.15);
+    }
+
+    .btn-custom {
+        width: 100%;
+        padding: 10px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-principal { 
+        background-color: var(--color-principal); 
+        color: white; 
+    }
+
+    .btn-principal:hover { 
+        background-color: var(--color-hover); 
+        transform: translateY(-1px); 
+        box-shadow: 0 4px 6px rgba(139,0,0,0.2); 
+    }
+    
+    .btn-accion { 
+        background-color: white; 
+        color: var(--color-texto); 
+        border: 1px solid var(--color-borde); 
+    }
+
+    .btn-accion:hover { 
+        background-color: var(--bg-suave); 
+        border-color: var(--color-principal); 
+        color: var(--color-principal); 
+    }
+
+    .btn-gris { 
+        background-color: #f1f5f9; 
+        color: #475569; 
+        border: 1px solid #cbd5e1; 
+    }
+
+    .btn-gris:hover { 
+        background-color: #e2e8f0; 
+        color: var(--color-texto); 
+    }
+
+    .link-custom {
+        color: var(--color-principal);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.9em;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    .link-custom:hover { 
+        background-color: rgba(139, 0, 0, 0.08); 
+    }
+
+    .grid-documentos {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .doc-card {
+        background-color: white;
+        border: 1px solid var(--color-borde);
+        border-radius: 6px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 8px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+
+    .doc-titulo {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .doc-ok { 
+        background-color: #f0fdf4; 
+        color: #15803d; 
+        border: 1px solid #bbf7d0; 
+        text-align: center; 
+        border-radius: 4px; 
+        padding: 4px; 
+        font-size: 0.75rem; 
+        font-weight: 800; 
+        text-decoration: none; 
+    }
+
+    .doc-ok:hover { 
+        background-color: #dcfce7; 
+    }
+
+    .doc-falta { 
+        background-color: #fef2f2; 
+        color: #b91c1c; 
+        border: 1px dashed #fecaca; 
+        text-align: center; 
+        border-radius: 4px; 
+        padding: 4px; 
+        font-size: 0.75rem; 
+        font-weight: 800; 
+    }
+
+    .lista-estilizada { 
+        padding-left: 0; 
+        list-style: none; 
+        margin: 0; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+    }
+    
+    .item-tarjeta {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        background: white; 
+        padding: 12px 15px; 
+        border-radius: 6px; 
+        border: 1px solid var(--color-borde);
+        border-left: 4px solid var(--color-principal);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        transition: transform 0.2s;
+    }
+
+    .item-tarjeta:hover { 
+        transform: translateX(2px); 
+        border-color: #94a3b8; 
+    }
+    
+    .item-deposito {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        padding: 8px 12px; 
+        background: white;
+        border: 1px solid #e2e8f0; 
+        border-radius: 6px;
+        font-size: 0.9em;
+    }
+
+    dialog {
+        background: white; 
+        padding: 25px; 
+        border-radius: 10px; 
+        border: none;
+        border-top: 4px solid var(--color-principal);
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        color: var(--color-texto);
+        max-width: 90vw;
+    }
+
+    dialog::backdrop {
+        background: rgba(15, 23, 42, 0.6); 
+        backdrop-filter: blur(3px);
+    }
+
+    dialog h5 { 
+        margin-top: 0; 
+        color: var(--color-texto); 
+        font-weight: 800; 
+        display: flex; 
+        align-items: center; 
+        margin-bottom: 20px;
+    }
+    
+    dialog label { 
+        display: block; 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        color: #475569; 
+        margin-bottom: 4px; 
+        text-transform: uppercase; 
+    }
+
+    .botones-modal { 
+        display: flex; 
+        gap: 10px; 
+        margin-top: 20px; 
+    }
+
+    .botones-modal button { 
+        flex: 1; 
+    }
+
+    .lista-preview-styled {
+        background: var(--bg-suave); 
+        padding: 15px 15px 15px 30px; 
+        border-radius: 6px; 
+        border: 1px solid var(--color-borde); 
+        margin-bottom: 20px; 
+        color: var(--color-texto); 
+        font-size: 0.9em; 
+        line-height: 1.6;
+    }
+</style>
+
+<div class="bloque-form" style="display: flex; justify-content: space-between; align-items: stretch; margin-bottom: 10px; padding: 0; overflow: hidden;">
+    <div style="padding: 20px; flex: 1; border-right: 1px solid #e2e8f0;">
+        <h4 style="margin: 0 0 12px 0; font-weight: 800; color: #0f172a; display: flex; align-items: center; font-size: 1.4rem;">
+            <i class="bi bi-folder-fill me-2" style="color: var(--color-principal);" aria-hidden="true"></i>
+            TRÁMITE: <span style="color: var(--color-principal); margin-left: 6px;">#{{ tramite.numero }}</span>
+        </h4>
+        <h4 style="margin: 0 0 12px 0; font-weight: 600; color: #0f172a; display: flex; align-items: center; font-size: 1.2rem;">
+            OPERADOR: <i style="font-weight: 100;">{{ tramite.operador|upper }} </i>
+        </h4>
+        <div style="display: flex; gap: 20px; font-size: 0.9rem; color: #475569;">
+            <div style="background: var(--bg-suave); padding: 4px 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                <strong style="color: #0f172a;">TIPO:</strong> {{ tramite.get_tipo_display|upper }}
+            </div>
+            <div style="background: var(--bg-suave); padding: 4px 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                <strong style="color: #0f172a;">LICENCIA:</strong> {{ tramite.get_licencia_display|upper }}
+            </div>
+        </div>
+    </div>
+    
+    <div style="padding: 15px 20px; background-color: var(--bg-suave); width: 45%;">
+        <div style="font-size: 0.85rem; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 8px;">
+            <i class="bi bi-files me-1" aria-hidden="true"></i> Estado de Documentación
+        </div>
+        
+        <div class="grid-documentos">
+            <div class="doc-card">
+                <div class="doc-titulo"><i class="bi bi-file-earmark-bar-graph" style="color: var(--color-principal);" aria-hidden="true"></i> Inf. Técnico</div>
+                {% if tramite.informe_tecnico %}
+                    <a href="{{ tramite.informe_tecnico.url }}" class="doc-ok" target="_blank"><i class="bi bi-eye" aria-hidden="true"></i> VER PDF</a>
+                {% else %}
+                    <span class="doc-falta"><i class="bi bi-x-circle" aria-hidden="true"></i> PENDIENTE</span>
+                {% endif %}
+            </div>
+            
+            <div class="doc-card">
+                <div class="doc-titulo"><i class="bi bi-file-earmark-ruled" style="color: var(--color-principal);" aria-hidden="true"></i> Inf. Legal</div>
+                {% if tramite.informe_legal %}
+                    <a href="{{ tramite.informe_legal.url }}" class="doc-ok" target="_blank"><i class="bi bi-eye" aria-hidden="true"></i> VER PDF</a>
+                {% else %}
+                    <span class="doc-falta"><i class="bi bi-x-circle" aria-hidden="true"></i> PENDIENTE</span>
+                {% endif %}
+            </div>
+
+            <div class="doc-card">
+                <div class="doc-titulo"><i class="bi bi-file-earmark-check" style="color: var(--color-principal);" aria-hidden="true"></i> Res. Admin.</div>
+                {% if tramite.resolucion_administrativa %}
+                    <a href="{{ tramite.resolucion_administrativa.url }}" class="doc-ok" target="_blank"><i class="bi bi-eye" aria-hidden="true"></i> VER PDF</a>
+                {% else %}
+                    <span class="doc-falta"><i class="bi bi-x-circle" aria-hidden="true"></i> PENDIENTE</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="contenedor-principal">
+    
+    <div class="columna-izquierda">
+        <div class="bloque-form">
+            <form method="POST" class="formulario-con-preview">
+                {% csrf_token %}
+                <h5 class="titulo-bloque" style="border-bottom: 2px solid var(--bg-suave); padding-bottom: 12px;">
+                    <i class="bi bi-plus-circle-fill me-2" aria-hidden="true"></i> REGISTRAR NUEVA TARJETA
+                </h5>
+                
+                <div class="subtitulo-bloque">Datos del Afiliado</div>
+                {{ form_afiliado.nombre_completo }}
+                <datalist id="lista_afiliados">
+                    {% for afiliado in afiliados_existentes %}
+                        <option value="{{ afiliado.nombre_completo }}"></option>
+                    {% endfor %}
+                </datalist>
+
+                <div class="subtitulo-bloque">Datos del Vehículo</div>
+                {{ form_vehiculo.as_p }}
+                
+                <button name="btn_tarjeta" type="submit" class="btn-custom btn-principal" style="margin-top: 15px;">
+                    <i class="bi bi-send-fill" aria-hidden="true"></i> ENVIAR DATOS DE TARJETA
+                </button>
+            </form>
+        </div>
+
+        <div style="text-align: right; margin-bottom: 15px;">
+            <a href="{% url 'tramite:vista' tramite.numero %}" class="btn-custom btn-gris d-inline-flex w-auto px-4 py-2 shadow-sm text-decoration-none">
+                <i class="bi bi-layout-text-window-reverse" aria-hidden="true"></i> Vista Previa del Trámite
+            </a>
+        </div>
+
+        <div class="bloque-form">
+            <h5 class="titulo-bloque" style="border-bottom: 2px solid var(--bg-suave); padding-bottom: 12px;">
+                <i class="bi bi-card-checklist me-2" aria-hidden="true"></i> TARJETAS GENERADAS
+            </h5>
+            <ul class="lista-estilizada">
+                {% for tarjeta in tarjetas %}
+                <li class="item-tarjeta">
+                    <div style="font-size: 0.9em;">
+                        <span style="background: var(--bg-suave); padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0; font-weight: 800; color: var(--color-principal); margin-right: 10px;">
+                            #{{ tarjeta.id }}
+                        </span>
+                        <strong style="color: #475569;">PLACA:</strong> <span style="color: #0f172a; font-weight: 600; margin-right: 12px;">{{ tarjeta.vehiculo.placa|upper }}</span>
+                        <strong style="color: #475569;">AFILIADO:</strong> <span style="color: #0f172a; font-weight: 600; margin-right: 12px;">{{ tarjeta.vehiculo.afiliado.nombre_completo|upper }}</span>
+                        <strong style="color: #475569;">TRANSPORTE:</strong> <span style="color: #0f172a; font-weight: 600;">{{ tarjeta.vehiculo.get_transporte_display }}</span>
+                        <strong style="color: #475569;">CAPACIDAD:</strong> <span style="color: #0f172a; font-weight: 600;">{{ tarjeta.vehiculo.capacidad}}</span>
+                    </div>
+                </li>
+                {% empty %}
+                <li style="color: #94a3b8; font-style: italic; text-align: center; padding: 20px; background: var(--bg-suave); border-radius: 6px;">
+                    <i class="bi bi-inbox fs-4 d-block mb-2" aria-hidden="true"></i> No hay tarjetas registradas aún.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="columna-derecha">
+        <div class="bloque-form" style="margin-bottom: 0;">
+            <div class="subtitulo-bloque" style="margin-top: 0;"><i class="bi bi-cloud-arrow-up-fill me-1" aria-hidden="true"></i> Subir Documentos</div>
+            <button class="btn-custom btn-accion mb-2" onclick="document.getElementById('modal-inf-tecnico').showModal()">Informe Técnico</button>
+            <button class="btn-custom btn-accion" onclick="document.getElementById('modal-inf-res').showModal()">Informe/Resolución</button>
+        </div>
+
+        <div class="bloque-form" style="margin-bottom: 0; background-color: var(--bg-suave);">
+            <div class="subtitulo-bloque" style="margin-top: 0; display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="bi bi-receipt me-1" aria-hidden="true"></i> Depósitos</span>
+                <button class="btn-custom btn-principal w-auto px-2 py-1" style="font-size: 0.75rem;" onclick="document.getElementById('modal-deposito').showModal()">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> AGREGAR
+                </button>
+            </div>
+            
+            <ul class="lista-estilizada mt-3">
+                {% for deposito in depositos %}
+                <li class="item-deposito">
+                    <div>
+                        <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 0.8rem;" aria-hidden="true"></i>
+                        <span style="font-family: monospace; font-weight: 700; color: #334155;">#{{ deposito.numero }}</span>
+                    </div>
+                    <strong style="color: var(--color-principal);">{{ deposito.monto }} Bs</strong>
+                </li>
+                {% empty %}
+                <li style="padding: 10px; text-align: center; color: #94a3b8; font-style: italic; border: 1px dashed #cbd5e1; border-radius: 6px;">
+                    Sin depósitos registrados.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="bloque-form" style="margin-bottom: 0;">
+            <div class="subtitulo-bloque" style="margin-top: 0;"><i class="bi bi-gear-fill me-1" aria-hidden="true"></i> Parámetros</div>
+            <button class="btn-custom btn-accion mb-2" onclick="document.getElementById('modal-marca').showModal()"><i class="bi bi-tag" aria-hidden="true"></i> Crear Marca</button>
+            <button class="btn-custom btn-accion" onclick="document.getElementById('modal-tipo').showModal()"><i class="bi bi-car-front" aria-hidden="true"></i> Crear Tipo Vehículo</button>
+        </div>
+    </div>
+</div>
+
+<dialog id="modal-inf-tecnico" style="width: 450px;">
+    <form method="POST" enctype="multipart/form-data" class="formulario-con-preview">
+        {% csrf_token %}
+        <h5><i class="bi bi-file-earmark-arrow-up me-2" aria-hidden="true"></i> INFORME TÉCNICO</h5>
+        <div class="mt-3">{{ form_informe_tecnico.as_p }}</div>
+        <div class="botones-modal">
+            <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modal-inf-tecnico').close()">Cancelar</button>
+            <button name="btn_inf_tecnico" type="submit" class="btn-custom btn-principal">SUBIR INFORME</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="modal-inf-res" style="width: 450px;">
+    <form method="POST" enctype="multipart/form-data" class="formulario-con-preview">
+        {% csrf_token %}
+        <h5><i class="bi bi-file-earmark-arrow-up me-2" aria-hidden="true"></i> INFORME Y RESOLUCIÓN</h5>
+        <div class="mt-3">{{ form_informe_resolucion.as_p }}</div>
+        <div class="botones-modal">
+            <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modal-inf-res').close()">Cancelar</button>
+            <button name="btn_inf_res" type="submit" class="btn-custom btn-principal">SUBIR DOCUMENTO</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="modal-deposito" style="width: 400px;">
+    <form method="POST" class="formulario-con-preview">
+        {% csrf_token %}
+        <h5><i class="bi bi-cash-stack me-2" aria-hidden="true"></i> AGREGAR DEPÓSITO</h5>
+        <div class="mt-3">{{ form_deposito.as_p }}</div>
+        <div class="botones-modal">
+            <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modal-deposito').close()">Cancelar</button>
+            <button name="btn_deposito" type="submit" class="btn-custom btn-principal">GUARDAR DEPÓSITO</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="modal-marca" style="width: 400px;">
+    <form method="POST" class="formulario-con-preview">
+        {% csrf_token %}
+        <h5><i class="bi bi-tags-fill me-2" aria-hidden="true"></i> CREAR MARCA</h5>
+        <div class="mt-3">{{ form_marcaVehiculo.as_p }}</div>
+        <div class="botones-modal">
+            <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modal-marca').close()">Cancelar</button>
+            <button name="btn_marcaV" type="submit" class="btn-custom btn-principal">GUARDAR MARCA</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="modal-tipo" style="width: 400px;">
+    <form method="POST" class="formulario-con-preview">
+        {% csrf_token %}
+        <h5><i class="bi bi-car-front-fill me-2" aria-hidden="true"></i> CREAR TIPO VEHÍCULO</h5>
+        <div class="mt-3">{{ form_tipoVehiculo.as_p }}</div>
+        <div class="botones-modal">
+            <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modal-tipo').close()">Cancelar</button>
+            <button name="btn_tipoV" type="submit" class="btn-custom btn-principal">GUARDAR TIPO</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="modal-confirmacion" style="width: 450px;">
+    <h5 style="color: var(--color-principal);">
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i> Confirmar Datos
+    </h5>
+    <p style="color: #475569; font-size: 0.9em; margin-bottom: 15px;">Por favor, revisa la información antes de guardarla en el sistema:</p>
+    
+    <div id="preview-content" class="lista-preview-styled"></div>
+
+    <div class="botones-modal">
+        <button id="btn-cancelar-submit" class="btn-custom btn-gris">Cancelar</button>
+        <button id="btn-confirmar-submit" class="btn-custom btn-principal"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar</button>
+    </div>
+</dialog>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        let formularioPendiente = null;
+        let botonPresionado = null;
+        const modalConfirmacion = document.getElementById('modal-confirmacion');
+        const previewContent = document.getElementById('preview-content');
+
+        const sanitizarTexto = (texto) => {
+            return texto ? texto.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '<em>Vacío</em>';
+        };
+
+        document.querySelectorAll('.formulario-con-preview button[type="submit"]').forEach(boton => {
+            boton.addEventListener('click', (e) => {
+                botonPresionado = e.currentTarget.name;
+            });
+        });
+
+        document.querySelectorAll('.formulario-con-preview').forEach(form => {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault(); 
+                formularioPendiente = e.target; 
+
+                let htmlPreview = '<ul style="margin: 0; padding-left: 20px;">';
+                const datos = new FormData(e.target);
+                
+                for (let [llave, valor] of datos.entries()) {
+                    if (llave !== 'csrfmiddlewaretoken' && valor !== '') {
+                        let nombreLegible = llave.split('-').pop().toUpperCase().replace(/_/g, ' ');
+                        
+                        if (valor instanceof File) {
+                            valor = valor.name || 'Ningún archivo adjunto';
+                        }
+                        
+                        htmlPreview += `<li style="margin-bottom: 6px;"><strong>${nombreLegible}:</strong> <span style="color: var(--color-principal); font-weight: 600;">${sanitizarTexto(valor)}</span></li>`;
+                    }
+                }
+                htmlPreview += '</ul>';
+
+                previewContent.innerHTML = htmlPreview;
+                
+                const parentDialog = e.target.closest('dialog');
+                if (parentDialog) parentDialog.close();
+                
+                modalConfirmacion.showModal();
+            });
+        });
+
+        document.getElementById('btn-confirmar-submit').addEventListener('click', (e) => {
+            if (formularioPendiente) {
+                const btn = e.currentTarget;
+                btn.innerHTML = `<i class="bi bi-hourglass-split" aria-hidden="true"></i> Guardando...`;
+                btn.disabled = true;
+
+                if (botonPresionado) {
+                    const inputOculto = document.createElement('input');
+                    inputOculto.type = 'hidden';
+                    inputOculto.name = botonPresionado;
+                    inputOculto.value = '1';
+                    formularioPendiente.appendChild(inputOculto);
+                }
+                formularioPendiente.submit();
+            }
+        });
+
+        document.getElementById('btn-cancelar-submit').addEventListener('click', () => {
+            modalConfirmacion.close();
+            
+            if (formularioPendiente) {
+                const parentDialog = formularioPendiente.closest('dialog');
+                if (parentDialog) parentDialog.showModal();
+            }
+        });
+    });
+</script>
+{% endblock %}

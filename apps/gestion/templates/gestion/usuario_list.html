@@ -1,0 +1,273 @@
+{% extends 'gestion/base_admin.html' %}
+
+{% block title %}Directorio de Usuarios{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 animate-fade-in">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
+        <div>
+            <h2 class="h3 mb-1 fw-bold" style="color: var(--text-main);">
+                <i class="fas fa-users-cog me-2" style="color: var(--accent-blue);"></i> 
+                Directorio de Usuarios
+            </h2>
+            <p class="text-muted mb-0 fs-7">Administración centralizada de cuentas, perfiles y niveles de acceso institucional.</p>
+        </div>
+        <div>
+            <a href="{% url 'gestion:crear_usuario' %}" class="btn btn-primary-modern d-flex align-items-center gap-2 shadow-sm">
+                <i class="fas fa-user-plus"></i> NUEVO USUARIO
+            </a>
+        </div>
+    </div>
+
+    <div class="card-panel p-0 border-0 shadow-sm overflow-hidden">
+        
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light flex-wrap gap-3">
+            <div class="text-muted fs-8 fw-bold text-uppercase tracking-wider">
+                <i class="fas fa-id-badge me-2"></i> Cuentas Registradas ({{ usuarios.count }})
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search text-muted"></i>
+                <input type="text" class="form-control filter-input-search" id="searchInput" placeholder="Buscar por Username, CI o Nombre...">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="usersTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th scope="col" class="ps-4 text-muted text-uppercase fs-8 fw-bold">Cuenta / Acceso</th>
+                        <th scope="col" class="text-muted text-uppercase fs-8 fw-bold">Información Personal</th>
+                        <th scope="col" class="text-muted text-uppercase fs-8 fw-bold">Contacto</th>
+                        <th scope="col" class="text-muted text-uppercase fs-8 fw-bold">Nivel de Privilegio</th>
+                        <th scope="col" class="text-muted text-uppercase fs-8 fw-bold">Estado</th>
+                        <th scope="col" class="pe-4 text-end text-muted text-uppercase fs-8 fw-bold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody style="background-color: var(--bg-surface);">
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-soft {% if usuario.rol == 'sa' %}av-indigo{% elif usuario.rol == 'a' %}av-blue{% else %}av-gray{% endif %}">
+                                    {{ usuario.username|make_list|first|upper }}
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold text-dark fs-6">{{ usuario.username }}</span>
+                                    <span class="text-muted fs-8 font-monospace">ID: USR-{{ usuario.id|stringformat:"04d" }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td>
+                            {% if usuario.perfil %}
+                                <div class="d-flex flex-column">
+                                    <span class="text-dark fw-semibold fs-7">{{ usuario.perfil.nombre }} {{ usuario.perfil.apellido }}</span>
+                                    <span class="text-muted fs-8"><i class="fas fa-id-card me-1 opacity-50"></i> {{ usuario.perfil.ci }}</span>
+                                </div>
+                            {% else %}
+                                <span class="text-muted fs-8 fst-italic">Sin datos de perfil</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            {% if usuario.perfil %}
+                                <div class="d-flex flex-column gap-0">
+                                    <span class="text-muted fs-8"><i class="fas fa-envelope me-1 opacity-50"></i> {{ usuario.perfil.email|default:"-" }}</span>
+                                    <span class="text-muted fs-8"><i class="fas fa-phone-alt me-1 opacity-50"></i> {{ usuario.perfil.numero_celular|default:"-" }}</span>
+                                </div>
+                            {% else %}
+                                <span class="text-muted fs-8">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            {% if usuario.rol == 'sa' %}
+                                <span class="badge bg-indigo-subtle text-indigo px-2 py-1 fs-9 fw-bold">Super Admin</span>
+                            {% elif usuario.rol == 'a' %}
+                                <span class="badge bg-blue-subtle text-blue px-2 py-1 fs-9 fw-bold">Administrador</span>
+                            {% else %}
+                                <span class="badge bg-slate-subtle text-slate px-2 py-1 fs-9 fw-bold">Usuario Base</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            {% if usuario.is_active %}
+                                <span class="status-pill sp-active">Activo</span>
+                            {% else %}
+                                <span class="status-pill sp-inactive">Suspendido</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="pe-4 text-end">
+                            <div class="d-inline-flex gap-2">
+                                <a href="{% url 'gestion:editar_usuario' usuario.id %}" class="btn-action-light" title="Editar">
+                                    <i class="fas fa-user-edit"></i>
+                                </a>
+                                
+                                {% if request.user.id != usuario.id %}
+                                    <button type="button" class="btn-action-light btn-del" 
+                                            onclick="openDeleteModal('{{ usuario.id }}', '{{ usuario.username }}', '{{ usuario.perfil.nombre|default:'' }} {{ usuario.perfil.apellido|default:'' }}', '{{ usuario.get_rol_display }}')" 
+                                            title="Revocar Acceso">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                {% else %}
+                                    <button type="button" class="btn-action-light disabled opacity-25" title="No puedes eliminar tu propia cuenta" disabled>
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="d-flex flex-column align-items-center justify-content-center text-muted">
+                                <i class="fas fa-users-slash fa-3x mb-3 opacity-25"></i>
+                                <h6 class="fw-bold text-dark">No se encontraron usuarios</h6>
+                                <p class="fs-8">Prueba ajustando los criterios de búsqueda.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-circle text-danger fs-1"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">¿Revocar acceso?</h5>
+                <p class="text-muted fs-8 mb-4">Esta acción inhabilitará permanentemente las credenciales de <strong id="modalUsername" class="text-dark"></strong>.</p>
+                
+                <div class="d-flex flex-column gap-2">
+                    <form id="deleteForm" method="POST" action="">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger w-100 fw-bold">CONFIRMAR BAJA</button>
+                    </form>
+                    <button type="button" class="btn btn-light w-100 fw-bold text-muted" data-bs-dismiss="modal">CANCELAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* VARIABLES LOCALES REFINADAS */
+    :root {
+        --bg-indigo-subtle: #eef2ff;
+        --text-indigo: #4f46e5;
+        --bg-blue-subtle: #eff6ff;
+        --text-blue: #2563eb;
+        --bg-slate-subtle: #f1f5f9;
+        --text-slate: #475569;
+    }
+
+    .fs-7 { font-size: 0.875rem; }
+    .fs-8 { font-size: 0.75rem; }
+    .fs-9 { font-size: 0.65rem; }
+    .font-monospace { font-family: 'JetBrains Mono', 'Courier New', monospace; }
+
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* BOTONES */
+    .btn-primary-modern {
+        background-color: var(--accent-blue);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+    .btn-primary-modern:hover {
+        background-color: #4338ca;
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    /* BUSCADOR */
+    .search-box { position: relative; width: 320px; }
+    .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; z-index: 5; }
+    .filter-input-search {
+        width: 100%;
+        background-color: var(--bg-surface) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 8px;
+        padding: 0.5rem 1rem 0.5rem 2.2rem;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+    .filter-input-search:focus {
+        border-color: var(--accent-blue) !important;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        outline: none;
+    }
+
+    /* AVATARES SUAVES */
+    .avatar-soft {
+        width: 38px; height: 38px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 1rem;
+    }
+    .av-indigo { background: var(--bg-indigo-subtle); color: var(--text-indigo); }
+    .av-blue { background: var(--bg-blue-subtle); color: var(--text-blue); }
+    .av-gray { background: var(--bg-slate-subtle); color: var(--text-slate); }
+
+    /* BADGES */
+    .badge { border-radius: 6px; letter-spacing: 0.3px; }
+    .bg-indigo-subtle { background-color: var(--bg-indigo-subtle); color: var(--text-indigo); }
+    .bg-blue-subtle { background-color: var(--bg-blue-subtle); color: var(--text-blue); }
+    .bg-slate-subtle { background-color: var(--bg-slate-subtle); color: var(--text-slate); }
+
+    /* ESTADO PILL */
+    .status-pill {
+        font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        padding: 4px 10px; border-radius: 20px;
+    }
+    .sp-active { background: #dcfce7; color: #15803d; }
+    .sp-inactive { background: #f1f5f9; color: #64748b; }
+
+    /* ACCIONES */
+    .btn-action-light {
+        width: 32px; height: 32px; border-radius: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #f8fafc; border: 1px solid #e2e8f0;
+        color: #64748b; transition: all 0.2s; text-decoration: none;
+    }
+    .btn-action-light:hover { background: white; color: var(--accent-blue); border-color: var(--accent-blue); }
+    .btn-del:hover { color: #ef4444; border-color: #fca5a5; background: #fef2f2; }
+</style>
+
+<script>
+    // Buscador optimizado
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll('#usersTable tbody tr');
+        
+        rows.forEach(row => {
+            if(row.querySelector('td[colspan]')) return;
+            let text = row.innerText.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
+    function openDeleteModal(userId, username) {
+        document.getElementById('modalUsername').textContent = username;
+        let form = document.getElementById('deleteForm');
+        form.action = "{% url 'gestion:eliminar_usuario' 0 %}".replace('0', userId);
+        
+        let deleteModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+        deleteModal.show();
+    }
+</script>
+{% endblock %}

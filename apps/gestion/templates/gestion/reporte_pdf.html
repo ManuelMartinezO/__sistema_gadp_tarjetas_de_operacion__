@@ -1,0 +1,273 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte Operativo</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm 1.5cm;
+            
+            @frame footer {
+                -pdf-frame-content: footerContent;
+                bottom: 0.5cm;
+                margin-left: 1.5cm;
+                margin-right: 1.5cm;
+                height: 1cm;
+                text-align: right;
+                font-size: 8px;
+                color: #000;
+            }
+        }
+
+        body { 
+            font-family: Helvetica, sans-serif; 
+            font-size: 9px; 
+            color: #000000; 
+            line-height: 1.1; 
+        }
+
+        .header-independiente {
+            border-bottom: 2px solid #000;
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+        }
+
+        .header-independiente h1 {
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0 0 2px 0;
+            text-align: left;
+        }
+
+        .header-independiente .meta-info {
+            font-size: 9px;
+            color: #444;
+            text-transform: uppercase;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+
+        th { 
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            font-weight: bold; 
+            text-align: left; 
+            padding: 4px 2px;
+            font-size: 8px; 
+            text-transform: uppercase;
+            background-color: #f5f5f5;
+        }
+
+        td { 
+            padding: 3px 2px; 
+            border-bottom: 0.5px solid #cccccc;
+            font-size: 8px; 
+        }
+        
+        .text-center { 
+            text-align: center; 
+        }
+
+        .bloque-seccion {
+            page-break-after: always;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="footerContent">
+        Reporte Operativo General | Página <pdf:pagenumber> de <pdf:pagecount> | Generado el {% now "d/m/Y H:i" %}
+    </div>
+
+    {% for mes_anio, datos in meses_ordenados %}
+
+        {% if datos.afiliados %}
+        <div class="bloque-seccion">
+            <div class="header-independiente">
+                <h1>Reporte Operativo - GADP</h1>
+                <div class="meta-info">Período: <strong>{{ mes_anio }}</strong> | Módulo: <strong>1. Padrón de Afiliados</strong></div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%" class="text-center">ID</th>
+                        <th style="width: 55%">Nombre Completo</th>
+                        <th style="width: 30%" class="text-center">Fecha de Registro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in datos.afiliados %}
+                    <tr>
+                        <td class="text-center">{{ a.id }}</td>
+                        <td>{{ a.nombre_completo }}</td>
+                        <td class="text-center">{{ a.fecha_registro|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if datos.operadores %}
+        <div class="bloque-seccion">
+            <div class="header-independiente">
+                <h1>Reporte Operativo - GADP</h1>
+                <div class="meta-info">Período: <strong>{{ mes_anio }}</strong> | Módulo: <strong>2. Operadores (Org/Fed)</strong></div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%" class="text-center">ID</th>
+                        <th style="width: 35%">Organización</th>
+                        <th style="width: 35%">Federación</th>
+                        <th style="width: 15%" class="text-center">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in datos.operadores %}
+                    <tr>
+                        <td class="text-center">{{ o.id }}</td>
+                        <td>{{ o.organizacion.nombre }}</td>
+                        <td>{{ o.federacion.nombre }}</td>
+                        <td class="text-center">{{ o.fecha_registro|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if datos.vehiculos %}
+        <div class="bloque-seccion">
+            <div class="header-independiente">
+                <h1>Reporte Operativo - GADP</h1>
+                <div class="meta-info">Período: <strong>{{ mes_anio }}</strong> | Módulo: <strong>3. Parque Automotor</strong></div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%" class="text-center">Placa</th>
+                        <th style="width: 35%">Marca / Tipo</th>
+                        <th style="width: 15%" class="text-center">Modelo</th>
+                        <th style="width: 20%">Servicio</th>
+                        <th style="width: 15%" class="text-center">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in datos.vehiculos %}
+                    <tr>
+                        <td class="text-center">{{ v.placa }}</td>
+                        <td>{{ v.marca.nombre }} - {{ v.tipo.tipo }}</td>
+                        <td class="text-center">{{ v.modelo }}</td>
+                        <td>{{ v.get_transporte_display }}</td>
+                        <td class="text-center">{{ v.fecha_registro|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if datos.tramites %}
+        <div class="bloque-seccion">
+            <div class="header-independiente">
+                <h1>Reporte Operativo - GADP</h1>
+                <div class="meta-info">Período: <strong>{{ mes_anio }}</strong> | Módulo: <strong>4. Control de Trámites</strong></div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%" class="text-center">Trámite N°</th>
+                        <th style="width: 30%">Tipo</th>
+                        <th style="width: 20%" class="text-center">Estado</th>
+                        <th style="width: 20%">Usuario Asignado</th>
+                        <th style="width: 15%" class="text-center">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in datos.tramites %}
+                    <tr>
+                        <td class="text-center">{{ t.numero }}</td>
+                        <td>{{ t.get_tipo_display }}</td>
+                        <td class="text-center">{{ t.get_estado_display }}</td>
+                        <td>{{ t.usuario.username }}</td>
+                        <td class="text-center">{{ t.fecha_registro|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if datos.tarjetas %}
+        <div class="bloque-seccion">
+            <div class="header-independiente">
+                <h1>Reporte Operativo - GADP</h1>
+                <div class="meta-info">Período: <strong>{{ mes_anio }}</strong> | Módulo: <strong>5. Tarjetas Emitidas</strong></div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%" class="text-center">Trámite N°</th>
+                        <th style="width: 20%" class="text-center">Vehículo</th>
+                        <th style="width: 25%" class="text-center">Licencia</th>
+                        <th style="width: 20%" class="text-center">Estado</th>
+                        <th style="width: 20%" class="text-center">Válida Hasta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tj in datos.tarjetas %}
+                    <tr>
+                        <td class="text-center">{{ tj.tramite.numero }}</td>
+                        <td class="text-center">{{ tj.vehiculo.placa }}</td>
+                        <td class="text-center">{{ tj.licencia }}</td>
+                        <td class="text-center">{{ tj.get_estado_display }}</td>
+                        <td class="text-center">{{ tj.valida_hasta|date:"d/m/Y"|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if datos.logs %}
+        <div class="bloque-seccion">
+            <div class="header-independiente">
+                <h1>Reporte Operativo - GADP</h1>
+                <div class="meta-info">Período: <strong>{{ mes_anio }}</strong> | Módulo: <strong>6. Auditoría (Logs)</strong></div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%" class="text-center">Fecha/Hora</th>
+                        <th style="width: 20%">Usuario</th>
+                        <th style="width: 15%" class="text-center">IP</th>
+                        <th style="width: 15%" class="text-center">Acción</th>
+                        <th style="width: 35%">Módulo / Registro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in datos.logs %}
+                    <tr>
+                        <td class="text-center">{{ log.timestamp|date:"d/m/Y H:i" }}</td>
+                        <td>{{ log.actor.username|default:"Sistema" }}</td>
+                        <td class="text-center">{{ log.remote_addr|default:"-" }}</td>
+                        <td class="text-center">{% if log.action == 0 %}Creado{% elif log.action == 1 %}Actualizado{% else %}Eliminado{% endif %}</td>
+                        <td>{{ log.content_type.name }} ({{ log.object_repr }})</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    {% endfor %}
+
+</body>
+</html>

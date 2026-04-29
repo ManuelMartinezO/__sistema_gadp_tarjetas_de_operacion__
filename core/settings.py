@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+import os
 
 from pathlib import Path
 
@@ -24,8 +25,10 @@ SECRET_KEY = 'django-insecure-5a-83p^!#@(c^&_z#s#*p&_iroz66-b12i67a7@jyrd0xk#uss
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = []
+
+# DEBUG = False
+# ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '*']
 
 
 # Application definition
@@ -38,7 +41,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'apps.usuario'
+    'apps.usuario',
+    'apps.tramite',
+    'apps.tarjeta_de_operacion',
+    'apps.afiliado',
+    'apps.operador',
+    'apps.vehiculo',
+    'apps.gestion',
+
+    'auditlog',
 ]
 
 MIDDLEWARE = [
@@ -47,8 +58,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'auditlog.middleware.AuditlogMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'apps.gestion.middleware.RequestMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -56,7 +70,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -107,7 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/La_Paz'
 
 USE_I18N = True
 
@@ -118,8 +132,27 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuración para usar el modelo de usuario personalizado
+AUTH_USER_MODEL ='usuario.Usuario'
+
+# Redirecciones del sistema de autenticación
+LOGIN_URL = 'login'              # A dónde enviar si no están logueados
+LOGIN_REDIRECT_URL = 'home'    # A dónde enviar tras un login exitoso
+LOGOUT_REDIRECT_URL = 'login'    # A dónde enviar tras cerrar sesión
+
+# URL que se verá en el navegador (ej. 127.0.0.1:8000/media/tramites/archivo.pdf)
+MEDIA_URL = '/media/'
+# Carpeta física en tu proyecto donde se guardarán
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# settings.py
+# (Solo si estás detrás de un proxy/servidor web en producción)
+AUDITLOG_USE_X_FORWARDED_FOR = True

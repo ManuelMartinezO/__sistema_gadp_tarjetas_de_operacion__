@@ -1,0 +1,451 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --color-principal: #8b0000;
+        --color-hover: #6a0000;
+        --color-texto: #1e293b;
+        --color-borde: #cbd5e1;
+        --bg-suave: #f8fafc;
+    }
+
+    .header-pagina {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--bg-suave);
+    }
+
+    .titulo-principal {
+        color: var(--color-texto);
+        font-weight: 800;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .contenedor-principal {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+
+    .columna { 
+        flex: 1; 
+        min-width: 300px; 
+    }
+    
+    .bloque-form {
+        border: 1px solid var(--color-borde);
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .subtitulo-bloque {
+        color: var(--color-principal);
+        font-weight: 800;
+        font-size: 0.95rem;
+        margin-top: 0;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--bg-suave);
+        padding-bottom: 10px;
+    }
+
+    .lista-datos {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .lista-datos li {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.95em;
+    }
+
+    .label-mini {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+    }
+
+    .valor-dato {
+        color: var(--color-texto);
+        font-weight: 600;
+        font-size: 1.05em;
+    }
+
+    .btn-custom {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.9em;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-decoration: none;
+    }
+
+    .btn-principal { 
+        background-color: var(--color-principal); 
+        color: white; 
+    }
+
+    .btn-principal:hover { 
+        background-color: var(--color-hover); 
+        transform: translateY(-1px); 
+        box-shadow: 0 4px 6px rgba(139,0,0,0.2); 
+        color: white;
+    }
+    
+    .btn-gris { 
+        background-color: #f1f5f9; 
+        color: #475569; 
+        border: 1px solid var(--color-borde); 
+    }
+
+    .btn-gris:hover { 
+        background-color: #e2e8f0; 
+        color: var(--color-texto); 
+    }
+
+    .btn-accion { 
+        background-color: white; 
+        color: var(--color-texto); 
+        border: 1px solid var(--color-borde); 
+    }
+
+    .btn-accion:hover { 
+        background-color: var(--bg-suave); 
+        border-color: var(--color-principal); 
+        color: var(--color-principal); 
+    }
+
+    .link-custom { 
+        color: var(--color-principal); 
+        text-decoration: none; 
+        font-weight: 700; 
+        font-size: 0.85em; 
+    }
+
+    .link-custom:hover { 
+        text-decoration: underline; 
+    }
+
+    dialog {
+        background: white; 
+        padding: 25px; 
+        border-radius: 10px; 
+        border: none;
+        border-top: 4px solid var(--color-principal);
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        color: var(--color-texto);
+        max-width: 90vw;
+    }
+
+    dialog::backdrop {
+        background: rgba(15, 23, 42, 0.6); 
+        backdrop-filter: blur(3px);
+    }
+
+    dialog h3 { 
+        margin-top: 0; 
+        color: var(--color-texto); 
+        font-weight: 800; 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        margin-bottom: 20px;
+    }
+    
+    dialog label { 
+        display: block; 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        color: #475569; 
+        margin-bottom: 4px; 
+        text-transform: uppercase; 
+    }
+
+    dialog input[type="text"], 
+    dialog input[type="number"], 
+    dialog select {
+        width: 100%; 
+        padding: 8px 12px; 
+        border: 1px solid #94a3b8; 
+        border-radius: 4px;
+        background-color: var(--bg-suave); 
+        color: var(--color-texto); 
+        font-size: 0.95em;
+        margin-bottom: 12px; 
+        box-sizing: border-box; 
+        transition: border-color 0.2s;
+    }
+
+    dialog input:focus, 
+    dialog select:focus {
+        outline: none; 
+        border-color: var(--color-principal); 
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+    }
+
+    .botones-modal { 
+        display: flex; 
+        gap: 10px; 
+        margin-top: 20px; 
+    }
+
+    .botones-modal button { 
+        flex: 1; 
+    }
+</style>
+
+<div>
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'vehiculo:lista_vehiculos' %}" class="btn-custom btn-gris d-inline-flex w-auto mb-3">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Volver a Vehículos
+        </a>
+    </div>
+
+    <div class="header-pagina">
+        <h2 class="titulo-principal">
+            <i class="bi bi-car-front-fill" style="color: var(--color-principal);" aria-hidden="true"></i> 
+            Unidad: <span style="color: var(--color-principal);">{{ vehiculo.placa|upper }}</span>
+        </h2>
+
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            <button class="btn-custom btn-principal w-auto" onclick="document.getElementById('modalEdicion').showModal()">
+                <i class="bi bi-pencil-square me-1" aria-hidden="true"></i> Actualizar Datos
+            </button>
+        {% endif %}
+    </div>
+
+    <div class="contenedor-principal">
+        
+        <div class="columna">
+            <div class="bloque-form">
+                <h3 class="subtitulo-bloque"><i class="bi bi-gear-fill me-2" aria-hidden="true"></i> Especificaciones Técnicas</h3>
+                <ul class="lista-datos">
+                    <li>
+                        <span class="label-mini">Marca y Modelo</span>
+                        <span class="valor-dato">{{ vehiculo.marca.nombre }} <span style="color: #64748b; font-weight: 500;">(Mod: {{ vehiculo.modelo }})</span></span>
+                    </li>
+                    <li>
+                        <span class="label-mini">Tipo de Vehículo</span>
+                        <span class="valor-dato">{{ vehiculo.tipo.tipo }}</span>
+                    </li>
+                    <li>
+                        <span class="label-mini">Número de Chasis</span>
+                        <span class="valor-dato" style="font-family: monospace; letter-spacing: 1px;">{{ vehiculo.chasis|upper }}</span>
+                    </li>
+                    <li style="flex-direction: row; gap: 20px; align-items: center; margin-top: 5px;">
+                        <div>
+                            <span class="label-mini d-block">Servicio</span>
+                            <span class="badge" style="background: var(--bg-suave); color: var(--color-principal); border: 1px solid var(--color-borde); padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: 700;">
+                                {% if vehiculo.transporte == 'p' %}
+                                    <i class="bi bi-people-fill me-1" aria-hidden="true"></i> Pasajeros
+                                {% else %}
+                                    <i class="bi bi-box-seam-fill me-1" aria-hidden="true"></i> Carga
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="label-mini d-block">Capacidad</span>
+                            <span class="valor-dato">{{ vehiculo.capacidad }} <span style="font-size: 0.85em; color: #64748b; font-weight: 500;">{% if vehiculo.transporte == 'p' %}personas{% else %}toneladas{% endif %}</span></span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="columna">
+            <div class="bloque-form">
+                <h3 class="subtitulo-bloque"><i class="bi bi-person-vcard-fill me-2" aria-hidden="true"></i> Datos del Titular</h3>
+                <ul class="lista-datos">
+                    <li style="background: var(--bg-suave); padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <span class="label-mini"><i class="bi bi-building me-1" aria-hidden="true"></i> Afiliado Legal</span>
+                        <span class="valor-dato" style="display: flex; justify-content: space-between; align-items: center;">
+                            {{ vehiculo.afiliado.nombre_completo|upper }}
+                            <a href="{% url 'afiliado:detalle_afiliado' vehiculo.afiliado.id %}" class="link-custom"><i class="bi bi-folder2-open" aria-hidden="true"></i> Expediente</a>
+                        </span>
+                    </li>
+                    <li style="padding: 12px;">
+                        <span class="label-mini"><i class="bi bi-person me-1" aria-hidden="true"></i> Propietario Registrado</span>
+                        <span class="valor-dato">{{ vehiculo.propietario|default:"NO ESPECIFICADO"|upper }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<dialog id="modalEdicion" style="width: 480px;">
+    <h3><i class="bi bi-pencil-square" style="color: var(--color-principal);" aria-hidden="true"></i> Editar Vehículo</h3>
+    <form id="formVehiculo" method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="submit_vehiculo" value="1">
+        
+        <div>
+            <label for="{{ form_vehiculo.placa.id_for_label }}">Placa:</label>
+            {{ form_vehiculo.placa }}
+        </div>
+        
+        <div>
+            <label for="{{ form_vehiculo.afiliado.id_for_label }}">Afiliado Legal:</label>
+            {{ form_vehiculo.afiliado }}
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: flex-start;">
+            <div style="flex: 1;">
+                <label for="{{ form_vehiculo.marca.id_for_label }}">Marca:</label>
+                {{ form_vehiculo.marca }}
+            </div>
+            <button type="button" class="btn-custom btn-accion w-auto" style="margin-top: 23px; padding: 8px 12px;" onclick="document.getElementById('modalMarca').showModal()" title="Agregar Nueva Marca" aria-label="Agregar Nueva Marca">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: flex-start;">
+            <div style="flex: 1;">
+                <label for="{{ form_vehiculo.tipo.id_for_label }}">Tipo:</label>
+                {{ form_vehiculo.tipo }}
+            </div>
+            <button type="button" class="btn-custom btn-accion w-auto" style="margin-top: 23px; padding: 8px 12px;" onclick="document.getElementById('modalTipo').showModal()" title="Agregar Nuevo Tipo" aria-label="Agregar Nuevo Tipo">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        {% for field in form_vehiculo %}
+            {% if field.name != 'placa' and field.name != 'marca' and field.name != 'tipo' and field.name != 'afiliado' %}
+                <div>
+                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                    {{ field }}
+                </div>
+            {% endif %}
+        {% endfor %}
+        
+        <div class="botones-modal">
+            <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modalEdicion').close()">Cancelar</button>
+            <button type="button" class="btn-custom btn-principal" onclick="mostrarConfirmacion()">Continuar <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="modalConfirmacion" style="width: 420px;">
+    <h3><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> Confirmar Cambios</h3>
+    <p style="color: #475569; font-size: 0.9em; margin-bottom: 15px;">Por favor, revisa la información antes de guardarla:</p>
+    
+    <ul id="listaVistaPrevia" style="background: var(--bg-suave); padding: 12px 25px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 20px; color: #1e293b; font-size: 0.9em; max-height: 250px; overflow-y: auto; list-style: none;"></ul>
+    
+    <div class="botones-modal">
+        <button type="button" class="btn-custom btn-gris" onclick="volverAEdicion()"><i class="bi bi-pencil" aria-hidden="true"></i> Volver a Editar</button>
+        <button type="button" class="btn-custom btn-principal" onclick="document.getElementById('formVehiculo').submit()"><i class="bi bi-check-lg" aria-hidden="true"></i> Confirmar</button>
+    </div>
+</dialog>
+
+<dialog id="modalMarca" style="width: 350px;">
+    <h3><i class="bi bi-tag-fill" style="color: var(--color-principal);" aria-hidden="true"></i> Nueva Marca</h3>
+    <form method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="submit_marca" value="1">
+        {{ form_marca.as_p }}
+        
+        <div class="botones-modal">
+            <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modalMarca').close()">Cerrar</button>
+            <button type="submit" class="btn-custom btn-principal">Guardar Marca</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="modalTipo" style="width: 350px;">
+    <h3><i class="bi bi-car-front-fill" style="color: var(--color-principal);" aria-hidden="true"></i> Nuevo Tipo</h3>
+    <form method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="submit_tipo" value="1">
+        {{ form_tipo.as_p }}
+        
+        <div class="botones-modal">
+            <button type="button" class="btn-custom btn-gris" onclick="document.getElementById('modalTipo').close()">Cerrar</button>
+            <button type="submit" class="btn-custom btn-principal">Guardar Tipo</button>
+        </div>
+    </form>
+</dialog>
+
+<script>
+    const mostrarConfirmacion = () => {
+        try {
+            const formulario = document.getElementById('formVehiculo');
+            const listaPreview = document.getElementById('listaVistaPrevia');
+            
+            if (!formulario || !listaPreview) throw new Error("Elementos del formulario no encontrados");
+
+            listaPreview.innerHTML = ''; 
+
+            Array.from(formulario.elements).forEach(elemento => {
+                const esElementoValido = elemento.name && 
+                                         elemento.name !== 'csrfmiddlewaretoken' && 
+                                         elemento.name !== 'submit_vehiculo' && 
+                                         elemento.tagName !== 'BUTTON';
+
+                if (esElementoValido) {
+                    let valorMostrado = elemento.value.trim();
+                    
+                    if (elemento.tagName === 'SELECT' && elemento.selectedIndex >= 0) {
+                        valorMostrado = elemento.options[elemento.selectedIndex].text;
+                    }
+                    
+                    const li = document.createElement('li');
+                    li.style.marginBottom = '6px';
+                    li.style.paddingLeft = '0';
+                    
+                    const nombreLimpio = elemento.name.toUpperCase().replace(/_/g, ' ');
+                    const valorSeguro = valorMostrado ? valorMostrado.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '<em>Vacío</em>';
+                    
+                    li.innerHTML = `<strong>${nombreLimpio}:</strong> <span style="color: var(--color-principal); font-weight: 600;">${valorSeguro}</span>`;
+                    listaPreview.appendChild(li);
+                }
+            });
+            
+            document.getElementById('modalEdicion').close();
+            document.getElementById('modalConfirmacion').showModal();
+        } catch (error) {
+            console.error("Error al preparar la confirmación:", error);
+        }
+    };
+
+    const volverAEdicion = () => {
+        try {
+            document.getElementById('modalConfirmacion').close();
+            document.getElementById('modalEdicion').showModal();
+        } catch (error) {
+            console.error("Error al cambiar de modal:", error);
+        }
+    };
+</script>
+{% endblock %}

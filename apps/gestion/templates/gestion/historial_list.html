@@ -1,0 +1,278 @@
+{% extends 'gestion/base_admin.html' %} 
+
+{% block title %}Logs de Auditoría{% endblock %}
+{% block header_title %}Auditoría del Sistema{% endblock %}
+
+{% block content %}
+<style>
+    /* Estilos para que los inputs mantengan el diseño claro y suave */
+    .filter-input {
+        background-color: var(--bg-surface) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border-color) !important;
+        font-size: 0.85rem;
+    }
+    .filter-input:focus {
+        border-color: var(--accent-blue) !important;
+        box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.1) !important; /* Indigo con baja opacidad */
+    }
+    .filter-label {
+        background-color: var(--bg-body) !important;
+        color: var(--text-muted) !important;
+        border: 1px solid var(--border-color) !important;
+        font-size: 0.75rem;
+        border-right: none !important;
+    }
+    /* Ajuste para el icono del calendario en modo claro */
+    ::-webkit-calendar-picker-indicator {
+        filter: none; /* Quitamos el invert para que se vea normal en fondo claro */
+        opacity: 0.6;
+        cursor: pointer;
+    }
+</style>
+
+<div class="card-panel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0 fw-bold" style="color: var(--text-main);">
+            <i class="fas fa-shield-halved me-2" style="color: var(--accent-blue);"></i> Registro de Actividades
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-spinner fa-spin text-primary d-none" id="loadingSpinner"></i>
+            <span class="badge rounded-pill px-3 py-2" style="background-color: var(--bg-body); color: var(--text-muted); border: 1px solid var(--border-color);">
+                Total: {{ logs.paginator.count }} registros
+            </span>
+        </div>
+    </div>
+
+    <form id="filterForm" class="row g-2 mb-4 align-items-center">
+        <div class="col-6 col-lg-2">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text filter-label fw-semibold">Desde</span>
+                <input type="date" name="date_start" class="form-control filter-input" value="{{ date_start }}">
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text filter-label fw-semibold">Hasta</span>
+                <input type="date" name="date_end" class="form-control filter-input" value="{{ date_end }}">
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-2">
+            <input type="text" name="user" class="form-control form-control-sm filter-input" placeholder="Usuario..." value="{{ user_filter }}" autocomplete="off" style="height: 31px;">
+        </div>
+        <div class="col-12 col-sm-6 col-lg-2">
+            <input type="text" name="ip" class="form-control form-control-sm filter-input" placeholder="Dirección IP..." value="{{ ip_filter }}" autocomplete="off" style="height: 31px;">
+        </div>
+        <div class="col-12 col-sm-6 col-lg-2">
+            <select name="action" class="form-select form-select-sm filter-input" style="height: 31px;">
+                <option value="">Todas las acciones...</option>
+                <option value="0" {% if action_filter == '0' %}selected{% endif %}>Creado</option>
+                <option value="1" {% if action_filter == '1' %}selected{% endif %}>Actualizado</option>
+                <option value="2" {% if action_filter == '2' %}selected{% endif %}>Eliminado</option>
+            </select>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-2 d-flex gap-2">
+            <input type="text" name="module" class="form-control form-control-sm filter-input" placeholder="Módulo..." value="{{ module_filter }}" autocomplete="off" style="height: 31px;">
+            <button type="button" id="btnReset" class="btn btn-sm" style="background-color: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-muted); height: 31px; width: 40px;" title="Limpiar Filtros">
+                <i class="fas fa-filter-circle-xmark"></i>
+            </button>
+        </div>
+    </form>
+
+    <div id="tablaContainer" class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th scope="col" class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 0.5px;">Fecha y Hora</th>
+                    <th scope="col" class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 0.5px;">Usuario</th>
+                    <th scope="col" class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 0.5px;">Dirección IP</th>
+                    <th scope="col" class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 0.5px;">Acción</th>
+                    <th scope="col" class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 0.5px;">Módulo (Registro)</th>
+                    <th scope="col" class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 0.5px;">Detalle de Cambios</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td class="text-nowrap" style="font-size: 0.85rem; color: var(--text-main);">
+                        {{ log.timestamp|date:"d M Y" }} <br>
+                        <small class="text-muted fw-medium">{{ log.timestamp|date:"H:i" }} hs</small>
+                    </td>
+                    
+                    <td>
+                        {% if log.actor %}
+                            <span class="fw-bold text-dark">{{ log.actor.username }}</span>
+                        {% else %}
+                            <span class="badge bg-light text-warning border border-warning border-opacity-25"><i class="fas fa-robot me-1"></i> Sistema</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if log.remote_addr %}
+                            <span class="text-muted" style="font-size: 0.8rem; font-family: 'Courier New', monospace;">
+                                <i class="fas fa-network-wired me-1 opacity-50"></i>{{ log.remote_addr }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted small italic">Local/System</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if log.action == 0 %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2">
+                                <i class="fas fa-plus-circle me-1"></i> Creado
+                            </span>
+                        {% elif log.action == 1 %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2">
+                                <i class="fas fa-pen me-1"></i> Actualizado
+                            </span>
+                        {% elif log.action == 2 %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2">
+                                <i class="fas fa-trash me-1"></i> Eliminado
+                            </span>
+                        {% endif %}
+                    </td>
+                    
+                    <td>
+                        <span class="fw-bold text-uppercase" style="font-size: 0.75rem; color: var(--accent-blue);">{{ log.content_type.name }}</span><br>
+                        <small class="text-muted d-inline-block text-truncate fw-medium" style="max-width: 150px;">{{ log.object_repr }}</small>
+                    </td>
+
+                    <td style="max-width: 320px;">
+                        {% if log.changes_dict %}
+                            <div class="p-2 rounded bg-light border border-light-subtle" style="max-height: 100px; overflow-y: auto; font-size: 0.8rem;">
+                                {% for field, values in log.changes_dict.items %}
+                                    <div class="mb-2">
+                                        <div class="fw-bold text-dark border-bottom border-light-subtle mb-1 pb-1" style="font-size: 0.75rem;">{{ field }}</div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-danger text-decoration-line-through small">{{ values.0|default:"(vacio)" }}</span> 
+                                            <i class="fas fa-long-arrow-alt-right text-muted opacity-50"></i> 
+                                            <span class="text-success fw-semibold">{{ values.1|default:"(vacio)" }}</span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <span class="text-muted small">Sin cambios específicos</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fas fa-filter d-block mb-2 fs-3 opacity-25"></i>
+                        No se encontraron registros que coincidan con los filtros.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="paginacionContainer">
+        {% if logs.has_other_pages %}
+        <nav class="mt-4 d-flex justify-content-between align-items-center">
+            <small class="text-muted">Página {{ logs.number }} de {{ logs.paginator.num_pages }}</small>
+            <ul class="pagination pagination-sm mb-0">
+                {% if logs.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center" href="?page={{ logs.previous_page_number }}&{{ query_string }}" style="color: var(--accent-blue); background: var(--bg-body); width: 32px; height: 32px;">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for i in logs.paginator.page_range %}
+                    {% if logs.number == i %}
+                        <li class="page-item active">
+                            <span class="page-link rounded-circle mx-1 border-0 fw-bold" style="background-color: var(--accent-blue); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;">{{ i }}</span>
+                        </li>
+                    {% elif i > logs.number|add:'-3' and i < logs.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link rounded-circle mx-1 border-0 text-muted d-flex align-items-center justify-content-center" href="?page={{ i }}&{{ query_string }}" style="background: transparent; width: 32px; height: 32px;">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if logs.has_next %}
+                    <li class="page-item">
+                        <a class="page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center" href="?page={{ logs.next_page_number }}&{{ query_string }}" style="color: var(--accent-blue); background: var(--bg-body); width: 32px; height: 32px;">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Se mantiene la misma lógica de Fetch API sin cambios
+    const filterForm = document.getElementById('filterForm');
+    const filterInputs = filterForm.querySelectorAll('input, select');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const btnReset = document.getElementById('btnReset');
+    let debounceTimer;
+
+    filterForm.addEventListener('submit', function(e) {
+        e.preventDefault(); 
+    });
+
+    const performSearch = () => {
+        if(loadingSpinner) loadingSpinner.classList.remove('d-none'); 
+
+        const formData = new FormData(filterForm);
+        const searchParams = new URLSearchParams(formData);
+        searchParams.set('page', 1); 
+
+        const url = new URL(window.location.href.split('?')[0]);
+        url.search = searchParams.toString();
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            const newTable = doc.getElementById('tablaContainer');
+            if(newTable) document.getElementById('tablaContainer').innerHTML = newTable.innerHTML;
+            
+            const currentPaginacion = document.getElementById('paginacionContainer');
+            const newPaginacion = doc.getElementById('paginacionContainer');
+            if(currentPaginacion && newPaginacion) {
+                currentPaginacion.innerHTML = newPaginacion.innerHTML;
+            }
+            
+            const currentBadge = document.querySelector('.badge');
+            const newBadge = doc.querySelector('.badge');
+            if (currentBadge && newBadge) {
+                currentBadge.innerHTML = newBadge.innerHTML;
+            }
+
+            window.history.pushState({}, '', url);
+            if(loadingSpinner) loadingSpinner.classList.add('d-none');
+        })
+        .catch(error => {
+            console.error('Error al filtrar:', error);
+            if(loadingSpinner) loadingSpinner.classList.add('d-none');
+        });
+    };
+
+    filterInputs.forEach(input => {
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(performSearch, 400); 
+        });
+    });
+
+    if(btnReset) {
+        btnReset.addEventListener('click', () => {
+            filterForm.reset();
+            performSearch(); 
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends 'gestion/base_admin.html' %}
+
+{% block title %}
+    {% if accion == 'Editar' %}Actualizar Usuario{% else %}Registrar Nuevo Usuario{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 animate-fade-in">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
+        <div>
+            <h2 class="h3 mb-1 fw-bold" style="color: var(--text-main);">
+                <i class="{% if accion == 'Editar' %}fas fa-user-edit{% else %}fas fa-user-plus{% endif %} me-3" style="color: var(--accent-blue);"></i> 
+                {% if accion == 'Editar' %}Actualizar Cuenta{% else %}Alta de Usuario{% endif %}
+            </h2>
+            <p class="text-muted mb-0 fs-7">
+                {% if accion == 'Editar' %}
+                    Modificación de credenciales de acceso y actualización de perfil en el sistema institucional.
+                {% else %}
+                    Provisión de nuevas credenciales y asignación de perfil para el personal del sistema.
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'gestion:usuario_list' %}" class="btn btn-back-light d-flex align-items-center gap-2 shadow-sm">
+                <i class="fas fa-arrow-left"></i> Volver al Directorio
+            </a>
+        </div>
+    </div>
+
+    <form method="POST" class="needs-validation custom-form-light">
+        {% csrf_token %}
+        
+        <div class="row g-4 mb-4">
+            
+            <div class="col-lg-4 col-md-5">
+                <div class="card-panel h-100 p-0 border-0 shadow-sm overflow-hidden">
+                    <div class="p-3 border-bottom bg-light">
+                        <h6 class="mb-0 fw-bold text-uppercase fs-8" style="color: var(--accent-blue); letter-spacing: 0.5px;">
+                            <i class="fas fa-shield-alt me-2"></i>Seguridad de Cuenta
+                        </h6>
+                    </div>
+                    <div class="p-4 bg-white">
+                        {% for field in usuario_form %}
+                            <div class="mb-4">
+                                <label class="form-label text-dark fs-8 fw-bold text-uppercase mb-2">
+                                    {{ field.label }}
+                                </label>
+                                
+                                {{ field }}
+                                
+                                {% if field.help_text %}
+                                    <div class="form-text text-muted mt-2 fs-8">
+                                        <i class="fas fa-info-circle me-1 opacity-50"></i>
+                                        {{ field.help_text|striptags }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% for error in field.errors %}
+                                    <div class="text-danger fs-8 mt-1 fw-semibold animate-shake">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>{{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 col-md-7">
+                <div class="card-panel h-100 p-0 border-0 shadow-sm overflow-hidden">
+                    <div class="p-3 border-bottom bg-light">
+                        <h6 class="mb-0 fw-bold text-uppercase fs-8" style="color: var(--text-main); letter-spacing: 0.5px;">
+                            <i class="fas fa-id-card-clip me-2" style="color: var(--accent-blue);"></i>Información Personal
+                        </h6>
+                    </div>
+                    <div class="p-4 bg-white">
+                        <div class="row g-4">
+                            {% for field in perfil_form %}
+                                <div class="col-md-6">
+                                    <label class="form-label text-dark fs-8 fw-bold text-uppercase mb-2">
+                                        {{ field.label }}
+                                    </label>
+                                    
+                                    {{ field }}
+                                    
+                                    {% for error in field.errors %}
+                                        <div class="text-danger fs-8 mt-1 fw-semibold animate-shake">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ error }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="card-panel p-4 text-center border-0 shadow-sm mb-5 bg-white">
+            <button type="submit" class="btn btn-indigo-modern px-5 py-2 fs-6 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center">
+                {% if accion == 'Editar' %}
+                    <i class="fas fa-save me-2"></i> ACTUALIZAR REGISTRO
+                {% else %}
+                    <i class="fas fa-user-check me-2"></i> CONFIRMAR ALTA
+                {% endif %}
+            </button>
+            <p class="text-muted fs-8 mt-3 mb-0">
+                Al guardar, se generará una entrada de auditoría vinculada a su cuenta de administrador.
+            </p>
+        </div>
+    </form>
+
+</div>
+
+<style>
+    /* VARIABLES REFINADAS */
+    .fs-7 { font-size: 0.875rem; }
+    .fs-8 { font-size: 0.75rem; }
+
+    .animate-fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+    .animate-shake { animation: shake 0.3s ease-in-out; }
+
+    /* BOTONES */
+    .btn-back-light {
+        background-color: var(--bg-surface);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .btn-back-light:hover {
+        background-color: white;
+        color: var(--accent-blue);
+        border-color: var(--accent-blue);
+    }
+
+    .btn-indigo-modern {
+        background-color: var(--accent-blue);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .btn-indigo-modern:hover {
+        background-color: #4338ca;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2) !important;
+        color: white;
+    }
+
+    /* ESTILOS DE FORMULARIO DJANGO */
+    .custom-form-light input, 
+    .custom-form-light select,
+    .custom-form-light textarea {
+        width: 100%;
+        background-color: #ffffff;
+        border: 1px solid #d1d5db;
+        color: #1f2937;
+        border-radius: 8px;
+        padding: 0.65rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .custom-form-light input:focus, 
+    .custom-form-light select:focus,
+    .custom-form-light textarea:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        background-color: #fff;
+    }
+
+    /* Mejora para los textos de ayuda (Passwords) */
+    .custom-form-light .helptext ul {
+        list-style: none;
+        padding-left: 0;
+        margin-top: 0.5rem;
+        color: #6b7280;
+    }
+    
+    .custom-form-light .helptext li {
+        font-size: 0.75rem;
+        position: relative;
+        padding-left: 1.2rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .custom-form-light .helptext li::before {
+        content: "\f00c";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        left: 0;
+        font-size: 0.65rem;
+        color: #10b981;
+    }
+</style>
+{% endblock %}  

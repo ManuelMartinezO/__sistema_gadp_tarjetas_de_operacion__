@@ -1,0 +1,373 @@
+{% extends 'gestion/base_admin.html' %}
+
+{% block title %}Control de Trámites{% endblock %}
+{% block header_title %}Operaciones / Trámites{% endblock %}
+
+{% block content %}
+<style>
+    /* REFINAMIENTO DE INPUTS PARA MODO CLARO */
+    .django-form-light input, 
+    .django-form-light select, 
+    .django-form-light textarea,
+    #searchInput { 
+        background-color: var(--bg-surface) !important; 
+        color: var(--text-main) !important; 
+        border: 1px solid var(--border-color) !important; 
+        width: 100%; 
+        padding: 0.5rem 0.75rem; 
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+    .django-form-light input:focus, 
+    .django-form-light select:focus, 
+    .django-form-light textarea:focus,
+    #searchInput:focus { 
+        border-color: var(--accent-blue) !important; 
+        outline: none; 
+        box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.1) !important; 
+    }
+    .django-form-light label { 
+        font-size: 0.75rem; 
+        color: var(--text-main); 
+        margin-bottom: 0.3rem; 
+        font-weight: 700; 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Estilo claro para los depósitos en la tabla */
+    .deposito-item {
+        background-color: #f8fafc; /* Gris super suave */
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 6px 10px;
+        margin-bottom: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.2s;
+    }
+    .deposito-item:hover {
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+</style>
+
+<div class="card-panel shadow-sm">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h5 class="mb-1 fw-bold" style="color: var(--text-main);">
+                <i class="fas fa-file-signature me-2" style="color: var(--accent-blue);"></i> Control de Trámites
+            </h5>
+            <p class="text-muted small mb-0">Gestión de expedientes operativos y pagos asociados.</p>
+        </div>
+        <form id="formBuscador" class="d-flex" style="max-width: 400px; width: 100%;">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="fas fa-search" id="iconoBusqueda"></i>
+                </span>
+                <input type="text" id="searchInput" name="q" value="{{ q }}" class="form-control border-start-0 ps-0" placeholder="N° Trámite, Usuario, Organización..." autocomplete="off">
+            </div>
+        </form>
+    </div>
+
+    <div id="tablaContainer" class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th class="text-muted text-uppercase fw-bold py-3 ps-4" style="font-size: 0.7rem; width: 10%;">N° Trámite</th>
+                    <th class="text-muted text-uppercase fw-bold py-3" style="font-size: 0.7rem; width: 25%;">Usuario y Operador</th>
+                    <th class="text-muted text-uppercase fw-bold py-3" style="font-size: 0.7rem; width: 15%;">Detalles</th>
+                    <th class="text-muted text-uppercase fw-bold py-3" style="font-size: 0.7rem; width: 35%;">Depósitos Asociados</th>
+                    <th class="text-muted text-uppercase fw-bold py-3 text-center pe-4" style="font-size: 0.7rem; width: 15%;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody style="background-color: var(--bg-surface);">
+                {% for t in registros %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td class="ps-4">
+                        <span class="fw-bold" style="color: var(--accent-blue); font-size: 1.1rem; font-family: 'Courier New', monospace;">
+                            #{{ t.numero }}
+                        </span>
+                    </td>
+                    
+                    <td>
+                        <span class="text-dark fw-bold"><i class="fas fa-user-circle text-muted me-1 opacity-50"></i>{{ t.usuario.username }}</span><br>
+                        <small class="text-muted d-block text-truncate fw-medium" style="max-width: 250px;">
+                            <i class="fas fa-building text-muted me-1 opacity-50"></i>{{ t.operador.organizacion.nombre }}
+                        </small>
+                    </td>
+
+                    <td>
+                        {% if t.estado == 'p' %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 w-100 mb-1 px-2 py-1">Pendiente</span>
+                        {% elif t.estado == 'v' %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 w-100 mb-1 px-2 py-1">Válido</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 w-100 mb-1 px-2 py-1">Observado</span>
+                        {% endif %}
+                        <small class="text-muted d-block text-center fw-medium" style="font-size: 0.7rem;">{{ t.get_tipo_display }}</small>
+                    </td>
+
+                    <td>
+                        <div style="max-height: 110px; overflow-y: auto; padding-right: 5px;">
+                            {% for dep in t.deposito_tramite.all %}
+                                <div class="deposito-item">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted fw-semibold" style="font-size: 0.75rem; font-family: monospace;">N°: {{ dep.numero }}</span>
+                                        <span class="text-success fw-bold" style="font-size: 0.8rem;">
+                                            Bs. {{ dep.monto }} <small class="text-muted fw-normal ms-1">({{ dep.fecha_deposito|date:"d/m/Y" }})</small>
+                                        </span>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-sm btn-link text-primary p-0 mx-1" onclick="abrirModalEdicionDeposito('{{ dep.id }}', '{{ dep.numero|escapejs }}', '{{ dep.monto }}', '{{ dep.fecha_deposito|date:"Y-m-d" }}')" title="Editar Depósito"><i class="fas fa-pen"></i></button>
+                                        <button type="button" class="btn btn-sm btn-link text-danger p-0 mx-1" onclick="abrirModalEliminacionDeposito('{{ dep.id }}', '{{ dep.numero|escapejs }}')" title="Eliminar Depósito"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <span class="text-muted small fst-italic"><i class="fas fa-exclamation-circle me-1 opacity-50"></i>Sin depósitos registrados</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+
+                    <td class="text-center pe-4">
+                        <div class="d-inline-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-light border" onclick="abrirModalEdicionTramite('{{ t.id }}', '{{ t.numero }}', '{{ t.tipo }}', '{{ t.estado }}', '{{ t.licencia }}', '{{ t.usuario.id }}', '{{ t.operador.id }}', '{{ t.fojas|default:"" }}', '{{ t.rutas|escapejs }}', '{{ t.observacion|escapejs }}')" title="Editar Trámite">
+                                <i class="fas fa-pen text-primary"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light border" onclick="abrirModalEliminacionTramite('{{ t.id }}', '{{ t.numero }}')" title="Eliminar Trámite">
+                                <i class="fas fa-trash text-danger"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="fas fa-folder-open fs-1 mb-3 opacity-25"></i><br>
+                        No se encontraron trámites registrados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="paginacionContainer">
+        {% if registros.has_other_pages %}
+        <nav class="mt-4 d-flex justify-content-end">
+            <ul class="pagination pagination-sm gap-1 mb-0">
+                {% if registros.has_previous %}
+                    <li class="page-item"><a class="page-link border-0 rounded" href="?page={{ registros.previous_page_number }}{% if q %}&q={{ q }}{% endif %}" style="color: var(--accent-blue); background: var(--bg-body);"><i class="fas fa-chevron-left"></i></a></li>
+                {% endif %}
+                {% for i in registros.paginator.page_range %}
+                    {% if registros.number == i %}
+                        <li class="page-item active"><span class="page-link rounded fw-bold" style="background-color: var(--accent-blue); border: none;">{{ i }}</span></li>
+                    {% elif i > registros.number|add:'-3' and i < registros.number|add:'3' %}
+                        <li class="page-item"><a class="page-link border-0 rounded text-muted" href="?page={{ i }}{% if q %}&q={{ q }}{% endif %}">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if registros.has_next %}
+                    <li class="page-item"><a class="page-link border-0 rounded" href="?page={{ registros.next_page_number }}{% if q %}&q={{ q }}{% endif %}" style="color: var(--accent-blue); background: var(--bg-body);"><i class="fas fa-chevron-right"></i></a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="modalEdicionTramite" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom">
+                <h6 class="modal-title fw-bold text-dark"><i class="fas fa-pen text-primary me-2"></i>Editar Trámite N° <span id="titulo_numero_tramite" class="text-primary"></span></h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body django-form-light p-4">
+                <form id="formEdicionTramite" method="POST" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="submit_editar_tramite" value="1">
+                    <input type="hidden" name="tramite_id" id="edit_tramite_id">
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3"><label>Tipo de Trámite:</label>{{ form_tramite.tipo }}</div>
+                        <div class="col-md-4 mb-3"><label>Estado:</label>{{ form_tramite.estado }}</div>
+                        <div class="col-md-4 mb-3"><label>Licencia:</label>{{ form_tramite.licencia }}</div>
+                        
+                        <div class="col-md-6 mb-3"><label>Usuario Asignado:</label>{{ form_tramite.usuario }}</div>
+                        <div class="col-md-6 mb-3"><label>Operador (Org/Fed):</label>{{ form_tramite.operador }}</div>
+                        
+                        <div class="col-md-12 mb-3"><label>Rutas:</label>{{ form_tramite.rutas }}</div>
+                        
+                        <div class="col-md-4 mb-3"><label>N° Fojas:</label>{{ form_tramite.fojas }}</div>
+                        <div class="col-md-8 mb-3"><label>Observaciones:</label>{{ form_tramite.observacion }}</div>
+
+                        <div class="col-md-6 mb-3"><label>Banco:</label>{{ form_tramite.banco }}</div>
+                        <div class="col-md-6 mb-3"><label>Cuenta:</label>{{ form_tramite.cuenta }}</div>
+
+                        <hr class="my-3"> <div class="col-md-6 mb-3"><label>Encargado Firma 1:</label>{{ form_tramite.encargado_firma_1 }}</div>
+                        <div class="col-md-6 mb-3"><label>Área Firma 1:</label>{{ form_tramite.area_firma_1 }}</div>
+
+                        <div class="col-md-6 mb-3"><label>Encargado Firma 2:</label>{{ form_tramite.encargado_firma_2 }}</div>
+                        <div class="col-md-6 mb-3"><label>Área Firma 2:</label>{{ form_tramite.area_firma_2 }}</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top">
+                <button type="button" class="btn btn-white border fw-bold text-muted" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary fw-bold" style="background-color: var(--accent-blue); border: none;" onclick="document.getElementById('formEdicionTramite').submit()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEliminacionTramite" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-circle text-danger fs-1 opacity-75"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-2">¿Eliminar Trámite?</h6>
+                <p class="text-muted small mb-4">Se eliminará el Trámite N° <strong id="texto_eliminar_tramite" class="text-danger font-monospace"></strong> y todos sus depósitos asociados de forma permanente.</p>
+                
+                <form method="POST" action="" class="d-flex flex-column gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="submit_eliminar_tramite" value="1">
+                    <input type="hidden" name="tramite_id" id="del_tramite_id">
+                    <button type="submit" class="btn btn-danger fw-bold">ELIMINAR TODO</button>
+                    <button type="button" class="btn btn-light border text-muted fw-bold" data-bs-dismiss="modal">CANCELAR</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEdicionDeposito" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom">
+                <h6 class="modal-title fw-bold text-dark"><i class="fas fa-money-bill-wave text-success me-2"></i>Editar Depósito</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body django-form-light p-4">
+                <form id="formEdicionDeposito" method="POST" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="submit_editar_deposito" value="1">
+                    <input type="hidden" name="deposito_id" id="edit_deposito_id">
+                    <div class="mb-3"><label>N° Depósito/Transacción:</label>{{ form_deposito.numero }}</div>
+                    <div class="mb-3"><label>Monto (Bs.):</label>{{ form_deposito.monto }}</div>
+                    <div class="mb-3"><label>Fecha de Depósito:</label>{{ form_deposito.fecha_deposito }}</div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top">
+                <button type="button" class="btn btn-white border fw-bold text-muted" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success fw-bold" onclick="document.getElementById('formEdicionDeposito').submit()">Guardar Depósito</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEliminacionDeposito" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-triangle text-danger fs-1 opacity-75"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-2">¿Eliminar Depósito?</h6>
+                <p class="text-muted small mb-4">Se borrará el depósito N° <strong id="texto_eliminar_deposito" class="text-danger font-monospace"></strong>. Esta acción afectará el balance del trámite.</p>
+                
+                <form method="POST" action="" class="d-flex flex-column gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="submit_eliminar_deposito" value="1">
+                    <input type="hidden" name="deposito_id" id="del_deposito_id">
+                    <button type="submit" class="btn btn-danger fw-bold">ELIMINAR DEPÓSITO</button>
+                    <button type="button" class="btn btn-light border text-muted fw-bold" data-bs-dismiss="modal">CANCELAR</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Lógica de búsqueda AJAX
+    const searchInput = document.getElementById('searchInput');
+    let debounceTimer;
+    document.getElementById('formBuscador').addEventListener('submit', e => e.preventDefault());
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        document.getElementById('iconoBusqueda').className = 'fas fa-spinner fa-spin text-primary';
+        debounceTimer = setTimeout(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('q', this.value);
+            url.searchParams.set('page', 1);
+
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.text())
+            .then(html => {
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                document.getElementById('tablaContainer').innerHTML = doc.getElementById('tablaContainer').innerHTML;
+                document.getElementById('paginacionContainer').innerHTML = doc.getElementById('paginacionContainer').innerHTML || '';
+                window.history.pushState({}, '', url);
+                document.getElementById('iconoBusqueda').className = 'fas fa-search';
+            });
+        }, 350); 
+    });
+
+    // Instancias de los Modales
+    let modalEdicionTramiteObj, modalEliminacionTramiteObj;
+    let modalEdicionDepositoObj, modalEliminacionDepositoObj;
+    
+    document.addEventListener("DOMContentLoaded", () => {
+        modalEdicionTramiteObj = new bootstrap.Modal(document.getElementById('modalEdicionTramite'));
+        modalEliminacionTramiteObj = new bootstrap.Modal(document.getElementById('modalEliminacionTramite'));
+        modalEdicionDepositoObj = new bootstrap.Modal(document.getElementById('modalEdicionDeposito'));
+        modalEliminacionDepositoObj = new bootstrap.Modal(document.getElementById('modalEliminacionDeposito'));
+    });
+
+    // --- Funciones para TRÁMITES ---
+    function abrirModalEdicionTramite(id, numero, tipo, estado, licencia, usuario, operador, fojas, rutas, observacion) {
+        document.getElementById('edit_tramite_id').value = id;
+        document.getElementById('titulo_numero_tramite').textContent = numero;
+        
+        document.getElementById('id_tipo').value = tipo;
+        document.getElementById('id_estado').value = estado;
+        document.getElementById('id_licencia').value = licencia;
+        document.getElementById('id_usuario').value = usuario;
+        document.getElementById('id_operador').value = operador;
+        document.getElementById('id_fojas').value = fojas;
+        document.getElementById('id_rutas').value = rutas;
+        document.getElementById('id_observacion').value = observacion;
+        
+        modalEdicionTramiteObj.show();
+    }
+
+    function abrirModalEliminacionTramite(id, numero) {
+        document.getElementById('del_tramite_id').value = id;
+        document.getElementById('texto_eliminar_tramite').textContent = numero;
+        modalEliminacionTramiteObj.show();
+    }
+
+    // --- Funciones para DEPÓSITOS ---
+    function abrirModalEdicionDeposito(id, numero, monto, fecha) {
+        document.getElementById('edit_deposito_id').value = id;
+        const form = document.getElementById('formEdicionDeposito');
+        form.querySelector('[name="numero"]').value = numero;
+        form.querySelector('[name="monto"]').value = monto.replace(',', '.'); 
+        form.querySelector('[name="fecha_deposito"]').value = fecha;
+        
+        modalEdicionDepositoObj.show();
+    }
+
+    function abrirModalEliminacionDeposito(id, numero) {
+        document.getElementById('del_deposito_id').value = id;
+        document.getElementById('texto_eliminar_deposito').textContent = numero;
+        modalEliminacionDepositoObj.show();
+    }
+</script>
+{% endblock %}

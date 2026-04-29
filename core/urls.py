@@ -15,8 +15,27 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.conf.urls import handler404
+from django.shortcuts import render
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('apps.usuario.urls')),
+    path('', include('apps.tramite.urls')),
+    path('', include('apps.operador.urls')),
+    path('', include('apps.afiliado.urls')),
+    path('', include('apps.vehiculo.urls')),
+    path('gestion/', include('apps.gestion.urls')),
+    path('', include('apps.tarjeta_de_operacion.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+def error_404_view(request, exception):
+    return render(request, '404.html', status=404)
+
+handler404 = error_404_view

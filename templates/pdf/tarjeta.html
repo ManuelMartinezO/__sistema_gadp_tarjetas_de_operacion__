@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tarjeta {{ tarjeta.vehiculo.placa }}</title>
+    <style>
+        /* =======================================================
+           CONFIGURACIÓN PÁGINA (XHTML2PDF)
+           ======================================================= */
+        @page {
+            size: A4 portrait;
+            /* Margen izquierdo grande para respetar el papel pre-impreso */
+            margin: 0.5cm 4cm 2cm 0.5cm; 
+        }
+        
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 10pt; /* Reducido de 10pt a 9pt */
+            color: #000;
+            /* CORRECCIÓN: line-height a 1 en lugar de 0 para evitar superposición vertical */
+            line-height: 1; 
+        }
+
+        /* Título Centrado */
+        .titulo-tarjeta {
+            text-align: center;
+            font-size: 6pt;
+            font-weight: bold;
+        }
+        .titulo-tarjeta p {
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Tabla de Datos Personales y Vehículo */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5px; 
+            margin-top: 10px;
+        }
+        .data-table td {
+            padding: 1px 2px; 
+            vertical-align: top;
+        }
+        .lbl {
+            font-weight: bold;
+            font-size: 8pt;
+            width: 18%; 
+        }
+        .val {
+            font-size: 8pt;
+            text-transform: uppercase;
+        }
+
+        /* Sección de Placa y QR */
+        .placa-qr-table {
+            width: 100%;
+            margin-bottom: 5px; 
+        }
+        .placa-table {
+            border-collapse: collapse;
+            text-align: center;
+        }
+        .placa-box {
+            vertical-align: middle;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18pt; 
+            padding: 3px;
+            font-weight: bold;
+            border: 1.5px solid #000;
+            background-color: #fff;
+        }
+        .qr-image {
+            width: 100px; 
+            height: 100px;
+        }
+
+        /* Rutas y Fechas */
+        .rutas-box {
+            font-size: 8pt;
+            font-weight: bold;
+            margin-bottom: 10px; 
+        }
+        .rutas-val {
+            font-weight: normal;
+            font-size: 6pt;
+            /* CORRECCIÓN: Al cambiar a <div> más abajo, display: block ya es natural */
+            margin-top: 2px;
+            text-transform: uppercase;
+        }
+
+        .fechas-table {
+            width: 100%;
+            font-size: 8pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .fechas-table span {
+            font-weight: normal;
+        }
+
+        /* Firmas de Autoridades */
+        .firmas-table {
+            width: 100%;
+            text-align: center;
+        }
+        .firma-nombre {
+            margin: 0;
+            font-size: 8pt;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .firma-cargo {
+            margin: 0;
+            font-size: 8pt;
+            font-weight: bold;
+            color: #333;
+        }
+        .tabla-info-impresion {
+            width: 100%; /* Añadido para estabilizar cabecera */
+            font-size: 6pt;
+            margin-bottom: 60px;
+        }
+        .tabla-info-impresion-info {
+            text-align: right;
+        }
+        .contenedor-firmas {
+            margin-top: 70px;
+        }
+    </style>
+</head>
+<body>
+
+    <div style="text-align: right; font-size: 6pt; margin-bottom: 5px;">
+        <p></p>
+    </div>
+    
+    <table class="tabla-info-impresion">
+        <tr>
+            <td>{% now "d/m/y, H:i a" %}</td>
+            <td class="tabla-info-impresion-info"><b>IMPRESIÓN DE TARJETAS INTERPROVINCIALES</b></td>
+        </tr>
+    </table>
+
+    <div class="titulo-tarjeta">
+        <p>LICENCIA DE OPERACIÓN PARA EL TRANSPORTE AUTOMOTOR</p>
+        {% if tarjeta.tipo_tarjeta == '001' %}
+            <p>INTERPROVINCIAL</p>
+        {% elif tarjeta.tipo_tarjeta == '002' %}
+            <p>INTERPROVINCIAL - ATL</p>
+        {% elif tarjeta.tipo_tarjeta == '003' %}
+            <p>INTERPROVINCIAL - CONFEDERADO</p>
+        {% elif tarjeta.tipo_tarjeta == '004' %}
+            <p>INTERPROVINCIAL - CONFEDERADO - SCZ</p>
+        {% elif tarjeta.tipo_tarjeta == '005' %}
+            <p>INTERPROVINCIAL - COOPERATIVAS</p>
+        {% endif %}
+    </div>
+
+    <table class="data-table">
+        <tr>
+            <td class="lbl">OPERADOR:</td>
+            <td class="val" colspan="3"><b>{{ tarjeta.operador.organizacion }} AFILIADO A {{ tarjeta.operador.federacion }}</b></td>
+        </tr>
+        <tr>
+            <td class="lbl">AFILIADO:</td>
+            <td class="val" colspan="3">{{ tarjeta.afiliado }}</td>
+        </tr>
+        <tr>
+            <td class="lbl" style="width: 18%;">MODELO:</td>
+            <td class="val" style="width: 32%;">{{ tarjeta.vehiculo.modelo }}</td>
+            <td class="lbl" style="width: 18%;">CAPACIDAD:</td>
+            <td class="val" style="width: 32%;">{{ tarjeta.vehiculo.capacidad|default:"N/D" }}</td>
+        </tr>
+        <tr>
+            <td class="lbl" style="width: 18%;">REGISTRO:</td>
+            <td class="val" style="width: 32%;"><b>{{ tarjeta.id }}</b></td>
+            <td class="lbl" style="width: 18%;">CHASIS:</td>
+            <td class="val" style="width: 32%;">{{ tarjeta.vehiculo.chasis|default:"N/D" }}</td>
+        </tr>
+        <tr>
+            <td class="lbl" style="width: 18%;">CATEGORÍA:</td>
+            <td class="val" style="width: 32%;">{{ tarjeta.vehiculo.get_transporte_display }}</td>
+            <td class="lbl" style="width: 18%;">MARCA:</td>
+            <td class="val" style="width: 32%;">{{ tarjeta.vehiculo.marca.nombre }}</td>
+        </tr>
+    </table>
+
+    <table class="placa-qr-table">
+        <tr>
+            <td style="width: 30%; text-align: left; vertical-align: middle;">
+                <table class="placa-table">
+                    <tr>
+                        <td class="placa-box"><b>{{ tarjeta.vehiculo.placa }}</b></td>
+                    </tr>
+                </table>
+            </td>
+            <td style="width: 70%; text-align: left; vertical-align: middle; padding-left: 1px;">
+                <img src="{{ qr_data_uri }}" alt="QR Code" class="qr-image">
+            </td>
+        </tr>
+    </table>
+
+    <div class="rutas-box">
+        RUTAS AUTORIZADAS:
+        <div class="rutas-val">
+            {{ tarjeta.ruta }}
+        </div>
+    </div>
+
+    <table class="fechas-table">
+        <tr>
+            <td style="width: 30%;">
+                LICENCIA VALIDA DE: <span>{{ tarjeta.fecha_emision|date:"d/m/Y"|default:"Pendiente" }}</span>
+            </td>
+            <td style="width: 70%;">
+                AL: <span>{{ tarjeta.valida_hasta|date:"d/m/Y"|default:"Pendiente" }}</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="contenedor-firmas">
+        <table class="firmas-table">
+            <tr>
+                <td style="width: 50%; vertical-align: top; padding-right: 5px;">
+                    <div class="firma-nombre"><i>{{ tarjeta.tramite.encargado_firma_1 }}</i></div>
+                    <div class="firma-cargo"><i>{{ tarjeta.tramite.area_firma_1 }}</i></div>
+                </td>
+                <td style="width: 50%; vertical-align: top; padding-left: 5px;">
+                    <div class="firma-nombre"><i>{{ tarjeta.tramite.encargado_firma_2 }}</i></div>
+                    <div class="firma-cargo"><i>{{ tarjeta.tramite.area_firma_2 }}</i></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+</html>

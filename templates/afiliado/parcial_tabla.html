@@ -1,0 +1,219 @@
+<style>
+    :root {
+        --color-principal: #8b0000;
+        --color-hover: #6a0000;
+        --color-texto: #1e293b;
+        --color-borde: #cbd5e1;
+        --bg-suave: #f8fafc;
+    }
+
+    .tabla-contenedor {
+        background: white;
+        border: 1px solid var(--color-borde);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        margin-bottom: 20px;
+    }
+
+    .tabla-moderna {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .tabla-moderna th {
+        background-color: var(--bg-suave);
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        padding: 12px 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .tabla-moderna td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e2e8f0;
+        color: var(--color-texto);
+        font-size: 0.95em;
+        vertical-align: middle;
+    }
+
+    .tabla-moderna tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .tabla-moderna tbody tr:hover {
+        background-color: #f1f5f9;
+    }
+
+    .tabla-moderna tbody tr:last-child td { 
+        border-bottom: none; 
+    }
+
+    .link-custom {
+        color: var(--color-principal);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.9em;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .link-custom:hover { 
+        background-color: rgba(139, 0, 0, 0.05); 
+        border-color: rgba(139, 0, 0, 0.2);
+    }
+
+    .paginacion-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 15px;
+        border: 1px solid var(--color-borde);
+        border-radius: 8px;
+        font-size: 0.9em;
+        color: #475569;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .paginacion-nav {
+        display: flex;
+        gap: 5px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .paginacion-nav a, 
+    .paginacion-nav span {
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        border: 1px solid var(--color-borde);
+        color: var(--color-texto);
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+    }
+
+    .paginacion-nav a:hover {
+        background-color: var(--bg-suave);
+        border-color: #94a3b8;
+    }
+
+    .paginacion-nav span.activo {
+        background-color: var(--color-principal);
+        color: white;
+        border-color: var(--color-principal);
+    }
+
+    .text-center { text-align: center; }
+    .id-destacado { color: var(--color-principal); font-size: 1.05em; letter-spacing: 0.5px; }
+    .nombre-destacado { font-weight: 600; }
+    .texto-vacio { text-align: center; padding: 40px; color: #94a3b8; }
+    .operador-vacio { color: #94a3b8; font-style: italic; }
+</style>
+
+<div class="tabla-contenedor">
+    <table class="tabla-moderna" aria-label="Lista de afiliados">
+        <thead>
+            <tr>
+                <th scope="col"><i class="bi bi-hash me-1" aria-hidden="true"></i> ID</th>
+                <th scope="col"><i class="bi bi-person-lines-fill me-1" aria-hidden="true"></i> Nombre Completo</th>
+                <th scope="col"><i class="bi bi-building me-1" aria-hidden="true"></i> Empresa / Operador</th>
+                <th scope="col"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i> Fecha Registro</th>
+                <th scope="col" class="text-center"><i class="bi bi-gear me-1" aria-hidden="true"></i> Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for afiliado in afiliados %}
+            <tr>
+                <td>
+                    <strong class="id-destacado">
+                        #{{ afiliado.id|stringformat:"04d" }}
+                    </strong>
+                </td>
+                
+                <td class="nombre-destacado">
+                    {{ afiliado.nombre_completo|upper }}
+                </td>
+                
+                <td>
+                    {% if afiliado.operador %}
+                        {{ afiliado.operador|upper }}
+                    {% else %}
+                        <span class="operador-vacio">
+                            <i class="bi bi-dash-circle me-1" aria-hidden="true"></i> Sin operador
+                        </span>
+                    {% endif %}
+                </td>
+                
+                <td>
+                    {{ afiliado.fecha_registro|date:"d M Y" }}
+                </td>
+                
+                <td class="text-center">
+                    <a href="{% url 'afiliado:detalle_afiliado' afiliado.id %}" class="link-custom" aria-label="Ver ficha del afiliado {{ afiliado.nombre_completo }}">
+                        <i class="bi bi-person-vcard" aria-hidden="true"></i> Ver Ficha
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="texto-vacio">
+                    <i class="bi bi-people fs-2 d-block mb-2" aria-hidden="true"></i> No hay afiliados registrados
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="paginacion-container">
+    <div aria-live="polite">
+        Mostrando <strong class="id-destacado">{{ afiliados.start_index|default:"0" }}</strong> a <strong class="id-destacado">{{ afiliados.end_index|default:"0" }}</strong> de <strong>{{ afiliados.paginator.count|default:"0" }}</strong> registros
+    </div>
+    
+    {% if afiliados.has_other_pages %}
+        <nav aria-label="Navegación de páginas">
+            <ul class="paginacion-nav">
+                {% if afiliados.has_previous %}
+                    <li>
+                        <a href="?page={{ afiliados.previous_page_number }}&q={{ q|urlencode }}" aria-label="Página anterior" title="Anterior">
+                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for i in afiliados.paginator.page_range %}
+                    {% if afiliados.number == i %}
+                        <li><span class="activo" aria-current="page">{{ i }}</span></li>
+                    {% elif i > afiliados.number|add:'-3' and i < afiliados.number|add:'3' %}
+                        <li>
+                            <a href="?page={{ i }}&q={{ q|urlencode }}" aria-label="Ir a la página {{ i }}">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if afiliados.has_next %}
+                    <li>
+                        <a href="?page={{ afiliados.next_page_number }}&q={{ q|urlencode }}" aria-label="Página siguiente" title="Siguiente">
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
