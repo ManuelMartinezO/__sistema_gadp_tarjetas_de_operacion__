@@ -14,7 +14,7 @@
             {% for tramite in tramites %}
             <tr onclick="window.location='{% url 'tramite:detalle_tramite' tramite.numero %}'" style="cursor: pointer;" title="Ver detalle del trámite #{{ tramite.numero }}" role="button" tabindex="0">
                 <td>
-                    <strong style="color: var(--color-principal);">#{{ tramite.numero|stringformat:"06d" }}</strong>
+                    <strong style="color: var(--color-principal);">#{{ tramite.numero|stringformat:"06d" }}/{{ tramite.fecha_registro|date:"Y" }}</strong>
                 </td>
                 <td>{{ tramite.usuario.username }}</td>
                 <td>{{ tramite.get_tipo_display }}</td>

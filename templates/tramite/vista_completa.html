@@ -296,13 +296,40 @@
         font-size: 0.9em; 
         line-height: 1.6;
     }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .bg-pendiente { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .bg-validado { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .bg-observado { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 </style>
+
+<div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center mb-3">
+    <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-light border border-dark rounded-2 shadow-sm px-3 py-1 text-dark fw-bold">
+        <i class="bi bi-arrow-left text-dark me-1" style="stroke-width: 2px;" aria-hidden="true"></i> Volver
+    </a>
+    {% if tramite.estado == 'p' %} 
+        <span class="badge bg-pendiente">Pendiente</span>
+    {% elif tramite.estado == 'v' %} 
+        <span class="badge bg-validado">Validado</span>
+    {% else %} 
+        <span class="badge bg-observado">Observado</span>
+    {% endif %}
+</div>
 
 <div class="bloque-form" style="display: flex; justify-content: space-between; align-items: stretch; margin-bottom: 10px; padding: 0; overflow: hidden;">
     <div style="padding: 20px; flex: 1; border-right: 1px solid #e2e8f0;">
         <h4 style="margin: 0 0 12px 0; font-weight: 800; color: #0f172a; display: flex; align-items: center; font-size: 1.4rem;">
             <i class="bi bi-folder-fill me-2" style="color: var(--color-principal);" aria-hidden="true"></i>
-            TRÁMITE: <span style="color: var(--color-principal); margin-left: 6px;">#{{ tramite.numero }}</span>
+            TRÁMITE: <span style="color: var(--color-principal); margin-left: 6px;">#{{ tramite.numero }} / {{ tramite.fecha_registro|date:"Y" }}</span>
         </h4>
         <h4 style="margin: 0 0 12px 0; font-weight: 600; color: #0f172a; display: flex; align-items: center; font-size: 1.2rem;">
             OPERADOR: <i style="font-weight: 100;">{{ tramite.operador|upper }} </i>
@@ -356,34 +383,41 @@
 <div class="contenedor-principal">
     
     <div class="columna-izquierda">
-        <div class="bloque-form">
-            <form method="POST" class="formulario-con-preview">
-                {% csrf_token %}
-                <h5 class="titulo-bloque" style="border-bottom: 2px solid var(--bg-suave); padding-bottom: 12px;">
-                    <i class="bi bi-plus-circle-fill me-2" aria-hidden="true"></i> REGISTRAR NUEVA TARJETA
-                </h5>
-                
-                <div class="subtitulo-bloque">Datos del Afiliado</div>
-                {{ form_afiliado.nombre_completo }}
-                <datalist id="lista_afiliados">
-                    {% for afiliado in afiliados_existentes %}
-                        <option value="{{ afiliado.nombre_completo }}"></option>
-                    {% endfor %}
-                </datalist>
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            {% if tramite.estado == 'v' %}
+            <div class="bloque-form">
+                <form method="POST" class="formulario-con-preview">
+                    {% csrf_token %}
+                    <h5 class="titulo-bloque" style="border-bottom: 2px solid var(--bg-suave); padding-bottom: 12px;">
+                        <i class="bi bi-plus-circle-fill me-2" aria-hidden="true"></i> REGISTRAR NUEVA TARJETA
+                    </h5>
+                    
+                    <div class="subtitulo-bloque">Datos del Afiliado</div>
+                    {{ form_afiliado.nombre_completo }}
+                    <datalist id="lista_afiliados">
+                        {% for afiliado in afiliados_existentes %}
+                            <option value="{{ afiliado.nombre_completo }}"></option>
+                        {% endfor %}
+                    </datalist>
 
-                <div class="subtitulo-bloque">Datos del Vehículo</div>
-                {{ form_vehiculo.as_p }}
-                
-                <button name="btn_tarjeta" type="submit" class="btn-custom btn-principal" style="margin-top: 15px;">
-                    <i class="bi bi-send-fill" aria-hidden="true"></i> ENVIAR DATOS DE TARJETA
-                </button>
-            </form>
-        </div>
+                    <div class="subtitulo-bloque">Datos del Vehículo</div>
+                    {{ form_vehiculo.as_p }}
+                    
+                    <button name="btn_tarjeta" type="submit" class="btn-custom btn-principal" style="margin-top: 15px;">
+                        <i class="bi bi-send-fill" aria-hidden="true"></i> ENVIAR DATOS DE TARJETA
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        {% endif %}
+        
 
         <div style="text-align: right; margin-bottom: 15px;">
-            <a href="{% url 'tramite:vista' tramite.numero %}" class="btn-custom btn-gris d-inline-flex w-auto px-4 py-2 shadow-sm text-decoration-none">
-                <i class="bi bi-layout-text-window-reverse" aria-hidden="true"></i> Vista Previa del Trámite
-            </a>
+            {% if tramite.estado == 'v' %}
+                <a href="{% url 'tramite:vista' tramite.numero %}" class="btn-custom btn-gris d-inline-flex w-auto px-4 py-2 shadow-sm text-decoration-none">
+                    <i class="bi bi-layout-text-window-reverse" aria-hidden="true"></i> Vista Previa del Trámite
+                </a>
+            {% endif %}
         </div>
 
         <div class="bloque-form">
@@ -418,13 +452,31 @@
             <button class="btn-custom btn-accion mb-2" onclick="document.getElementById('modal-inf-tecnico').showModal()">Informe Técnico</button>
             <button class="btn-custom btn-accion" onclick="document.getElementById('modal-inf-res').showModal()">Informe/Resolución</button>
         </div>
+         <div class="bloque-form" style="margin-bottom: 0;">
+            <div class="subtitulo-bloque" style="margin-top: 0;"><i class="bi bi-chat-dots me-1" aria-hidden="true"></i> Observaciones</div>
+            {% if tramite.observacion %}
+                <div class="lista-preview-styled">
+                    {{ tramite.observacion|linebreaks }}
+                </div>
+            {% else %}
+                <div style="color: #94a3b8; font-style: italic; text-align: center; padding: 15px; background: var(--bg-suave); border-radius: 6px;">
+                    <i class="bi bi-chat-left-dots fs-4 d-block mb-2" aria-hidden="true"></i> No hay observaciones registradas.
+                </div>
+            {% endif %}
+        </div>
 
         <div class="bloque-form" style="margin-bottom: 0; background-color: var(--bg-suave);">
             <div class="subtitulo-bloque" style="margin-top: 0; display: flex; justify-content: space-between; align-items: center;">
                 <span><i class="bi bi-receipt me-1" aria-hidden="true"></i> Depósitos</span>
-                <button class="btn-custom btn-principal w-auto px-2 py-1" style="font-size: 0.75rem;" onclick="document.getElementById('modal-deposito').showModal()">
-                    <i class="bi bi-plus-lg" aria-hidden="true"></i> AGREGAR
-                </button>
+                {% if user.rol == 'a' or user.rol == 'sa' %}
+                    {% if tramite.estado == 'v' %}
+                    <button class="btn-custom btn-principal w-auto px-2 py-1" style="font-size: 0.75rem;" onclick="document.getElementById('modal-deposito').showModal()">
+                        <i class="bi bi-plus-lg" aria-hidden="true"></i> AGREGAR
+                    </button>
+                    {% else %}
+                        <span style="color: #94a3b8; font-style: italic;">VALIDACION PENDIENTE</span>
+                    {% endif %}
+                {% endif %}
             </div>
             
             <ul class="lista-estilizada mt-3">
@@ -443,12 +495,13 @@
                 {% endfor %}
             </ul>
         </div>
-
-        <div class="bloque-form" style="margin-bottom: 0;">
-            <div class="subtitulo-bloque" style="margin-top: 0;"><i class="bi bi-gear-fill me-1" aria-hidden="true"></i> Parámetros</div>
-            <button class="btn-custom btn-accion mb-2" onclick="document.getElementById('modal-marca').showModal()"><i class="bi bi-tag" aria-hidden="true"></i> Crear Marca</button>
-            <button class="btn-custom btn-accion" onclick="document.getElementById('modal-tipo').showModal()"><i class="bi bi-car-front" aria-hidden="true"></i> Crear Tipo Vehículo</button>
-        </div>
+        {% if user.rol == 'a' or user.rol == 'sa' %}
+            <div class="bloque-form" style="margin-bottom: 0;">
+                <div class="subtitulo-bloque" style="margin-top: 0;"><i class="bi bi-gear-fill me-1" aria-hidden="true"></i> Parámetros</div>
+                <button class="btn-custom btn-accion mb-2" onclick="document.getElementById('modal-marca').showModal()"><i class="bi bi-tag" aria-hidden="true"></i> Crear Marca</button>
+                <button class="btn-custom btn-accion" onclick="document.getElementById('modal-tipo').showModal()"><i class="bi bi-car-front" aria-hidden="true"></i> Crear Tipo Vehículo</button>
+            </div>
+        {% endif %}
     </div>
 </div>
 

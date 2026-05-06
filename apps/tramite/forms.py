@@ -27,7 +27,6 @@ class NuevoTramiteForm(BootstrapFormMixin, forms.ModelForm):
             'rutas': 'Rutas Solicitadas',
         }
         widgets = {
-            'licencia': forms.TextInput(attrs={'placeholder': 'Ej. 12345-A'}),
             'fojas': forms.NumberInput(attrs={'placeholder': 'Ej. 15'}),
             'rutas': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Detalle de rutas solicitadas...'}),
         }

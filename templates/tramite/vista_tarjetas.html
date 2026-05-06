@@ -121,7 +121,7 @@
 <div style="width: 70%; border-bottom: 2px solid #0f172a; margin-bottom: 15px; padding-bottom: 6px; display: flex; align-items: center;">
     <i class="bi bi-folder2-open text-dark me-2" style="font-size: 1.4rem;" aria-hidden="true"></i>
     <h4 style="margin: 0; color: #0f172a; font-weight: 700; font-size: 1.25rem; letter-spacing: 0.5px;">
-        TRÁMITE: <span style="color: #8b0000;">#{{ tramite.numero }}</span>
+        TRÁMITE: <span style="color: #8b0000;">#{{ tramite.numero }} / {{ tramite.fecha_registro|date:"Y" }}</span>
     </h4>
 </div>
 
@@ -134,21 +134,24 @@
         
         <tr>
             <td colspan="4" style="text-align: right; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">
-                
-                <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" style="margin-right: 4px;" onclick="manejarImpresion('{% url 'tarjeta:tarjeta_pdf' item.obj.id %}', '{{ item.obj.estado }}')">
-                    <i class="bi bi-printer-fill text-dark me-1" aria-hidden="true"></i> Imprimir
-                </button>
+                {% if user.rol == 'a' or user.rol == 'sa' %}
+                    {% if tramite.deposito %}
+                    <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" style="margin-right: 4px;" onclick="manejarImpresion('{% url 'tarjeta:tarjeta_pdf' item.obj.id %}', '{{ item.obj.estado }}')">
+                        <i class="bi bi-printer-fill text-dark me-1" aria-hidden="true"></i> Imprimir
+                    </button>
+                    {% endif %}
 
-                <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" onclick="toggleEdicion('{{ item.obj.id }}', true)">
-                    <i class="bi bi-pencil-square text-dark me-1" aria-hidden="true"></i> Editar Tarjeta
-                </button>
-                
-                <button type="button" class="btn btn-sm btn-dark edicion-{{ item.obj.id }} fw-bold py-1 px-2 shadow-sm" style="display: none;" onclick="confirmarEdicion('{{ item.obj.id }}')">
-                    <i class="bi bi-check-circle-fill text-white me-1" aria-hidden="true"></i> Guardar Cambios
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary edicion-{{ item.obj.id }} fw-bold py-1 px-2" style="display: none;" onclick="toggleEdicion('{{ item.obj.id }}', false)">
-                    <i class="bi bi-x-circle-fill text-secondary me-1" aria-hidden="true"></i> Cancelar
-                </button>
+                    <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" onclick="toggleEdicion('{{ item.obj.id }}', true)">
+                        <i class="bi bi-pencil-square text-dark me-1" aria-hidden="true"></i> Editar Tarjeta
+                    </button>
+                    
+                    <button type="button" class="btn btn-sm btn-dark edicion-{{ item.obj.id }} fw-bold py-1 px-2 shadow-sm" style="display: none;" onclick="confirmarEdicion('{{ item.obj.id }}')">
+                        <i class="bi bi-check-circle-fill text-white me-1" aria-hidden="true"></i> Guardar Cambios
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary edicion-{{ item.obj.id }} fw-bold py-1 px-2" style="display: none;" onclick="toggleEdicion('{{ item.obj.id }}', false)">
+                        <i class="bi bi-x-circle-fill text-secondary me-1" aria-hidden="true"></i> Cancelar
+                    </button>
+                {% endif %}
             </td>
         </tr>
 
