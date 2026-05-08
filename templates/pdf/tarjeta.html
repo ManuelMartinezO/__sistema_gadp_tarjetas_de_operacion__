@@ -145,15 +145,15 @@
 
     <div class="titulo-tarjeta">
         <p>LICENCIA DE OPERACIÓN PARA EL TRANSPORTE AUTOMOTOR</p>
-        {% if tarjeta.tipo_tarjeta == '001' %}
+        {% if tarjeta.licencia == 'l1' %}
             <p>INTERPROVINCIAL</p>
-        {% elif tarjeta.tipo_tarjeta == '002' %}
+        {% elif tarjeta.licencia == 'l2' %}
             <p>INTERPROVINCIAL - ATL</p>
-        {% elif tarjeta.tipo_tarjeta == '003' %}
+        {% elif tarjeta.licencia == 'l3' %}
             <p>INTERPROVINCIAL - CONFEDERADO</p>
-        {% elif tarjeta.tipo_tarjeta == '004' %}
+        {% elif tarjeta.licencia == 'l4' %}
             <p>INTERPROVINCIAL - CONFEDERADO - SCZ</p>
-        {% elif tarjeta.tipo_tarjeta == '005' %}
+        {% elif tarjeta.licencia == 'l5' %}
             <p>INTERPROVINCIAL - COOPERATIVAS</p>
         {% endif %}
     </div>

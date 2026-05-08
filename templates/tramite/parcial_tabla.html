@@ -5,7 +5,8 @@
                 <th scope="col"><i class="bi bi-hash" aria-hidden="true"></i> N° Trámite</th>
                 <th scope="col"><i class="bi bi-person" aria-hidden="true"></i> Usuario</th>
                 <th scope="col"><i class="bi bi-tags" aria-hidden="true"></i> Tipo de Solicitud</th>
-                <th scope="col"><i class="bi bi-shield-check" aria-hidden="true"></i> Estado Revisión</th>
+                <th scope="col"><i class="bi bi-shield-check" aria-hidden="true"></i> Primera Revisión</th>
+                <th scope="col"><i class="bi bi-shield-check" aria-hidden="true"></i> Segunda Revisión</th>
                 <th scope="col"><i class="bi bi-cash-stack" aria-hidden="true"></i> Depósito</th>
                 <th scope="col"><i class="bi bi-calendar3" aria-hidden="true"></i> Fecha de Ingreso</th>
             </tr>
@@ -14,7 +15,7 @@
             {% for tramite in tramites %}
             <tr onclick="window.location='{% url 'tramite:detalle_tramite' tramite.numero %}'" style="cursor: pointer;" title="Ver detalle del trámite #{{ tramite.numero }}" role="button" tabindex="0">
                 <td>
-                    <strong style="color: var(--color-principal);">#{{ tramite.numero|stringformat:"06d" }}</strong>
+                    <strong style="color: var(--color-principal);">#{{ tramite.numero|stringformat:"06d" }}/{{ tramite.fecha_registro|date:"Y" }}</strong>
                 </td>
                 <td>{{ tramite.usuario.username }}</td>
                 <td>{{ tramite.get_tipo_display }}</td>
@@ -22,6 +23,15 @@
                     {% if tramite.estado == 'p' %} 
                         <span class="badge bg-pendiente">Pendiente</span>
                     {% elif tramite.estado == 'v' %} 
+                        <span class="badge bg-validado">Validado</span>
+                    {% else %} 
+                        <span class="badge bg-observado">Observado</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if tramite.segunda_revicion == 'p' %} 
+                        <span class="badge bg-pendiente">Pendiente</span>
+                    {% elif tramite.segunda_revicion == 'v' %} 
                         <span class="badge bg-validado">Validado</span>
                     {% else %} 
                         <span class="badge bg-observado">Observado</span>

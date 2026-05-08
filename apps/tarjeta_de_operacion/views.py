@@ -90,10 +90,35 @@ def generar_pdf_tarjeta(request: HttpRequest, id_tarjeta: int) -> HttpResponse:
     
     try:
         if tarjeta.estado == 'p':
-            tarjeta.fecha_emision = timezone.now().date()
-            tarjeta.valida_hasta = tarjeta.fecha_emision + relativedelta(years=tarjeta.validez)
-            tarjeta.estado = 'e'
-            tarjeta.save()
+            fecha_actual = timezone.now().date()
+            
+            # 1. Obtenemos todas las tarjetas asociadas al MISMO TRÁMITE que estén pendientes ('p').
+            # REEMPLAZA 'tramite' por el nombre del campo o relación correcta en tu modelo.
+            tarjetas_pendientes = TarjetaDeOperacion.objects.filter(
+                tramite=tarjeta.tramite, 
+                estado='p'
+            )
+            
+            tarjetas_a_actualizar = []
+            
+            # 2. Asignamos las nuevas fechas y estados a cada tarjeta relacionada
+            for t in tarjetas_pendientes:
+                t.fecha_emision = fecha_actual
+                t.valida_hasta = fecha_actual + relativedelta(years=t.validez)
+                t.estado = 'e'
+                tarjetas_a_actualizar.append(t)
+            
+            # 3. Guardamos los cambios de todas las tarjetas en la base de datos de una sola vez
+            if tarjetas_a_actualizar:
+                with transaction.atomic():
+                    TarjetaDeOperacion.objects.bulk_update(
+                        tarjetas_a_actualizar, 
+                        ['fecha_emision', 'valida_hasta', 'estado']
+                    )
+            
+            # 4. Refrescamos la instancia actual desde la BD para asegurar que el código QR 
+            # tome las fechas actualizadas generadas en el bloque anterior.
+            tarjeta.refresh_from_db()
 
         texto_qr = (
             f"PLACA: {tarjeta.vehiculo.placa}\n"

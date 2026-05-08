@@ -110,7 +110,7 @@ def vista_completa_tramite(request: HttpRequest, numero: str) -> HttpResponse:
             messages.error(request, "Ocurrió un error inesperado al procesar la solicitud.")
 
     form_informe_tecnico = InformeTecnicoForm(instance=tramite, prefix='infTecnico')
-    form_informe_resolucion = InformeAndResolucionForm(instance=tramite, prefix='informeAndResolucion')
+    form_informe_resolucion = InformeAndResolucionForm(prefix='informeAndResolucion')
     form_afiliado = NuevoAfiliadoForm(prefix='afiliado')
     form_vehiculo = NuevoVehiculoForm(prefix='vehiculo')
     form_deposito = DepositoForm(prefix='deposito')

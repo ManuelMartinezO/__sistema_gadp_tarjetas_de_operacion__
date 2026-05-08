@@ -27,7 +27,6 @@ class NuevoTramiteForm(BootstrapFormMixin, forms.ModelForm):
             'rutas': 'Rutas Solicitadas',
         }
         widgets = {
-            'licencia': forms.TextInput(attrs={'placeholder': 'Ej. 12345-A'}),
             'fojas': forms.NumberInput(attrs={'placeholder': 'Ej. 15'}),
             'rutas': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Detalle de rutas solicitadas...'}),
         }
@@ -54,7 +53,7 @@ class EditarTramiteAdminForm(BootstrapFormMixin, forms.ModelForm):
 class InformeTecnicoForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Tramite
-        fields = ['informe_tecnico', 'estado', 'observacion']
+        fields = ['informe_tecnico', 'estado', 'segunda_revicion', 'observacion']
 
 class InformeAndResolucionForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
