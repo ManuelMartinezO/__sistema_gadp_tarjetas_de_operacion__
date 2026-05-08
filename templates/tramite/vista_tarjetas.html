@@ -135,10 +135,10 @@
         <tr>
             <td colspan="4" style="text-align: right; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">
                 {% if user.rol == 'a' or user.rol == 'sa' %}
-                    {% if tramite.deposito %}
-                    <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" style="margin-right: 4px;" onclick="manejarImpresion('{% url 'tarjeta:tarjeta_pdf' item.obj.id %}', '{{ item.obj.estado }}')">
-                        <i class="bi bi-printer-fill text-dark me-1" aria-hidden="true"></i> Imprimir
-                    </button>
+                    {% if tramite.deposito and tramite.estado == 'v' and tramite.segunda_revicion == 'v' %}
+                        <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" style="margin-right: 4px;" onclick="manejarImpresion('{% url 'tarjeta:tarjeta_pdf' item.obj.id %}', '{{ item.obj.estado }}')">
+                            <i class="bi bi-printer-fill text-dark me-1" aria-hidden="true"></i> Imprimir
+                        </button>
                     {% endif %}
 
                     <button type="button" class="btn btn-sm btn-light border border-secondary text-dark vista-{{ item.obj.id }} hover-soft fw-bold py-1 px-2 shadow-sm" onclick="toggleEdicion('{{ item.obj.id }}', true)">

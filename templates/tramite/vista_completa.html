@@ -313,16 +313,27 @@
 </style>
 
 <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center mb-3">
+    <div>
+        {% if tramite.estado == 'p' %} 
+            <span class="badge bg-pendiente">Primera Revicion: Pendiente</span>
+        {% elif tramite.estado == 'v' %} 
+            <span class="badge bg-validado">Primera Revicion: Validado</span>
+        {% else %} 
+            <span class="badge bg-observado">Primera Revicion: Observado</span>
+        {% endif %}
+    </div>
+    <div>
+        {% if tramite.segunda_revicion == 'p' %} 
+            <span class="badge bg-pendiente">Segunda revicion: Pendiente</span>
+        {% elif tramite.segunda_revicion == 'v' %} 
+            <span class="badge bg-validado">Segunda revicion: Validado</span>
+        {% else %} 
+        <span class="badge bg-observado">Segunda revicion: Observado</span>
+        {% endif %}
+    </div>
     <a href="{% url 'tramite:lista_tramites' %}" class="btn btn-light border border-dark rounded-2 shadow-sm px-3 py-1 text-dark fw-bold">
         <i class="bi bi-arrow-left text-dark me-1" style="stroke-width: 2px;" aria-hidden="true"></i> Volver
     </a>
-    {% if tramite.estado == 'p' %} 
-        <span class="badge bg-pendiente">Pendiente</span>
-    {% elif tramite.estado == 'v' %} 
-        <span class="badge bg-validado">Validado</span>
-    {% else %} 
-        <span class="badge bg-observado">Observado</span>
-    {% endif %}
 </div>
 
 <div class="bloque-form" style="display: flex; justify-content: space-between; align-items: stretch; margin-bottom: 10px; padding: 0; overflow: hidden;">
@@ -483,8 +494,18 @@
                 {% for deposito in depositos %}
                 <li class="item-deposito">
                     <div>
-                        <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 0.8rem;" aria-hidden="true"></i>
-                        <span style="font-family: monospace; font-weight: 700; color: #334155;">#{{ deposito.numero }}</span>
+                        <p>
+                            <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 0.8rem;" aria-hidden="true"></i>
+                            <span style="font-family: monospace; font-weight: 700; color: #334155;">#{{ deposito.numero }}</span>
+                        </p>
+                        <p>
+                            <i style="font-size: 0.8rem;">Fecha de Depósito: </i>
+                            <span style="font-size: 0.8rem; font-family: monospace; font-weight: 700; color: #334155;">{{ deposito.fecha_deposito|date:"d/m/Y H:i" }}</span>
+                        </p>
+                        <p>
+                            <i style="font-size: 0.8rem;">Fecha de Registro: </i>
+                            <span style="font-size: 0.8rem; font-family: monospace; font-weight: 700; color: #334155;">{{ deposito.fecha_registro|date:"d/m/Y H:i" }}</span>
+                        </p>
                     </div>
                     <strong style="color: var(--color-principal);">{{ deposito.monto }} Bs</strong>
                 </li>

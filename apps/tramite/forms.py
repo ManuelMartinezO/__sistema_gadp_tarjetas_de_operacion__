@@ -53,7 +53,7 @@ class EditarTramiteAdminForm(BootstrapFormMixin, forms.ModelForm):
 class InformeTecnicoForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Tramite
-        fields = ['informe_tecnico', 'estado', 'observacion']
+        fields = ['informe_tecnico', 'estado', 'segunda_revicion', 'observacion']
 
 class InformeAndResolucionForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:

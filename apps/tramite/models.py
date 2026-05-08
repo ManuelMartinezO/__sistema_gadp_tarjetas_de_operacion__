@@ -26,6 +26,7 @@ class Tramite(models.Model):
     # === CHOICES ===
     tipo = models.CharField(max_length=1, choices=TIPO)
     estado = models.CharField(max_length=1, choices=ESTADO, default='p')
+    segunda_revicion = models.CharField(max_length=1, choices=ESTADO, default='p')
     licencia = models.CharField(max_length=2, choices=LICENCIA)
     
     # === RELACIONES ===
