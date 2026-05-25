@@ -54,6 +54,9 @@ class InformeTecnicoForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Tramite
         fields = ['informe_tecnico', 'estado', 'segunda_revicion', 'observacion']
+        labels = {
+            'estado': 'Primera Revicion'
+        }
 
 class InformeAndResolucionForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:

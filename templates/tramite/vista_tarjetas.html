@@ -125,8 +125,18 @@
     </h4>
 </div>
 
+<div style="width: 70%; margin-bottom: 20px;">
+    <div class="input-group shadow-sm">
+        <span class="input-group-text bg-white border-dark"><i class="bi bi-search text-dark" aria-hidden="true"></i></span>
+        <input type="text" id="buscador-tarjetas" class="form-control border-dark" placeholder="Buscar por placa, afiliado o Nro. de registro..." style="text-transform: uppercase;">
+    </div>
+</div>
+
 {% for item in tarjetas_data %}
-<form method="POST" id="form-tarjeta-{{ item.obj.id }}">
+<form method="POST" id="form-tarjeta-{{ item.obj.id }}" class="tarjeta-item" 
+      data-id="{{ item.obj.id }}" 
+      data-afiliado="{{ item.obj.afiliado.nombre_completo|lower }}" 
+      data-placa="{{ item.obj.vehiculo.placa|lower }}">
     {% csrf_token %}
     <input type="hidden" name="tarjeta_id" value="{{ item.obj.id }}">
     
@@ -331,6 +341,30 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
+        // --- NUEVA LÓGICA DEL BUSCADOR ---
+        const buscadorTarjetas = document.getElementById('buscador-tarjetas');
+        const tarjetasItems = document.querySelectorAll('.tarjeta-item');
+
+        if (buscadorTarjetas) {
+            buscadorTarjetas.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+
+                tarjetasItems.forEach(tarjeta => {
+                    // Extraemos los datos ocultos en los data-attributes
+                    const id = tarjeta.getAttribute('data-id');
+                    const afiliado = tarjeta.getAttribute('data-afiliado');
+                    const placa = tarjeta.getAttribute('data-placa');
+
+                    // Si la búsqueda coincide con ID, Afiliado o Placa, mostramos la tarjeta
+                    if (id.includes(query) || afiliado.includes(query) || placa.includes(query)) {
+                        tarjeta.style.display = '';
+                    } else {
+                        tarjeta.style.display = 'none'; // La ocultamos
+                    }
+                });
+            });
+        }
+
         const sanitizarTexto = (texto) => {
             return texto ? texto.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '<em>Vacío</em>';
         };

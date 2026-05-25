@@ -16,6 +16,37 @@ class BootstrapFormMixin:
                     'style': 'border-radius: 10px;'
                 })
 
+class EditarVistaTarjetaForm(BootstrapFormMixin, forms.ModelForm):
+    # El campo virtual para el afiliado se mantiene intacto
+    nombre_afiliado = forms.CharField(
+        max_length=200, 
+        required=True,
+        label='Afiliado Vinculado',
+        widget=forms.TextInput(attrs={
+            'list': 'lista_afiliados', 
+            'autocomplete': 'off',
+            'placeholder': 'Escriba para buscar el afiliado...'
+        })
+    )
+
+    class Meta:
+        model = TarjetaDeOperacion
+        # MAGIA: Solo dejamos 'ruta', ya que es el único campo real del modelo que quieres editar aquí
+        fields = ['ruta'] 
+        
+        labels = {
+            'ruta': 'Descripción de la Ruta',
+        }
+        widgets = {
+            'ruta': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Describa el recorrido aprobado...'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Precargar el nombre del afiliado actual si se está editando una tarjeta existente
+        if self.instance and self.instance.pk and self.instance.afiliado:
+            self.fields['nombre_afiliado'].initial = self.instance.afiliado.nombre_completo
+
 class EditarTarjetaForm(BootstrapFormMixin, forms.ModelForm):
     # Campo de texto libre para buscar y vincular al afiliado mediante un datalist
     nombre_afiliado = forms.CharField(

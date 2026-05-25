@@ -17,7 +17,7 @@ from django.contrib import messages
 from .models import Tramite, Deposito
 from apps.tramite.forms import NuevoTramiteForm, InformeTecnicoForm, InformeAndResolucionForm, DepositoForm
 from apps.tarjeta_de_operacion.models import TarjetaDeOperacion
-from apps.tarjeta_de_operacion.forms import TarjetaDeOperacionForm, EditarTarjetaForm
+from apps.tarjeta_de_operacion.forms import EditarVistaTarjetaForm, TarjetaDeOperacionForm, EditarTarjetaForm
 from apps.afiliado.models import Afiliado
 from apps.vehiculo.models import Vehiculo
 from apps.afiliado.forms import NuevoAfiliadoForm
@@ -77,23 +77,39 @@ def vista_completa_tramite(request: HttpRequest, numero: str) -> HttpResponse:
                     return redirect('tramite:detalle_tramite', numero=tramite.numero)
                     
             elif 'btn_tarjeta' in request.POST:
-                form_afiliado = NuevoAfiliadoForm(request.POST, prefix='afiliado')
-                form_vehiculo = NuevoVehiculoForm(request.POST, prefix='vehiculo')
+                # 1. Extraemos los identificadores únicos directamente del POST.
+                # Usamos la sintaxis 'prefijo-nombre_campo' porque instancias los forms con prefix
+                nombre_ingresado = request.POST.get('afiliado-nombre_completo')
+                placa_ingresada = request.POST.get('vehiculo-placa')
+                
+                # 2. Buscamos si ya existen en la base de datos
+                instancia_afiliado = Afiliado.objects.filter(nombre_completo=nombre_ingresado).first()
+                instancia_vehiculo = Vehiculo.objects.filter(placa=placa_ingresada).first()
+                
+                # 3. Instanciamos los formularios. 
+                # MAGIA: Al pasarle 'instance', si el objeto existe, Django lo actualiza sin dar error unique.
+                # Si 'instance' es None, Django sabe que debe validar y crear uno nuevo.
+                form_afiliado = NuevoAfiliadoForm(request.POST, prefix='afiliado', instance=instancia_afiliado)
+                form_vehiculo = NuevoVehiculoForm(request.POST, prefix='vehiculo', instance=instancia_vehiculo)
                 
                 if form_afiliado.is_valid() and form_vehiculo.is_valid():
                     with transaction.atomic():
-                        nombre_ingresado = form_afiliado.cleaned_data.get('nombre_completo')
-                        afiliado, created = Afiliado.objects.get_or_create(
-                            nombre_completo=nombre_ingresado,
-                            defaults={'operador': tramite.operador}
-                        )
+                        # Guardamos/Actualizamos el afiliado
+                        afiliado = form_afiliado.save(commit=False)
+                        if not afiliado.id:  # Si es nuevo, le asignamos el operador del trámite
+                            afiliado.operador = tramite.operador
+                        afiliado.save()
                         
+                        # Guardamos/Actualizamos el vehículo
                         vehiculo = form_vehiculo.save(commit=False)
                         if not vehiculo.propietario:
                             vehiculo.propietario = afiliado.nombre_completo
+                        
+                        # Relacionamos el vehículo con el afiliado
                         vehiculo.afiliado = afiliado
                         vehiculo.save()
                         
+                        # 4. Creamos la tarjeta de operación vinculando todo
                         TarjetaDeOperacion.objects.create(
                             tramite=tramite,
                             operador=tramite.operador,
@@ -102,8 +118,19 @@ def vista_completa_tramite(request: HttpRequest, numero: str) -> HttpResponse:
                             ruta=tramite.rutas,
                             licencia=tramite.licencia,
                         )
-                    messages.success(request, "Tarjeta de operación generada y vinculada.")
+                        
+                    messages.success(request, "Tarjeta de operación generada y vinculada exitosamente.")
                     return redirect('tramite:detalle_tramite', numero=tramite.numero)
+                    
+                else:
+                    # Capturamos por qué falló y mandamos el error
+                    for campo, errores in form_vehiculo.errors.items():
+                        for error in errores:
+                            messages.error(request, f"Error en Vehículo: {error}")
+                            
+                    for campo, errores in form_afiliado.errors.items():
+                        for error in errores:
+                            messages.error(request, f"Error en Afiliado: {error}")
                     
         except Exception as e:
             logger.error(f"Error en vista_completa_tramite ({numero}): {e}")
@@ -117,6 +144,7 @@ def vista_completa_tramite(request: HttpRequest, numero: str) -> HttpResponse:
     form_tipoVehiculo = TipoVehiculoForm(prefix='tipoV')
     form_marcaVehiculo = MarcaVehiculoForm(prefix='marcaV')
     afiliados_existentes = Afiliado.objects.all()
+    vehiculos_existentes = Vehiculo.objects.all()
 
     contexto = {
         'depositos': depositos,
@@ -130,6 +158,7 @@ def vista_completa_tramite(request: HttpRequest, numero: str) -> HttpResponse:
         'form_tipoVehiculo': form_tipoVehiculo,
         'form_marcaVehiculo': form_marcaVehiculo,
         'afiliados_existentes': afiliados_existentes,
+        'vehiculos_existentes': vehiculos_existentes,
     }
     return render(request, 'tramite/vista_completa.html', contexto)
 
@@ -210,35 +239,49 @@ def vista(request: HttpRequest, numero: str) -> HttpResponse:
             tarjeta_id = request.POST.get('tarjeta_id')
             
             try:
-                tarjeta_edit = TarjetaDeOperacion.objects.get(id=tarjeta_id)
+                # Usamos select_related para traer la tarjeta, el vehículo y el afiliado de un solo golpe
+                tarjeta_edit = TarjetaDeOperacion.objects.select_related('vehiculo', 'afiliado').get(id=tarjeta_id)
                 prefijo_vehiculo = f"vehiculo_{tarjeta_id}"
                 prefijo_tarjeta = f"tarjeta_{tarjeta_id}"
                 
+                # Instanciamos los formularios con las instancias que ya están vinculadas
                 form_vehiculo_edit = NuevoVehiculoForm(request.POST, instance=tarjeta_edit.vehiculo, prefix=prefijo_vehiculo)
-                form_tarjeta_edit = EditarTarjetaForm(request.POST, instance=tarjeta_edit, prefix=prefijo_tarjeta)
+                form_tarjeta_edit = EditarVistaTarjetaForm(request.POST, instance=tarjeta_edit, prefix=prefijo_tarjeta)
                 
                 if form_vehiculo_edit.is_valid() and form_tarjeta_edit.is_valid():
                     with transaction.atomic():
-                        vehiculo = form_vehiculo_edit.save(commit=False)
+                        # 1. Se actualizan los datos del vehículo existente
+                        vehiculo = form_vehiculo_edit.save()
+                        
+                        # 2. Se actualizan los datos de la tarjeta existente
                         tarjeta = form_tarjeta_edit.save(commit=False)
                         
+                        # 3. Se actualiza únicamente el nombre del afiliado ya vinculado
                         nombre_editado = form_tarjeta_edit.cleaned_data.get('nombre_afiliado')
-                        afiliado_obj, created = Afiliado.objects.get_or_create(
-                            nombre_completo=nombre_editado,
-                            defaults={'operador': tramite.operador}
-                        )
+                        if nombre_editado:
+                            afiliado = tarjeta.afiliado
+                            afiliado.nombre_completo = nombre_editado
+                            afiliado.save()
+                            
+                            # Sincronizamos el propietario del vehículo para que coincida
+                            vehiculo.propietario = nombre_editado
+                            vehiculo.save()
                         
-                        tarjeta.afiliado = afiliado_obj
-                        vehiculo.afiliado = afiliado_obj
-                        
-                        vehiculo.save()
                         tarjeta.save()
                         
-                    messages.success(request, "Tarjeta actualizada correctamente.")
-                    return redirect('tramite:vista', numero=tramite.numero)
-                else:
-                    messages.error(request, "Error de validación en los formularios enviados.")
+                    messages.success(request, "Tarjeta y datos asociados actualizados correctamente.")
+                    return redirect('tramite:vista', numero=tramite.numero) 
                     
+                else:
+                    # Reporte de errores detallado si la validación falla
+                    for campo, errores in form_vehiculo_edit.errors.items():
+                        for error in errores:
+                            messages.error(request, f"Error en Vehículo (Tarjeta {tarjeta_id}): {error}")
+                            
+                    for campo, errores in form_tarjeta_edit.errors.items():
+                        for error in errores:
+                            messages.error(request, f"Error en Tarjeta ({tarjeta_id}) - Campo '{campo}': {error}")
+                            
             except TarjetaDeOperacion.DoesNotExist:
                 logger.warning(f"Intento de actualizar tarjeta inexistente: {tarjeta_id}")
                 messages.error(request, "La tarjeta especificada no existe.")
