@@ -109,10 +109,18 @@ def crear_usuario(request: HttpRequest) -> HttpResponse:
     
     if request.method == 'POST' and usuario_form.is_valid() and perfil_form.is_valid():
         try:
+            # 1. Se crea el usuario (y la señal crea el perfil en blanco silenciosamente)
             nuevo_usuario = usuario_form.save()
-            perfil = perfil_form.save(commit=False)
-            perfil.usuario = nuevo_usuario
-            perfil.save()
+            
+            # 2. Obtenemos el perfil recién creado por la señal
+            perfil_existente = nuevo_usuario.perfil
+            
+            # 3. Le inyectamos los datos limpios que vinieron en el formulario
+            for campo, valor in perfil_form.cleaned_data.items():
+                setattr(perfil_existente, campo, valor)
+                
+            # 4. Guardamos los cambios (esto hace un UPDATE, no hay error de duplicidad)
+            perfil_existente.save()
             
             messages.success(request, f"Usuario {nuevo_usuario.username} provisionado correctamente.")
             return redirect('gestion:usuario_list')
