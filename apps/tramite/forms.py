@@ -22,7 +22,7 @@ class NuevoTramiteForm(BootstrapFormMixin, forms.ModelForm):
             'usuario': 'Usuario Responsable',
             'operador': 'Empresa Operadora',
             'tipo': 'Tipo de Trámite',
-            'licencia': 'Número de Licencia',
+            'licencia': 'Tipo',
             'fojas': 'Cantidad de Fojas',
             'rutas': 'Rutas Solicitadas',
         }
