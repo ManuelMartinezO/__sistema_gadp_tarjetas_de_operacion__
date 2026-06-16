@@ -11,6 +11,8 @@ class NuevoAfiliadoForm(forms.ModelForm):
         widgets = {
             'nombre_completo': forms.TextInput(
                 attrs={
+                    'id': 'input-afiliado-nombre',
+                    'class': 'form-control',
                     'list': 'lista_afiliados',
                     'autocomplete': 'off',
                     'placeholder': 'Ej. Juan Pérez...',

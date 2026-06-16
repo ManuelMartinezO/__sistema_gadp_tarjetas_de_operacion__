@@ -22,7 +22,7 @@ class NuevoTramiteForm(BootstrapFormMixin, forms.ModelForm):
             'usuario': 'Usuario Responsable',
             'operador': 'Empresa Operadora',
             'tipo': 'Tipo de Trámite',
-            'licencia': 'Número de Licencia',
+            'licencia': 'Tipo',
             'fojas': 'Cantidad de Fojas',
             'rutas': 'Rutas Solicitadas',
         }
@@ -54,6 +54,9 @@ class InformeTecnicoForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Tramite
         fields = ['informe_tecnico', 'estado', 'segunda_revicion', 'observacion']
+        labels = {
+            'estado': 'Primera Revicion'
+        }
 
 class InformeAndResolucionForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:

@@ -11,7 +11,7 @@ class BootstrapFormMixin:
                 'style': 'border-radius: 10px;'
             })
 
-class NuevoVehiculoForm(BootstrapFormMixin, forms.ModelForm):
+class NuevoVehiculoForm(forms.ModelForm):
     class Meta:
         model = Vehiculo
         fields = [
@@ -29,14 +29,18 @@ class NuevoVehiculoForm(BootstrapFormMixin, forms.ModelForm):
             'capacidad': 'Capacidad',
         }
         widgets = {
-            'propietario': forms.TextInput(attrs={'placeholder': 'Nombre completo del propietario...'}),
-            'placa': forms.TextInput(attrs={'placeholder': 'Ej. 1234ABC', 'style': 'text-transform: uppercase; border-radius: 10px;'}),
-            'modelo': forms.NumberInput(attrs={'placeholder': 'Ej. 2015'}),
-            'chasis': forms.TextInput(attrs={'placeholder': 'Ingrese el número de chasis...'}),
-            'capacidad': forms.NumberInput(attrs={'placeholder': 'Ej. 45'}),
+            'propietario': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre completo del propietario...', 'id': 'input-vehiculo-propietario'}),
+            'placa': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 1234ABC', 'style': 'text-transform: uppercase; border-radius: 10px;', 'id': 'input-vehiculo-placa'}),
+            'modelo': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 2015', 'id': 'input-vehiculo-modelo'}),
+            'chasis': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el número de chasis...', 'id': 'input-vehiculo-chasis'}),
+            'capacidad': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 45', 'id': 'input-vehiculo-capacidad'}),
+
+            'tipo': forms.Select(attrs={'class': 'form-control', 'id': 'input-vehiculo-tipo'}),
+            'marca': forms.Select(attrs={'class': 'form-control', 'id': 'input-vehiculo-marca'}),
+            'transporte': forms.Select(attrs={'class': 'form-control', 'id': 'input-vehiculo-transporte'}),
         }
 
-class EditarVehiculoForm(BootstrapFormMixin, forms.ModelForm):
+class EditarVehiculoForm(forms.ModelForm):
     class Meta:
         model = Vehiculo
         fields = [
