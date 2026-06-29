@@ -196,11 +196,11 @@
                         
                         <td style="width: 40%; border-right: 1px solid #eee; padding-left: 5px; padding-right: 5px;">
                             <div class="lbl">Propietario / Afiliado</div>
-                            <div class="val">{{ tarjeta.afiliado.nombre }} {{ tarjeta.afiliado.apellido }}</div>
+                            <div class="val">{{ tarjeta.afiliado.nombre_completo }} {{ tarjeta.afiliado.apellido }}</div>
                             <div class="lbl">Empresa / Operador</div>
                             <div class="val">{{ tramite.operador }}</div>
                             <div class="lbl">Tipo de Servicio</div>
-                            <div class="val">{{ tarjeta.vehiculo.tipo_vehiculo }}</div>
+                            <div class="val">{{ tarjeta.vehiculo.tipo }}</div>
                             <div class="lbl">Rutas Autorizadas</div>
                             <div class="val" style="font-size: 7.5pt; line-height: 1.1;">{{ tarjeta.ruta }}</div>
                         </td>
@@ -211,7 +211,7 @@
                             <div class="lbl">Fecha y Hora Registro</div>
                             <div class="val">{{ tarjeta.fecha_registro|date:"d/m/Y" }} {{ tarjeta.fecha_registro|time:"H:i" }}</div>
                             <div class="lbl">Validez</div>
-                            <div class="val">{{ tarjeta.validez_tiempo }} {{ tarjeta.get_validez_periodo_display }}</div>
+                            <div class="val">{{ tarjeta.valida_hasta }}</div>
                             <div class="lbl">Monto</div>
                             <div class="val">Bs. {{ tarjeta.monto }}</div>
                         </td>

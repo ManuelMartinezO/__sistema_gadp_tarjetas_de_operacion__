@@ -93,4 +93,8 @@ class TarjetaDeOperacionForm(BootstrapFormMixin, forms.ModelForm):
     """
     class Meta:
         model = TarjetaDeOperacion
-        fields = [] # TODO: Añadir campos según los requisitos de negocio al crear
+        fields = [
+            'operador',
+            'afiliado',
+            'vehiculo',
+            'ruta',] # TODO: Añadir campos según los requisitos de negocio al crear

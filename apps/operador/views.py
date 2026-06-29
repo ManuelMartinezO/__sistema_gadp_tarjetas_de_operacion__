@@ -32,7 +32,7 @@ def lista_operadores(request: HttpRequest) -> HttpResponse:
             filtros = Q(organizacion__nombre__icontains=q) | Q(federacion__nombre__icontains=q)
             operadores_list = operadores_list.filter(filtros)
             
-        paginator = Paginator(operadores_list, 5) 
+        paginator = Paginator(operadores_list, 10) 
         page_number = request.GET.get('page')
         operadores = paginator.get_page(page_number)
         

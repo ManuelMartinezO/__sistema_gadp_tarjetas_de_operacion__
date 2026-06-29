@@ -34,7 +34,7 @@ def lista_vehiculos(request: HttpRequest) -> HttpResponse:
         if tipo and tipo != 'todos':
             vehiculos_list = vehiculos_list.filter(transporte=tipo)
 
-        paginator = Paginator(vehiculos_list, 5)
+        paginator = Paginator(vehiculos_list, 10)
         page_number = request.GET.get('page')
         vehiculos = paginator.get_page(page_number)
         

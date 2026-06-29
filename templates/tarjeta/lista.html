@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .input-mono:focus, .select-mono:focus {
+        border-color: #000000 !important;
+        box-shadow: none !important;
+    }
+    .tracking-wide {
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="container my-5">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 mb-4 border-bottom border-dark border-opacity-10">
+        <div>
+            <span class="text-muted text-uppercase small tracking-wider fw-semibold" style="font-size: 0.75rem; letter-spacing: 1px;">Registros Activos</span>
+            <h2 class="text-dark fw-bold m-0 fs-3">Listado de Tarjetas de Operación</h2>
+        </div>
+        <div>
+            <a href="#" class="btn btn-dark btn-sm px-3 fw-medium">
+                <i class="fas fa-plus me-2"></i>Nueva Tarjeta
+            </a>
+        </div>
+    </div>
+
+    <div class="card border border-secondary border-opacity-15 bg-white mb-4 rounded-1">
+        <div class="card-body p-4">
+            <form id="form-busqueda" class="row g-3" onsubmit="event.preventDefault();">
+                
+                <div class="col-md-8">
+                    <label class="form-label text-muted text-uppercase font-monospace small mb-1 tracking-wide" style="font-size: 0.75rem;">
+                        Buscar por Placa, Afiliado o Sindicato
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-secondary border-opacity-25 border-end-0 rounded-1 text-muted">
+                            <i class="fas fa-search small"></i>
+                        </span>
+                        <input type="text" name="q" id="input-buscar" class="form-control form-control-lg input-mono border-secondary border-opacity-25 border-start-0 rounded-1 fs-6" placeholder="Escribe los criterios de búsqueda..." value="{{ q }}" autocomplete="off">
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label text-muted text-uppercase font-monospace small mb-1 tracking-wide" style="font-size: 0.75rem;">
+                        Filtrar por Estado
+                    </label>
+                    <select name="estado" id="select-estado" class="form-select form-select-lg select-mono border-secondary border-opacity-25 rounded-1 fs-6 text-secondary">
+                        <option value="todos" {% if estado_actual == 'todos' %}selected{% endif %}>Todos los estados</option>
+                        <option value="emitida" {% if estado_actual == 'emitida' %}selected{% endif %}>Emitida</option>
+                        <option value="pendiente" {% if estado_actual == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                    </select>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <div id="tabla-container">
+        {% include 'tarjeta/parcial_tabla.html' %}
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let timeout = null;
+    const formBusqueda = document.getElementById('form-busqueda');
+    const inputBuscar = document.getElementById('input-buscar');
+    const selectEstado = document.getElementById('select-estado');
+    const tablaContainer = document.getElementById('tabla-container');
+
+    function ejecutarBusqueda() {
+        const url = new URL(window.location.href);
+        const formData = new FormData(formBusqueda);
+        const searchParams = new URLSearchParams(formData);
+        
+        fetch(`${url.pathname}?${searchParams.toString()}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            tablaContainer.innerHTML = html;
+            window.history.pushState({}, '', `${url.pathname}?${searchParams.toString()}`);
+            asignarEventosPaginacion();
+        })
+        .catch(error => console.error("Error en la búsqueda:", error));
+    }
+
+    inputBuscar.addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(ejecutarBusqueda, 300);
+    });
+
+    selectEstado.addEventListener('change', ejecutarBusqueda);
+
+    function asignarEventosPaginacion() {
+        const linksPaginacion = document.querySelectorAll('.pagination .page-link');
+        linksPaginacion.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = new URL(this.href);
+                if (url.searchParams.has('page')) {
+                    const params = new URLSearchParams(url.search);
+                    fetch(`${url.pathname}?${params.toString()}`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        tablaContainer.innerHTML = html;
+                        window.history.pushState({}, '', url.href);
+                        asignarEventosPaginacion();
+                    });
+                }
+            });
+        });
+    }
+
+    asignarEventosPaginacion();
+});
+</script>
+{% endblock %}

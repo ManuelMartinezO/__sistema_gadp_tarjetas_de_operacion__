@@ -33,7 +33,7 @@ class NuevoVehiculoForm(forms.ModelForm):
             'placa': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 1234ABC', 'style': 'text-transform: uppercase; border-radius: 10px;', 'id': 'input-vehiculo-placa'}),
             'modelo': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 2015', 'id': 'input-vehiculo-modelo'}),
             'chasis': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el número de chasis...', 'id': 'input-vehiculo-chasis'}),
-            'capacidad': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 45', 'id': 'input-vehiculo-capacidad'}),
+            'capacidad': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 45', 'id': 'input-vehiculo-capacidad'}),
 
             'tipo': forms.Select(attrs={'class': 'form-control', 'id': 'input-vehiculo-tipo'}),
             'marca': forms.Select(attrs={'class': 'form-control', 'id': 'input-vehiculo-marca'}),
