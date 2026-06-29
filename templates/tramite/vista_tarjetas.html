@@ -114,6 +114,10 @@
             <a href="{% url 'tramite:tramite_pdf' tramite.numero %}" target="_blank" class="btn btn-outline-dark rounded-2 shadow-sm px-3 py-1 ms-1 fw-bold">
                 <i class="bi bi-printer-fill text-dark me-1" aria-hidden="true"></i> Imprimir Todo
             </a>
+
+            <a href="{% url 'tarjeta:imprimir_todas_tarjetas' tramite.id %}" target="_blank" class="btn btn-dark rounded-2 shadow-sm px-3 py-1 ms-1 fw-bold">
+                <i class="bi bi-card-heading me-1" aria-hidden="true"></i> Imprimir Tarjetas del Trámite
+            </a>
         {% endif %}
     {% endif %}
 </div>

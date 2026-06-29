@@ -31,7 +31,7 @@ def lista_afiliados(request: HttpRequest) -> HttpResponse:
                 Q(operador__federacion__nombre__icontains=q)
             )
             
-        paginator = Paginator(afiliados_list, 5)
+        paginator = Paginator(afiliados_list, 10)
         page_number = request.GET.get('page')
         afiliados = paginator.get_page(page_number)
         

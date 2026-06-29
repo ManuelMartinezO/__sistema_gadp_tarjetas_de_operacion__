@@ -225,6 +225,11 @@
                             <i class="bi bi-car-front me-3" aria-hidden="true"></i> Vehículos
                         </a>
                     </li>
+                    <li>
+                        <a href="{% url 'tarjeta:lista_tarjetas' %}" class="nav-link {% if request.resolver_match.app_name == 'tarjeta' %}active{% endif %}" {% if request.resolver_match.app_name == 'tarjeta' %}aria-current="page"{% endif %}>
+                            <i class="bi bi-car-front me-3" aria-hidden="true"></i> Tarjetas
+                        </a>
+                    </li>
                 {% endif %}
                 
                 <li class="mt-4">

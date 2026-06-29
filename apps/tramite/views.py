@@ -204,7 +204,7 @@ def lista_tramites(request: HttpRequest) -> HttpResponse:
         if fecha_fin:
             tramites = tramites.filter(fecha_registro__date__lte=parse_date(fecha_fin))
 
-        paginator = Paginator(tramites, 5)
+        paginator = Paginator(tramites, 10)
         page_number = request.GET.get('page')
         tramites_paginados = paginator.get_page(page_number)
         
@@ -373,8 +373,16 @@ def generar_pdf_tramite(request: HttpRequest, numero: str) -> HttpResponse:
     
     for tarjeta in tarjetas:
         # Simplificación del texto del QR como dato de respaldo.
-        texto_qr = f"Ref. Trámite: {tramite.numero} - Tarjeta: {tarjeta.id}"
-        
+        texto_qr = (
+            f"Ref. Trámite: {tramite.numero} - Tarjeta: {tarjeta.id}\n"
+            f"PLACA: {tarjeta.vehiculo.placa}\n"
+            f"MARCA: {tarjeta.vehiculo.marca.nombre}\n"
+            f"MODELO: {tarjeta.vehiculo.modelo}\n"
+            f"ESTADO: {tarjeta.get_estado_display()}\n"
+            f"EMITIDA: {tarjeta.fecha_emision}\n"
+            f"VENCE: {tarjeta.valida_hasta}\n"
+        )
+         
         qr = qrcode.QRCode(
             version=1,  
             error_correction=qrcode.constants.ERROR_CORRECT_L,

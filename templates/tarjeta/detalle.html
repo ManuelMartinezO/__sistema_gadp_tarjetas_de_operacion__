@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 1000px;">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 mb-4 border-bottom border-dark border-opacity-10">
+        <div>
+            <span class="text-muted text-uppercase small tracking-wider fw-semibold" style="font-size: 0.75rem; letter-spacing: 1px;">Control de Registros</span>
+            <h2 class="text-dark fw-bold m-0 fs-3">Tarjeta de Operación #{{ tarjeta.id }}</h2>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'tarjeta:lista_tarjetas' %}" class="btn btn-outline-dark btn-sm px-3 fw-medium">
+                <i class="fas fa-arrow-left me-2"></i>Volver a la Lista
+            </a>
+            <a href="{% url 'tarjeta:editar_tarjeta' tarjeta.id %}" class="btn btn-dark btn-sm px-3 fw-medium">
+                <i class="fas fa-edit me-2"></i>Editar Registro
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card border border-secondary border-opacity-15 shadow-sm h-100 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-2 mb-4 pb-2 border-bottom border-light">
+                        <i class="fas fa-user-tie text-secondary small"></i>
+                        <h5 class="m-0 fw-bold text-dark fs-6 text-uppercase tracking-wide" style="font-size: 0.85rem;">Información General</h5>
+                    </div>
+                    
+                    <div class="d-flex flex-column gap-3">
+                        <div>
+                            <span class="d-block text-muted small fw-normal mb-1">Afiliado</span>
+                            <span class="fw-semibold text-dark fs-5">{{ tarjeta.afiliado.nombre_completo }}</span>
+                        </div>
+                        
+                        <div>
+                            <span class="d-block text-muted small fw-normal mb-1">Vehículo</span>
+                            <span class="text-dark fw-medium">{{ tarjeta.vehiculo.marca|default:"N/A" }} {{ tarjeta.vehiculo.modelo|default:"" }}</span>
+                        </div>
+                        
+                        <div>
+                            <span class="d-block text-muted small fw-normal mb-1">Placa</span>
+                            <span class="badge border border-dark text-dark font-monospace px-2.5 py-1.5 fs-6 fw-normal bg-white" style="letter-spacing: 0.5px;">
+                                {{ tarjeta.vehiculo.placa }}
+                            </span>
+                        </div>
+                        
+                        <div>
+                            <span class="d-block text-muted small fw-normal mb-1">Trámite Asociado</span>
+                            <span class="text-secondary font-monospace bg-light px-2 py-1 rounded small border border-secondary border-opacity-10 d-inline-block">
+                                #{{ tarjeta.tramite.id|default:"Sin trámite" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border border-secondary border-opacity-15 shadow-sm h-100 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-2 mb-4 pb-2 border-bottom border-light">
+                        <i class="fas fa-bus text-secondary small"></i>
+                        <h5 class="m-0 fw-bold text-dark fs-6 text-uppercase tracking-wide" style="font-size: 0.85rem;">Datos de Operación</h5>
+                    </div>
+                    
+                    <div class="d-flex flex-column gap-3">
+                        <div>
+                            <span class="d-block text-muted small fw-normal mb-1">Operador (Institución)</span>
+                            <span class="fw-semibold text-dark">{{ tarjeta.operador }}</span>
+                        </div>
+                        
+                        <div>
+                            <span class="d-block text-muted small fw-normal mb-1">Tipo de Tarjeta</span>
+                            <span class="text-dark">{{ tarjeta.get_tipo_tarjeta_display|default:"No especificado" }}</span>
+                        </div>
+                        
+                        <div>
+                            <span class="d-block text-muted small fw-normal mb-1">Estado de Emisión</span>
+                            {% if tarjeta.estado == 'e' %}
+                                <span class="badge bg-dark text-white fw-normal px-3 py-1.5 rounded-1 border border-dark">
+                                    <i class="fas fa-check-circle me-1.5 small"></i> {{ tarjeta.get_estado_display }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border border-dark border-opacity-20 fw-normal px-3 py-1.5 rounded-1">
+                                    <i class="fas fa-clock me-1.5 small text-muted"></i> {{ tarjeta.get_estado_display }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <span class="d-block text-muted small fw-normal mb-1">Periodo de Validez</span>
+                            <span class="text-dark fw-medium">{{ tarjeta.validez }} año(s)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border border-secondary border-opacity-15 shadow-sm bg-white">
+                <div class="card-body p-4 py-3">
+                    <div class="row text-center g-3">
+                        <div class="col-6 border-end border-secondary border-opacity-15">
+                            <span class="text-muted small d-block mb-1">Fecha de Emisión</span>
+                            <span class="fs-5 fw-bold text-dark font-monospace">{{ tarjeta.fecha_emision|default:"—" }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block mb-1">Válida Hasta</span>
+                            <span class="fs-5 fw-bold text-dark font-monospace">{{ tarjeta.valida_hasta|default:"—" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

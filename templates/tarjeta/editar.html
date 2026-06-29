@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .input-mono:focus, .select-mono:focus, .textarea-mono:focus {
+        border-color: #000000 !important;
+        box-shadow: none !important;
+        background-color: #ffffff !important;
+    }
+    .tracking-wide {
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="container my-5" style="max-width: 900px;">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 mb-4 border-bottom border-dark border-opacity-10">
+        <div>
+            <span class="text-muted text-uppercase small tracking-wider fw-semibold" style="font-size: 0.75rem; letter-spacing: 1px;">Edición de Registro</span>
+            <h2 class="text-dark fw-bold m-0 fs-3">Tarjeta de Operación #{{ tarjeta.id }}</h2>
+        </div>
+        <div>
+            <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}" class="btn btn-outline-dark btn-sm px-3 fw-medium rounded-1">
+                <i class="fas fa-times me-2"></i>Cancelar Edición
+            </a>
+        </div>
+    </div>
+
+    <div class="card border border-secondary border-opacity-15 bg-white shadow-none rounded-1">
+        <div class="card-body p-4 p-md-5">
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert bg-light border border-dark text-dark fw-medium rounded-1 px-4 py-3 mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i> 
+                            <span>Por favor, revisa los siguientes conflictos:</span>
+                        </div>
+                        <ul class="mb-0 font-monospace small">
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="row g-4">
+                    {% for field in form %}
+                        <div class="col-md-6">
+                            <label for="{{ field.id_for_label }}" class="form-label text-muted text-uppercase font-monospace small mb-2 tracking-wide" style="font-size: 0.75rem;">
+                                {{ field.label }}
+                            </label>
+                            
+                            {{ field }}
+                            
+                            {% if field.help_text %}
+                                <div class="form-text text-secondary small mt-2 font-monospace" style="font-size: 0.75rem;">
+                                    <i class="fas fa-info-circle me-1"></i>{{ field.help_text }}
+                                </div>
+                            {% endif %}
+                            
+                            {% if field.errors %}
+                                <div class="text-dark fw-bold small mt-2 bg-light border border-dark border-opacity-25 px-2 py-1 rounded-1" style="font-size: 0.8rem;">
+                                    {% for error in field.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <hr class="my-5 border-secondary border-opacity-25">
+
+                <div class="d-flex flex-column flex-sm-row justify-content-end gap-3">
+                    <a href="{% url 'tarjeta:detalle_tarjeta' tarjeta.id %}" class="btn btn-light border border-secondary border-opacity-25 px-4 fw-medium rounded-1 text-dark">
+                        Descartar Cambios
+                    </a>
+                    <button type="submit" class="btn btn-dark px-5 fw-medium rounded-1 shadow-sm">
+                        <i class="fas fa-save me-2"></i>Guardar Registro
+                    </button>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.type !== 'checkbox' && input.type !== 'radio') {
+                // Añadimos clases para que tengan fondo ligeramente gris, bordes neutros y tipografía limpia
+                input.classList.add(
+                    'form-control', 
+                    'input-mono', 
+                    'border-secondary', 
+                    'border-opacity-25', 
+                    'rounded-1', 
+                    'bg-light',
+                    'fs-6'
+                );
+                
+                // Si es un select, ajustar el padding
+                if(input.tagName === 'SELECT') {
+                    input.classList.remove('form-control');
+                    input.classList.add('form-select', 'select-mono');
+                }
+            } else {
+                input.classList.add('form-check-input', 'border-dark');
+            }
+        });
+    });
+</script>
+{% endblock %}

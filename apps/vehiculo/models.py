@@ -45,7 +45,7 @@ class Vehiculo(models.Model):
     modelo = models.PositiveIntegerField()
     placa = models.CharField(max_length=7, unique=True)
     chasis = models.CharField(max_length=100, unique=True)
-    capacidad = models.PositiveIntegerField()
+    capacidad = models.CharField(max_length=20)
     
     # === FECHA ===
     fecha_registro = models.DateTimeField(auto_now_add=True)
